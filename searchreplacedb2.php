@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.0.1
+ * Safe Search and Replace on Database with Serialized Data v2.1.1
  *
  * This script is to solve the problem of doing database search and replace when
  * developers have only gone and used the non-relational concept of serializing
@@ -26,7 +26,7 @@
  *
  * BIG WARNING!  Take a backup first, and carefully test the results of this
  * code. If you don't, and you vape your data then you only have yourself to
- * blame. Seriously.  And if you're English is bad and you don't fully
+ * blame. Seriously.  And if your English is bad and you don't fully
  * understand the instructions then STOP. Right there. Yes. Before you do any
  * damage.
  *
@@ -44,9 +44,17 @@
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
+ * Version 2.2.0
+ * 		Added code to recursive_unserialize_replace to deal with objects not
+ * 		just arrays. This was submitted by Tina Matter.
+ * 		ToDo: Test object handling. Not sure how it will cope with object in the
+ * 		db created with classes that don't exist in anything but the base PHP.
+ * 		Made into version 2.2.0 as effectively adding a new feature to handle BLOBS.
+ * 		Corrected dumb type pointed out lots of people.
+ * 		Closed a <p> tag.
  *
  * Version 2.1.0:
- *              - Changed to version 2.1.0 
+ *              - Changed to version 2.1.0
  *		* Following change by Sergei Biryukov - merged in and tested by Dave Coveney
  *              - Added Charset Support (tested with UTF-8, not tested on other charsets)
  *		* Following changes implemented by James Whitehead with thanks to all the commenters and feedback given!
@@ -189,6 +197,18 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			$_tmp = array( );
 			foreach ( $data as $key => $value ) {
 				$_tmp[ $key ] = recursive_unserialize_replace( $from, $to, $value, false );
+			}
+
+			$data = $_tmp;
+			unset( $_tmp );
+		}
+
+		// Submitted by Tina Matter
+		elseif ( is_object( $data ) ) {
+			$dataClass = get_class( $data );
+			$_tmp = new $dataClass( );
+			foreach ( $data as $key => $value ) {
+				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
 			}
 
 			$data = $_tmp;
@@ -449,14 +469,14 @@ if ( $step >= 3 ) {
 		$errors[] = mysql_error( );
 		$step = 2;
 	}
-	
+
 	if ( ! empty( $char ) ) {
 		if ( function_exists( 'mysql_set_charset' ) )
 			mysql_set_charset( $char, $connection );
 		else
-			mysql_query( 'SET NAMES ' . $char, $connection );  // Shouldn't really use this, but there for backwards compatibility	
+			mysql_query( 'SET NAMES ' . $char, $connection );  // Shouldn't really use this, but there for backwards compatibility
 	}
-	
+
 	// Do we have any tables and if so build the all tables array
 	$all_tables = array( );
 	@mysql_select_db( $data, $connection );
@@ -670,7 +690,7 @@ switch ( $step ) {
 					<label for="pass">Password:</label>
 					<input class="text" type="password" name="pass" id="pass" value="<?php esc_html_attr( $pass, true ) ?>" />
 				</p>
-				
+
 				<p>
 					<label for="pass">Charset:</label>
 					<input class="text" type="text" name="char" id="char" value="<?php esc_html_attr( $char, true ) ?>" />
@@ -799,7 +819,7 @@ if ( ini_get( 'safe_mode' ) ) {
 
 			<p><style="color:red">WARNING!</strong> Take a backup first, and carefully test the results of this code.
 			If you don't, and you vape your data then you only have yourself to blame.
-			Seriously.  And if you're English is bad and you don't fully understand the
+			Seriously.  And if your English is bad and you don't fully understand the
 			instructions then STOP.  Right there.  Yes.  Before you do any damage.
 
 			<h2>Don't Forget to Remove Me!</h3>
@@ -826,7 +846,11 @@ if ( ini_get( 'safe_mode' ) ) {
 			all references to a company name and changing it when a rebrand comes along.  Or
 			perhaps you changed your name.  Whatever you want to search and replace the code will help.</p>
 
-			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script? Come tell us!</a>
+			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script or want to check for a new version? Come tell us!</a></p>
+			<p><a href="http://interconnectit.com/newsletter-signup/">Want to know about updates or our other projects? Subscribe to our newsletter!</a></p>
+			
+			<p>Please note - clicking the links will mean referrer details will be passed on - if you're running this on a visible site you may wish to be careful.</p>
+
 
 		</div>
 	</div>
