@@ -5,6 +5,8 @@
 /**
  * To run this script, execute something like this:
  * `./searchreplacedb2cli.php -h localhost -u root -d test -c utf\-8 -s "findMe" -r "replaceMe"`
+ * use the --dry-run flag to do a dry run without searching/replacing.
+ * this script currently affects all tables in a db there are @TODOs below...
  */
 
 require_once('searchreplacedb2.php'); // include the proper srdb script
