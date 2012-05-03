@@ -254,7 +254,7 @@ function is_serialized_string( $data ) {
  * HTML. This walks every table in the db that was selected in step 3 and then
  * walks every row and column replacing all occurences of a string with another.
  * We split large tables into 50,000 row blocks when dealing with them to save
- * on memmory consumption.
+ * on memory consumption.
  *
  * @param mysql  $connection The db connection object
  * @param string $search     What we want to replace
