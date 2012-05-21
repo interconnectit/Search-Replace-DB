@@ -400,7 +400,7 @@ function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 		// preventing the full WP stack from bootstrapping
 		stream_filter_register("stopwpbootstrap", "stopwpbootstrap_filter");
 		
-		// by reading this file via the php filter protocoal,
+		// by reading this file via the php filter protocol,
 		// we can safely include wp-config.php in our function scope now 
 		include("php://filter/read=stopwpbootstrap/resource=$filename");
 	}
