@@ -44,6 +44,10 @@
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
+ * Version 2.3.0
+ * 		Added CLI script so you can use search replace as part of a build/deployment
+ * 		system. Thanks to @msenateatplos & @davemac on github.
+ *
  * Version 2.2.0
  * 		Added code to recursive_unserialize_replace to deal with objects not
  * 		just arrays. This was submitted by Tina Matter.
@@ -848,7 +852,7 @@ if ( ini_get( 'safe_mode' ) ) {
 
 			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script or want to check for a new version? Come tell us!</a></p>
 			<p><a href="http://interconnectit.com/newsletter-signup/">Want to know about updates or our other projects? Subscribe to our newsletter!</a></p>
-			
+
 			<p>Please note - clicking the links will mean referrer details will be passed on - if you're running this on a visible site you may wish to be careful.</p>
 
 
