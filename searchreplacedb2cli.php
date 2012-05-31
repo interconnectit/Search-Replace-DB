@@ -26,7 +26,7 @@ $shortopts .= "s:"; // search // $srch
 $shortopts .= "r:"; // replace // $rplc
 $shortopts .= ""; // These options do not accept values
 
-// All long options require values 
+// All long options require values
 $longopts  = array(
     "host:",    // $host
     "database:", // $data
@@ -57,8 +57,8 @@ else{
 
 if (isset($options["d"])){
   $data = $options["d"];}
-elseif(isset($options["data"])){
-  $data = $options["data"];
+elseif(isset($options["database"])){
+  $data = $options["database"];
   echo "Abort! Database name required, use --database or -d\n";
   exit;}
 
@@ -143,7 +143,7 @@ $tables = $all_tables;
 if(!isset($options["dry-run"])){ // check if dry-run
 
 echo "\n\nWorking...";
-        
+
 @ set_time_limit( 60 * 10 );
 // Try to push the allowed memory up, while we're at it
 @ ini_set( 'memory_limit', '1024M' );
@@ -160,11 +160,10 @@ echo $error . '\n';
 }
 
 // Calc the time taken.
-$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) ); 
+$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) );
 
 echo "Done. Report:\n\n";
-printf( 'In the process of replacing "%s" with "%s" we scanned %d tables with a total of %d rows, %d cells were changed and %d db update performed and it all took %f seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); 
+printf( 'In the process of replacing "%s" with "%s" we scanned %d tables with a total of %d rows, %d cells were changed and %d db update performed and it all took %f seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time );
 }
 
 ?>
-
