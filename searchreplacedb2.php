@@ -44,6 +44,15 @@
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
+ * Version 2.4.0
+ * 		Added Joel Clermont's code to include wp-config.php as a stream to parse
+ * 		variables used for setting the DB_NAME, DB_USER etc... definitions without
+ * 		loading the entire wordpress stack.
+ *
+ * Version 2.3.0
+ * 		Added CLI script so you can use search replace as part of a build/deployment
+ * 		system. Thanks to @msenateatplos & @davemac on github.
+ *
  * Version 2.2.0
  * 		Added code to recursive_unserialize_replace to deal with objects not
  * 		just arrays. This was submitted by Tina Matter.
@@ -86,6 +95,10 @@
  *  Credits:  moz667 at gmail dot com for his recursive_array_replace posted at
  *            uk.php.net which saved me a little time - a perfect sample for me
  *            and seems to work in all cases.
+ *
+ *            Joel Clermont for his wp-config filestream work
+ *
+ *            @msenateatplos & @davemac on github for the CLI script
  *
  */
 
@@ -387,6 +400,8 @@ function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '
  * Filter and include the file name passed for a set of defines used to set up
  * WordPress db access.
  *
+ * Filestream code by Joel Clermont https://github.com/joelclermont/Search-Replace-DB
+ *
  * @param string $filename The file name we need to filter and include for the defines.
  *
  * @return array    List of db connection details.
@@ -399,9 +414,9 @@ function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 		// this filter will strip out the wp-settings require line
 		// preventing the full WP stack from bootstrapping
 		stream_filter_register("stopwpbootstrap", "stopwpbootstrap_filter");
-		
+
 		// by reading this file via the php filter protocol,
-		// we can safely include wp-config.php in our function scope now 
+		// we can safely include wp-config.php in our function scope now
 		include("php://filter/read=stopwpbootstrap/resource=$filename");
 	}
 
@@ -842,7 +857,7 @@ if ( ini_get( 'safe_mode' ) ) {
 
 			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script or want to check for a new version? Come tell us!</a></p>
 			<p><a href="http://interconnectit.com/newsletter-signup/">Want to know about updates or our other projects? Subscribe to our newsletter!</a></p>
-			
+
 			<p>Please note - clicking the links will mean referrer details will be passed on - if you're running this on a visible site you may wish to be careful.</p>
 
 
