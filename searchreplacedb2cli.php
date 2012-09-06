@@ -10,7 +10,7 @@
  */
 
 ob_start();
-require_once('searchreplacedb.php'); // include the proper srdb script
+require_once('searchreplacedb2.php'); // include the proper srdb script
 ob_end_clean();
 
 // source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
