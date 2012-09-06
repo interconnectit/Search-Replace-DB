@@ -9,9 +9,9 @@
  * this script currently affects all tables in a db there are @TODOs below...
  */
 
-require_once('searchreplacedb2.php'); // include the proper srdb script
-
-echo "########################### Ignore Above ###############################\n\n";
+ob_start();
+require_once('replace.php'); // include the proper srdb script
+ob_end_clean();
 
 // source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
 
