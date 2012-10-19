@@ -44,7 +44,11 @@
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
- * Version 2.1.1
+ * Version 2.1.2:
+ * 		* Added remove script patch from David Anderson (wordshell.net)
+ * 		* Added ability to replace strings with nothing
+ *
+ * Version 2.1.1:
  * 		* Added code to recursive_unserialize_replace to deal with objects not
  * 		just arrays. This was submitted by Tina Matter.
  * 		ToDo: Test object handling. Not sure how it will cope with object in the
@@ -460,7 +464,7 @@ if ( $loadwp && file_exists( dirname( __FILE__ ) . '/wp-config.php' ) )
 	list( $host, $data, $user, $pass, $char ) = icit_srdb_define_find( 'wp-config.php' );
 
 // Check the db connection else go back to step two.
-if ( $step >= 3 ) {
+if ( $step >= 3 && $step < 6 ) {
 	$connection = @mysql_connect( $host, $user, $pass );
 	if ( ! $connection ) {
 		$errors[] = mysql_error( );
@@ -479,10 +483,10 @@ if ( $step >= 3 ) {
 	@mysql_select_db( $data, $connection );
 	$all_tables_mysql = @mysql_query( 'SHOW TABLES', $connection );
 
-	if ( ! $all_tables_mysql ) {
+	if ( ! $all_tables_mysql && $step < 6 ) {
 		$errors[] = mysql_error( );
 		$step = 2;
-	} else {
+	} elseif ( $step < 6 ) {
 		while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
 			$all_tables[] = $table[ 0 ];
 		}
@@ -491,13 +495,13 @@ if ( $step >= 3 ) {
 
 // Check and clean the tables array
 $tables = array_filter( $tables, 'check_table_array' );
-if ( $step >= 4 && empty( $tables ) ) {
+if ( $step >= 4 && $step < 6 && empty( $tables ) ) {
 	$errors[] = 'You didn\'t select any tables.';
 	$step = 3;
 }
 
 // Make sure we're searching for something.
-if ( $step >= 5 ) {
+if ( $step == 5 ) {
 	if ( empty( $srch ) ) {
 		$errors[] = 'Missing search string.';
 		$step = 4;
@@ -788,9 +792,36 @@ switch ( $step ) {
 		$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) ); ?>
 
 		<h2>Completed</h2>
-		<p><?php printf( 'In the process of replacing <strong>"%s"</strong> with <strong>"%s"</strong> we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells were changed and <strong>%d</strong> db update performed and it all took <strong>%f</strong> seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); ?></p> <?php
+		<p><?php printf( 'In the process of replacing <strong>"%s"</strong> with <strong>"%s"</strong> we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells were changed and <strong>%d</strong> db update performed and it all took <strong>%f</strong> seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); ?></p>
+
+		<h2>Important!</h2>
+		<p>Now <strong><a href="<?php icit_srdb_form_action(); ?>">click here to delete this script</a></strong> from your server.</p>
+		<?php
 		break;
 
+	case 6:
+
+		$error = true;
+
+		echo '<h2>Removing script: ';
+		echo ' <em>';
+		if( is_file( __FILE__ ) ) {
+			@unlink( __FILE__ );
+			$error = is_file( __FILE__ );
+			echo $error ? 'Failed' : 'Succeeded';
+		} else {
+			$error = true;
+			echo 'Strange error: file not found';
+		}
+		echo '</em></h2>';
+
+		if ( $error ) {
+			echo '<p>Sorry! Something went wrong. You will need to remove this script manually.</p>';
+		} else {
+			echo '<p>All done! You can return to your <a href="/">website</a> now.</p>';
+		}
+
+		break;
 
 	default: ?>
 		<h2>No idea how we got here.</h2>
@@ -811,7 +842,7 @@ if ( ini_get( 'safe_mode' ) ) {
  Close out the html and exit.
 */ ?>
 		<div class="help">
-			<h4><a href="http://interconnectit.com/">interconnect/it</a> <a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Safe Search and Replace on Database with Serialized Data v2.0.0</a></h4>
+			<h4><a href="http://interconnectit.com/">interconnect/it</a> <a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Safe Search and Replace on Database with Serialized Data v2.1.2</a></h4>
 			<p>This developer/sysadmin tool helps solve the problem of doing a search and replace on a
 			WordPress site when doing a migration to a domain name with a different length.</p>
 
