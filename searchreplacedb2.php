@@ -4,25 +4,13 @@
  * Safe Search and Replace on Database with Serialized Data v2.1.2
  *
  * This script is to solve the problem of doing database search and replace when
- * developers have only gone and used the non-relational concept of serializing
- * PHP arrays into single database columns.  It will search for all matching
- * data on the database and change it, even if it's within a serialized PHP
- * array.
+ * some data is stored within PHP serialized arrays or objects.
  *
- * The big problem with serialised arrays is that if you do a normal DB style
- * search and replace the lengths get mucked up.  This search deals with the
- * problem by unserializing and reserializing the entire contents of the
- * database you're working on.  It then carries out a search and replace on the
- * data it finds, and dumps it back to the database.  So far it appears to work
- * very well.  It was coded for our WordPress work where we often have to move
- * large databases across servers, but I designed it to work with any database.
- * Biggest worry for you is that you may not want to do a search and replace on
- * every damn table - well, if you want, simply add some exclusions in the table
- * loop and you'll be fine.  If you don't know how, you possibly shouldn't be
- * using this script anyway.
+ * For more information, see 
+ * http://interconnectit.com/124/search-and-replace-for-wordpress-databases/
  *
- * To use, simply configure the settings below and off you go.  I wouldn't
- * expect the script to take more than a few seconds on most machines.
+ * To use, load the script on your server and point your web browser to it.
+ * In some situations, consider using the command line interface version.
  *
  * BIG WARNING!  Take a backup first, and carefully test the results of this
  * code. If you don't, and you vape your data then you only have yourself to
@@ -38,7 +26,7 @@
  * and released under the WTFPL
  * ie, do what ever you want with the code, and we take no responsibility for it
  * OK? If you don't wish to take responsibility, hire us at Interconnect IT Ltd
- * on +44 (0)151 331 5140 and we will do the work for you, but at a cost,
+ * on +44 (0)151 331 5140 and we will do the work for you at our hourly rate,
  * minimum 1hr
  *
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
@@ -47,6 +35,7 @@
  * Version 2.1.2:
  * 		* Added remove script patch from David Anderson (wordshell.net)
  * 		* Added ability to replace strings with nothing
+ *		* Copy changes
  *
  * Version 2.1.1:
  * 		* Added code to recursive_unserialize_replace to deal with objects not
