@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.1.1
+ * Safe Search and Replace on Database with Serialized Data v2.1.2
  *
  * This script is to solve the problem of doing database search and replace when
  * developers have only gone and used the non-relational concept of serializing
@@ -147,7 +147,7 @@ function esc_html_attr( $string = '', $echo = false ){
 
 
 /**
- * Walk and array replacing one element for another. ( NOT USED ANY MORE )
+ * Walk an array replacing one element for another. ( NOT USED ANY MORE )
  *
  * @param string $find    The string we want to replace.
  * @param string $replace What we'll be replacing it with.
@@ -843,37 +843,29 @@ if ( ini_get( 'safe_mode' ) ) {
 */ ?>
 		<div class="help">
 			<h4><a href="http://interconnectit.com/">interconnect/it</a> <a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Safe Search and Replace on Database with Serialized Data v2.1.2</a></h4>
-			<p>This developer/sysadmin tool helps solve the problem of doing a search and replace on a
-			WordPress site when doing a migration to a domain name with a different length.</p>
+			<p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised PHP Arrays and Objects.</p>
 
-			<p><style="color:red">WARNING!</strong> Take a backup first, and carefully test the results of this code.
-			If you don't, and you vape your data then you only have yourself to blame.
-			Seriously.  And if your English is bad and you don't fully understand the
-			instructions then STOP.  Right there.  Yes.  Before you do any damage.
+			<p><style="color:red">WARNINGS!</strong>
+			Ensure data is backed up.
+			We take no responsibility for any damage caused by this script or its misuse.
+			DB Connection Settings are auto-filled and can be confused by commented out settings so CHECK!
+			If your server enforces strict timeouts, split up the search/replaces and do a table at a time.
+			There is NO UNDO!
+			Be careful running this script on a production server.</p>
 
-			<h2>Don't Forget to Remove Me!</h3>
+			<h2>Don't Forget to Remove Me!</h2>
 
 			<p style="color:red">Delete this utility from your
 			server after use.  It represents a major security threat to your database if
 			maliciously used.</p>
 
-			<h2>Use Of This Script Is Entirely At Your Own Risk</h2>
+			<h2>Again, use Of This Script Is Entirely At Your Own Risk</h2>
 
-			<p> We accept no liability from the use of this tool.</p>
-
-			<p>If you're not comfortable with this kind of stuff, get an expert, like us, to do
-			this work for you.  You do this ENTIRELY AT YOUR OWN RISK!  We accept no responsibility
-			if you mess up your data.  There is NO UNDO here!</p>
-
-			<p>The easiest way to use it is to copy your site's files and DB to the new location.
+			<p>The easiest and safest way to use this script is to copy your site's files and DB to a new location.
 			You then, if required, fix up your .htaccess and wp-config.php appropriately.  Once
 			done, run this script, select your tables (in most cases all of them) and then
 			enter the search replace strings.  You can press back in your browser to do
 			this several times, as may be required in some cases.</p>
-
-			<p>Of course, you can use the script in many other ways - for example, finding
-			all references to a company name and changing it when a rebrand comes along.  Or
-			perhaps you changed your name.  Whatever you want to search and replace the code will help.</p>
 
 			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script? Come tell us!</a>
 
