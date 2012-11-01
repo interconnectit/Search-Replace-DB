@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.1.2
+ * Safe Search and Replace on Database with Serialized Data v2.2.0
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -32,12 +32,10 @@
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
- * Version 2.1.2:
+ * Version 2.2.0:
  * 		* Added remove script patch from David Anderson (wordshell.net)
  * 		* Added ability to replace strings with nothing
  *		* Copy changes
- *
- * Version 2.1.1:
  * 		* Added code to recursive_unserialize_replace to deal with objects not
  * 		just arrays. This was submitted by Tina Matter.
  * 		ToDo: Test object handling. Not sure how it will cope with object in the
