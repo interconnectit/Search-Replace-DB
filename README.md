@@ -6,10 +6,10 @@ If you find a problem let us know in the issues area and if you can improve the 
 
 ## Usage
 
-* Migrate all your website files
-* Upload the script to your web root (or the same folder as wp-config.php)
-* Browse to the script's URL in your web browser
-* Follow the on-screen instructions
+1. Migrate all your website files
+2. Upload the script to your web root (or the same folder as wp-config.php)
+3. Browse to the script's URL in your web browser
+4. Follow the on-screen instructions
 
 ### CLI script
 
