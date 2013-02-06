@@ -58,7 +58,8 @@ else{
 if (isset($options["d"])){
   $data = $options["d"];}
 elseif(isset($options["database"])){
-  $data = $options["database"];
+  $data = $options["database"];}
+else{
   echo "Abort! Database name required, use --database or -d\n";
   exit;}
 
