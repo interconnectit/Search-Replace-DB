@@ -1,16 +1,28 @@
 <?php
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.2.0
+ * Safe Search and Replace on Database with Serialized Data v2.1.1
  *
  * This script is to solve the problem of doing database search and replace when
- * some data is stored within PHP serialized arrays or objects.
+ * developers have only gone and used the non-relational concept of serializing
+ * PHP arrays into single database columns.  It will search for all matching
+ * data on the database and change it, even if it's within a serialized PHP
+ * array.
  *
- * For more information, see 
- * http://interconnectit.com/124/search-and-replace-for-wordpress-databases/
+ * The big problem with serialised arrays is that if you do a normal DB style
+ * search and replace the lengths get mucked up.  This search deals with the
+ * problem by unserializing and reserializing the entire contents of the
+ * database you're working on.  It then carries out a search and replace on the
+ * data it finds, and dumps it back to the database.  So far it appears to work
+ * very well.  It was coded for our WordPress work where we often have to move
+ * large databases across servers, but I designed it to work with any database.
+ * Biggest worry for you is that you may not want to do a search and replace on
+ * every damn table - well, if you want, simply add some exclusions in the table
+ * loop and you'll be fine.  If you don't know how, you possibly shouldn't be
+ * using this script anyway.
  *
- * To use, load the script on your server and point your web browser to it.
- * In some situations, consider using the command line interface version.
+ * To use, simply configure the settings below and off you go.  I wouldn't
+ * expect the script to take more than a few seconds on most machines.
  *
  * BIG WARNING!  Take a backup first, and carefully test the results of this
  * code. If you don't, and you vape your data then you only have yourself to
@@ -26,20 +38,29 @@
  * and released under the WTFPL
  * ie, do what ever you want with the code, and we take no responsibility for it
  * OK? If you don't wish to take responsibility, hire us at Interconnect IT Ltd
- * on +44 (0)151 331 5140 and we will do the work for you at our hourly rate,
+ * on +44 (0)151 331 5140 and we will do the work for you, but at a cost,
  * minimum 1hr
  *
  * To view the WTFPL go to http://sam.zoy.org/wtfpl/ (WARNING: it's a little
  * rude, if you're sensitive);
  *
- * Version 2.2.0:
- * 		* Added remove script patch from David Anderson (wordshell.net)
- * 		* Added ability to replace strings with nothing
- *		* Copy changes
- * 		* Added code to recursive_unserialize_replace to deal with objects not
+ * Version 2.4.0
+ * 		Added Joel Clermont's code to include wp-config.php as a stream to parse
+ * 		variables used for setting the DB_NAME, DB_USER etc... definitions without
+ * 		loading the entire wordpress stack.
+ *
+ * Version 2.3.0
+ * 		Added CLI script so you can use search replace as part of a build/deployment
+ * 		system. Thanks to @msenateatplos & @davemac on github.
+ *
+ * Version 2.2.0
+ * 		Added code to recursive_unserialize_replace to deal with objects not
  * 		just arrays. This was submitted by Tina Matter.
  * 		ToDo: Test object handling. Not sure how it will cope with object in the
  * 		db created with classes that don't exist in anything but the base PHP.
+ * 		Made into version 2.2.0 as effectively adding a new feature to handle BLOBS.
+ * 		Corrected dumb type pointed out lots of people.
+ * 		Closed a <p> tag.
  *
  * Version 2.1.0:
  *              - Changed to version 2.1.0
@@ -74,6 +95,10 @@
  *  Credits:  moz667 at gmail dot com for his recursive_array_replace posted at
  *            uk.php.net which saved me a little time - a perfect sample for me
  *            and seems to work in all cases.
+ *
+ *            Joel Clermont for his wp-config filestream work
+ *
+ *            @msenateatplos & @davemac on github for the CLI script
  *
  */
 
@@ -242,7 +267,7 @@ function is_serialized_string( $data ) {
  * HTML. This walks every table in the db that was selected in step 3 and then
  * walks every row and column replacing all occurences of a string with another.
  * We split large tables into 50,000 row blocks when dealing with them to save
- * on memmory consumption.
+ * on memory consumption.
  *
  * @param mysql  $connection The db connection object
  * @param string $search     What we want to replace
@@ -372,10 +397,12 @@ function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '
 
 
 /**
- * Search through the file name passed for a set of defines used to set up
+ * Filter and include the file name passed for a set of defines used to set up
  * WordPress db access.
  *
- * @param string $filename The file name we need to scan for the defines.
+ * Filestream code by Joel Clermont https://github.com/joelclermont/Search-Replace-DB
+ *
+ * @param string $filename The file name we need to filter and include for the defines.
  *
  * @return array    List of db connection details.
  */
@@ -384,37 +411,31 @@ function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 	$filename = dirname( __FILE__ ) . '/' . basename( $filename );
 
 	if ( file_exists( $filename ) && is_file( $filename ) && is_readable( $filename ) ) {
-		$file = @fopen( $filename, 'r' );
-		$file_content = fread( $file, filesize( $filename ) );
-		@fclose( $file );
+		// this filter will strip out the wp-settings require line
+		// preventing the full WP stack from bootstrapping
+		stream_filter_register("stopwpbootstrap", "stopwpbootstrap_filter");
+
+		// by reading this file via the php filter protocol,
+		// we can safely include wp-config.php in our function scope now
+		include("php://filter/read=stopwpbootstrap/resource=$filename");
 	}
 
-	preg_match_all( '/define\s*?\(\s*?([\'"])(DB_NAME|DB_USER|DB_PASSWORD|DB_HOST|DB_CHARSET)\1\s*?,\s*?([\'"])([^\3]*?)\3\s*?\)\s*?;/si', $file_content, $defines );
+	return array( DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_CHARSET );
+}
 
-	if ( ( isset( $defines[ 2 ] ) && ! empty( $defines[ 2 ] ) ) && ( isset( $defines[ 4 ] ) && ! empty( $defines[ 4 ] ) ) ) {
-		foreach( $defines[ 2 ] as $key => $define ) {
-
-			switch( $define ) {
-				case 'DB_NAME':
-					$name = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_USER':
-					$user = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_PASSWORD':
-					$pass = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_HOST':
-					$host = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_CHARSET':
-					$char = $defines[ 4 ][ $key ];
-					break;
-			}
-		}
-	}
-
-	return array( $host, $name, $user, $pass, $char );
+/*
+ Define a filter class to strip out the wp-settings require
+ */
+class stopwpbootstrap_filter extends php_user_filter {
+  function filter($in, $out, &$consumed, $closing)
+  {
+    while ($bucket = stream_bucket_make_writeable($in)) {
+      $bucket->data = str_replace("require_once(ABSPATH . 'wp-settings.php');", "", $bucket->data);
+      $consumed += $bucket->datalen;
+      stream_bucket_append($out, $bucket);
+    }
+    return PSFS_PASS_ON;
+  }
 }
 
 /*
@@ -451,7 +472,7 @@ if ( $loadwp && file_exists( dirname( __FILE__ ) . '/wp-config.php' ) )
 	list( $host, $data, $user, $pass, $char ) = icit_srdb_define_find( 'wp-config.php' );
 
 // Check the db connection else go back to step two.
-if ( $step >= 3 && $step < 6 ) {
+if ( $step >= 3 ) {
 	$connection = @mysql_connect( $host, $user, $pass );
 	if ( ! $connection ) {
 		$errors[] = mysql_error( );
@@ -470,10 +491,10 @@ if ( $step >= 3 && $step < 6 ) {
 	@mysql_select_db( $data, $connection );
 	$all_tables_mysql = @mysql_query( 'SHOW TABLES', $connection );
 
-	if ( ! $all_tables_mysql && $step < 6 ) {
+	if ( ! $all_tables_mysql ) {
 		$errors[] = mysql_error( );
 		$step = 2;
-	} elseif ( $step < 6 ) {
+	} else {
 		while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
 			$all_tables[] = $table[ 0 ];
 		}
@@ -482,23 +503,22 @@ if ( $step >= 3 && $step < 6 ) {
 
 // Check and clean the tables array
 $tables = array_filter( $tables, 'check_table_array' );
-if ( $step >= 4 && $step < 6 && empty( $tables ) ) {
+if ( $step >= 4 && empty( $tables ) ) {
 	$errors[] = 'You didn\'t select any tables.';
 	$step = 3;
 }
 
 // Make sure we're searching for something.
-if ( $step == 5 ) {
+if ( $step >= 5 ) {
 	if ( empty( $srch ) ) {
 		$errors[] = 'Missing search string.';
 		$step = 4;
 	}
 
-	// Replacing a string with nothing is ok
-	//if ( empty( $rplc ) ) {
-	//	$errors[] = 'Replace string is blank.';
-	//	$step = 4;
-	//}
+	if ( empty( $rplc ) ) {
+		$errors[] = 'Replace string is blank.';
+		$step = 4;
+	}
 
 	if ( ! ( empty( $rplc ) && empty( $srch ) ) && $rplc == $srch ) {
 		$errors[] = 'Search and replace are the same, please check your values.';
@@ -779,36 +799,9 @@ switch ( $step ) {
 		$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) ); ?>
 
 		<h2>Completed</h2>
-		<p><?php printf( 'In the process of replacing <strong>"%s"</strong> with <strong>"%s"</strong> we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells were changed and <strong>%d</strong> db update performed and it all took <strong>%f</strong> seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); ?></p>
-
-		<h2>Important!</h2>
-		<p>Now <strong><a href="<?php icit_srdb_form_action(); ?>">click here to delete this script</a></strong> from your server.</p>
-		<?php
+		<p><?php printf( 'In the process of replacing <strong>"%s"</strong> with <strong>"%s"</strong> we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells were changed and <strong>%d</strong> db update performed and it all took <strong>%f</strong> seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); ?></p> <?php
 		break;
 
-	case 6:
-
-		$error = true;
-
-		echo '<h2>Removing script: ';
-		echo ' <em>';
-		if( is_file( __FILE__ ) ) {
-			@unlink( __FILE__ );
-			$error = is_file( __FILE__ );
-			echo $error ? 'Failed' : 'Succeeded';
-		} else {
-			$error = true;
-			echo 'Strange error: file not found';
-		}
-		echo '</em></h2>';
-
-		if ( $error ) {
-			echo '<p>Sorry! Something went wrong. You will need to remove this script manually.</p>';
-		} else {
-			echo '<p>All done! You can return to your <a href="/">website</a> now.</p>';
-		}
-
-		break;
 
 	default: ?>
 		<h2>No idea how we got here.</h2>
@@ -829,32 +822,44 @@ if ( ini_get( 'safe_mode' ) ) {
  Close out the html and exit.
 */ ?>
 		<div class="help">
-			<h4><a href="http://interconnectit.com/">interconnect/it</a> <a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Safe Search and Replace on Database with Serialized Data v2.1.2</a></h4>
-			<p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised PHP Arrays and Objects.</p>
+			<h4><a href="http://interconnectit.com/">interconnect/it</a> <a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Safe Search and Replace on Database with Serialized Data v2.0.0</a></h4>
+			<p>This developer/sysadmin tool helps solve the problem of doing a search and replace on a
+			WordPress site when doing a migration to a domain name with a different length.</p>
 
-			<p><style="color:red">WARNINGS!</strong>
-			Ensure data is backed up.
-			We take no responsibility for any damage caused by this script or its misuse.
-			DB Connection Settings are auto-filled and can be confused by commented out settings so CHECK!
-			If your server enforces strict timeouts, split up the search/replaces and do a table at a time.
-			There is NO UNDO!
-			Be careful running this script on a production server.</p>
+			<p><style="color:red">WARNING!</strong> Take a backup first, and carefully test the results of this code.
+			If you don't, and you vape your data then you only have yourself to blame.
+			Seriously.  And if your English is bad and you don't fully understand the
+			instructions then STOP.  Right there.  Yes.  Before you do any damage.
 
-			<h2>Don't Forget to Remove Me!</h2>
+			<h2>Don't Forget to Remove Me!</h3>
 
 			<p style="color:red">Delete this utility from your
 			server after use.  It represents a major security threat to your database if
 			maliciously used.</p>
 
-			<h2>Again, use Of This Script Is Entirely At Your Own Risk</h2>
+			<h2>Use Of This Script Is Entirely At Your Own Risk</h2>
 
-			<p>The easiest and safest way to use this script is to copy your site's files and DB to a new location.
+			<p> We accept no liability from the use of this tool.</p>
+
+			<p>If you're not comfortable with this kind of stuff, get an expert, like us, to do
+			this work for you.  You do this ENTIRELY AT YOUR OWN RISK!  We accept no responsibility
+			if you mess up your data.  There is NO UNDO here!</p>
+
+			<p>The easiest way to use it is to copy your site's files and DB to the new location.
 			You then, if required, fix up your .htaccess and wp-config.php appropriately.  Once
 			done, run this script, select your tables (in most cases all of them) and then
 			enter the search replace strings.  You can press back in your browser to do
 			this several times, as may be required in some cases.</p>
 
-			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script? Come tell us!</a>
+			<p>Of course, you can use the script in many other ways - for example, finding
+			all references to a company name and changing it when a rebrand comes along.  Or
+			perhaps you changed your name.  Whatever you want to search and replace the code will help.</p>
+
+			<p><a href="http://interconnectit.com/124/search-and-replace-for-wordpress-databases/">Got feedback on this script or want to check for a new version? Come tell us!</a></p>
+			<p><a href="http://interconnectit.com/newsletter-signup/">Want to know about updates or our other projects? Subscribe to our newsletter!</a></p>
+
+			<p>Please note - clicking the links will mean referrer details will be passed on - if you're running this on a visible site you may wish to be careful.</p>
+
 
 		</div>
 	</div>
