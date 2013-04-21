@@ -9,9 +9,9 @@
  * this script currently affects all tables in a db there are @TODOs below...
  */
 
+ob_start();
 require_once('searchreplacedb2.php'); // include the proper srdb script
-
-echo "########################### Ignore Above ###############################\n\n";
+ob_end_clean();
 
 // source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
 
@@ -26,7 +26,7 @@ $shortopts .= "s:"; // search // $srch
 $shortopts .= "r:"; // replace // $rplc
 $shortopts .= ""; // These options do not accept values
 
-// All long options require values 
+// All long options require values
 $longopts  = array(
     "host:",    // $host
     "database:", // $data
@@ -57,8 +57,9 @@ else{
 
 if (isset($options["d"])){
   $data = $options["d"];}
-elseif(isset($options["data"])){
-  $data = $options["data"];
+elseif(isset($options["database"])){
+  $data = $options["database"];}
+else{
   echo "Abort! Database name required, use --database or -d\n";
   exit;}
 
@@ -100,31 +101,31 @@ echo "search: ".$srch."\n";
 echo "replace: ".$rplc."\n\n";
 
 /* Reproduce what's done in Case 3 to test the server before proceeding */
-        $connection = @mysql_connect( $host, $user, $pass );
+        $connection = mysqli_connect( $host, $user, $pass, $data );
         if ( ! $connection ) {
-                $errors[] = mysql_error( );
+                $errors[] = mysqli_connect_error( );
                 echo "MySQL Connection Error: ";
                 print_r($errors);
         }
 
         if ( ! empty( $char ) ) {
-                if ( function_exists( 'mysql_set_charset' ) )
-                        mysql_set_charset( $char, $connection );
+                if ( function_exists( 'mysqli_set_charset' ) )
+                        mysqli_set_charset( $connection, $char );
                 else
                         mysql_query( 'SET NAMES ' . $char, $connection );  // Shouldn't really use this, but there for backwards compatibility
         }
 
         // Do we have any tables and if so build the all tables array
         $all_tables = array( );
-        @mysql_select_db( $data, $connection );
-        $all_tables_mysql = @mysql_query( 'SHOW TABLES', $connection );
+        //mysql_select_db( $data, $connection );
+        $all_tables_mysql = mysqli_query( $connection, 'SHOW TABLES' );
 
         if ( ! $all_tables_mysql ) {
-                $errors[] = mysql_error( );
+                $errors[] = mysqli_error( );
                 echo "MySQL Table Error: ";
                 print_r($errors);
         } else {
-                while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
+                while ( $table = mysqli_fetch_array( $all_tables_mysql ) ) {
                         $all_tables[] = $table[ 0 ];
                 }
                 echo "Tables: ";
@@ -143,7 +144,7 @@ $tables = $all_tables;
 if(!isset($options["dry-run"])){ // check if dry-run
 
 echo "\n\nWorking...";
-        
+
 @ set_time_limit( 60 * 10 );
 // Try to push the allowed memory up, while we're at it
 @ ini_set( 'memory_limit', '1024M' );
@@ -160,11 +161,10 @@ echo $error . '\n';
 }
 
 // Calc the time taken.
-$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) ); 
+$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) );
 
 echo "Done. Report:\n\n";
-printf( 'In the process of replacing "%s" with "%s" we scanned %d tables with a total of %d rows, %d cells were changed and %d db update performed and it all took %f seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); 
+printf( 'In the process of replacing "%s" with "%s" we scanned %d tables with a total of %d rows, %d cells were changed and %d db update performed and it all took %f seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time );
 }
 
 ?>
-
