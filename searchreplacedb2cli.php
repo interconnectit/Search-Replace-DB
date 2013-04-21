@@ -101,31 +101,31 @@ echo "search: ".$srch."\n";
 echo "replace: ".$rplc."\n\n";
 
 /* Reproduce what's done in Case 3 to test the server before proceeding */
-        $connection = @mysql_connect( $host, $user, $pass );
+        $connection = mysqli_connect( $host, $user, $pass, $data );
         if ( ! $connection ) {
-                $errors[] = mysql_error( );
+                $errors[] = mysqli_connect_error( );
                 echo "MySQL Connection Error: ";
                 print_r($errors);
         }
 
         if ( ! empty( $char ) ) {
-                if ( function_exists( 'mysql_set_charset' ) )
-                        mysql_set_charset( $char, $connection );
+                if ( function_exists( 'mysqli_set_charset' ) )
+                        mysqli_set_charset( $connection, $char );
                 else
                         mysql_query( 'SET NAMES ' . $char, $connection );  // Shouldn't really use this, but there for backwards compatibility
         }
 
         // Do we have any tables and if so build the all tables array
         $all_tables = array( );
-        @mysql_select_db( $data, $connection );
-        $all_tables_mysql = @mysql_query( 'SHOW TABLES', $connection );
+        //mysql_select_db( $data, $connection );
+        $all_tables_mysql = mysqli_query( $connection, 'SHOW TABLES' );
 
         if ( ! $all_tables_mysql ) {
-                $errors[] = mysql_error( );
+                $errors[] = mysqli_error( );
                 echo "MySQL Table Error: ";
                 print_r($errors);
         } else {
-                while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
+                while ( $table = mysqli_fetch_array( $all_tables_mysql ) ) {
                         $all_tables[] = $table[ 0 ];
                 }
                 echo "Tables: ";
