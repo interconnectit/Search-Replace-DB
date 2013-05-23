@@ -681,7 +681,7 @@ switch ( $step ) {
 				</p>
 
 				<p>
-					<label for="pass">Charset:</label>
+					<label for="char">Charset:</label>
 					<input class="text" type="text" name="char" id="char" value="<?php esc_html_attr( $char, true ) ?>" />
 				</p>
 				<?php icit_srdb_submit( 'Submit DB details' ); ?>
