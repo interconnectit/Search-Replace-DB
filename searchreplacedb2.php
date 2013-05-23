@@ -382,7 +382,11 @@ function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '
 function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 
 	$filename = dirname( __FILE__ ) . '/' . basename( $filename );
-
+	
+	// look up one directory if config file doesn't exist in current directory
+	if ( ! file_exists( $filename ) )
+		$filename = dirname( __FILE__ ) . '/../' . basename( $filename );
+		
 	if ( file_exists( $filename ) && is_file( $filename ) && is_readable( $filename ) ) {
 		$file = @fopen( $filename, 'r' );
 		$file_content = fread( $file, filesize( $filename ) );
@@ -444,10 +448,11 @@ $exclude_cols = array( 'guid' ); // Add columns to be excluded from changes to t
 
 // If we're at the start we'll check to see if wp is about so we can get the details from the wp-config.
 if ( $step == 0 || $step == 1 )
-	$step = file_exists( dirname( __FILE__ ) . '/wp-config.php' ) ? 1 : 2;
+if ( $step == 0 || $step == 1 )
+	$step = file_exists( dirname( __FILE__ ) . '/wp-config.php' ) || file_exists( dirname( __FILE__ ) . '/../wp-config.php' ) ? 1 : 2;
 
 // Scan wp-config for the defines. We can't just include it as it will try and load the whole of wordpress.
-if ( $loadwp && file_exists( dirname( __FILE__ ) . '/wp-config.php' ) )
+if ( $loadwp && file_exists( dirname( __FILE__ ) . '/wp-config.php' ) || file_exists( dirname( __FILE__ ) . '/../wp-config.php' ) )
 	list( $host, $data, $user, $pass, $char ) = icit_srdb_define_find( 'wp-config.php' );
 
 // Check the db connection else go back to step two.
