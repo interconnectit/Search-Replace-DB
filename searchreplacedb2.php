@@ -337,6 +337,9 @@ function icit_srdb_replacer( $connection, $search = '', $replace = '', $tables =
 					}
 
 				}
+
+				mysql_free_result( $data );
+
 			}
 		}
 
