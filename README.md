@@ -10,6 +10,7 @@ If you find a problem let us know in the issues area and if you can improve the 
 2. Upload the script to your web root (or the same folder as wp-config.php)
 3. Browse to the script's URL in your web browser
 4. Follow the on-screen instructions
+5. Select the `Dry-run` checkbox to do a dry run without searching/replacing
 
 ### CLI script
 
