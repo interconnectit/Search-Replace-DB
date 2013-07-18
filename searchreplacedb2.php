@@ -6,7 +6,7 @@
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
  *
- * For more information, see 
+ * For more information, see
  * http://interconnectit.com/124/search-and-replace-for-wordpress-databases/
  *
  * To use, load the script on your server and point your web browser to it.
@@ -252,7 +252,7 @@ function is_serialized_string( $data ) {
  * @return array    Collection of information gathered during the run.
  */
 function icit_srdb_replacer( $connection, $search = '', $replace = '', $tables = array( ) ) {
-	global $guid, $exclude_cols;
+	global $guid, $exclude_cols, $dry_run_only;
 
 	$report = array( 'tables' => 0,
 					 'rows' => 0,
@@ -262,6 +262,10 @@ function icit_srdb_replacer( $connection, $search = '', $replace = '', $tables =
 					 'end' => microtime( ),
 					 'errors' => array( ),
 					 );
+
+	if ( $dry_run_only ) { 	// Report this as a search-only run.
+		$report[ 'errors' ][] = '<span id="search-only>">The dry-run option was checked. No replacements were actually made.</span>';
+	}
 
 	if ( is_array( $tables ) && ! empty( $tables ) ) {
 		foreach( $tables as $table ) {
@@ -324,7 +328,10 @@ function icit_srdb_replacer( $connection, $search = '', $replace = '', $tables =
 							$where_sql[] = $column . ' = "' . mysql_real_escape_string( $data_to_fix ) . '"';
 					}
 
-					if ( $upd && ! empty( $where_sql ) ) {
+					if ($dry_run_only) {
+						// nothing for this state
+					}
+					elseif ( $upd && ! empty( $where_sql ) ) {
 						$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
 						$result = mysql_query( $sql, $connection );
 						if ( ! $result )
@@ -382,11 +389,11 @@ function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '
 function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 
 	$filename = dirname( __FILE__ ) . '/' . basename( $filename );
-	
+
 	// look up one directory if config file doesn't exist in current directory
 	if ( ! file_exists( $filename ) )
 		$filename = dirname( __FILE__ ) . '/../' . basename( $filename );
-		
+
 	if ( file_exists( $filename ) && is_file( $filename ) && is_readable( $filename ) ) {
 		$file = @fopen( $filename, 'r' );
 		$file_content = fread( $file, filesize( $filename ) );
@@ -445,6 +452,10 @@ $tables = isset( $_POST[ 'tables' ] ) && is_array( $_POST[ 'tables' ] ) ? array_
 // Do we want to skip changing the guid column
 $guid = isset( $_POST[ 'guid' ] ) && $_POST[ 'guid' ] == 1 ? 1 : 0;
 $exclude_cols = array( 'guid' ); // Add columns to be excluded from changes to this array. If the GUID checkbox is ticked they'll be skipped.
+
+// bsy-web, 20130621: Check dry_run option checkbox state.
+$dry_run_only = isset( $_POST[ 'dry_run' ] ) &&  $_POST[ 'dry_run' ] ? true : false;
+
 
 // If we're at the start we'll check to see if wp is about so we can get the details from the wp-config.
 if ( $step == 0 || $step == 1 )
@@ -756,7 +767,8 @@ switch ( $step ) {
 					<input class="text" type="text" name="rplc" id="rplc" value="<?php esc_html_attr( $rplc, true ) ?>" />
 				</p>
 
-				<?php icit_srdb_submit( 'Submit Search string', 'Are you REALLY sure you want to go ahead and do this?' ); ?>
+				<?php icit_srdb_submit( 'Submit Search and Replace strings', 'Are you REALLY sure you want to go ahead and do this?' ); ?>
+				<input type="checkbox" checked="checked" value="1" name="dry_run" id="dry_run" /><span>Dry-run (no DB updates)</span>
 			</fieldset>
 		</form>	<?php
 		break;
@@ -784,7 +796,11 @@ switch ( $step ) {
 		$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) ); ?>
 
 		<h2>Completed</h2>
-		<p><?php printf( 'In the process of replacing <strong>"%s"</strong> with <strong>"%s"</strong> we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells were changed and <strong>%d</strong> db update performed and it all took <strong>%f</strong> seconds.', $srch, $rplc, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $report[ 'updates' ], $time ); ?></p>
+		<p><?php
+			$srch_rplc_input_phrase = $dry_run_only ? 'searching for <strong>"'.$srch.'"</strong> (to be replaced by <strong>"'.$rplc.'"</strong>)' : 'replacing <strong>"'.$srch.'"</strong> with <strong>"'.$rplc.'"</strong>';
+
+			printf( 'In the process of %s we scanned <strong>%d</strong> tables with a total of <strong>%d</strong> rows, <strong>%d</strong> cells %s changed. <strong>%d</strong> db updates were actually performed. It all took <strong>%f</strong> seconds.', $srch_rplc_input_phrase, $report[ 'tables' ], $report[ 'rows' ], $report[ 'change' ], $dry_run_only ? 'would have' : 'were', $report[ 'updates' ], $time );
+			?></p>
 
 		<h2>Important!</h2>
 		<p>Now <strong><a href="<?php icit_srdb_form_action(); ?>">click here to delete this script</a></strong> from your server.</p>
