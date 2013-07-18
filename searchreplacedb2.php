@@ -275,6 +275,10 @@ function icit_srdb_replacer( $connection, $search = '', $replace = '', $tables =
 
 			// Get a list of columns in this table
 		    $fields = mysql_query( 'DESCRIBE ' . $table, $connection );
+			if ( ! $fields ) {
+				$report[ 'errors' ][] = mysql_error( );
+				continue;
+			}
 			while( $column = mysql_fetch_array( $fields ) )
 				$columns[ $column[ 'Field' ] ] = $column[ 'Key' ] == 'PRI' ? true : false;
 
@@ -612,6 +616,10 @@ if ( $step == 5 ) {
 		background-color: #FFEBE8;
 		text-align: center;
 		margin-bottom: 10px;
+	}
+	
+	.error p {
+		max-width: none;
 	}
 
 	label {
