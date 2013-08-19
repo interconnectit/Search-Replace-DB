@@ -145,9 +145,13 @@ if(!isset($options["dry-run"])){ // check if dry-run
 
 echo "\n\nWorking...";
 
-@ set_time_limit( 60 * 10 );
-// Try to push the allowed memory up, while we're at it
-@ ini_set( 'memory_limit', '1024M' );
+if( !defined('STDIN') ) { // Only for NO CLI call, CLI set no timeout, no memory limit
+
+    @ set_time_limit( 60 * 10 );
+    // Try to push the allowed memory up, while we're at it
+    @ ini_set( 'memory_limit', '1024M' );
+    
+}
 
 // Process the tables
 if ( isset( $connection ) )
