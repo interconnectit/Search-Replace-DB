@@ -5,24 +5,28 @@
  * To run this script, execute something like this:
  * `./searchreplacedb2cli.php -h localhost -u root -d test -c utf\-8 -s "findMe" -r "replaceMe"`
  * use the --dry-run flag to do a dry run without searching/replacing.
- * this script currently affects all tables in a db there are @TODOs below...
+ * 
+ * You can restrict the search/replace to specific tables, use arg 
+ * `--tables = "table1,table2"` or `-ttable1,table2`
  */
-require_once('searchreplacedb2.php'); // include the proper srdb script
 
+require_once('searchreplacedb2.php'); // include the proper srdb script
 echo "########################### Ignore Above ###############################\n\n";
 
 // source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
 
 /* Flags for options, all values required */
 $shortopts = "";
-$shortopts .= "h:";  // host name // $host
+$shortopts .= "h:"; // host name // $host
 $shortopts .= "d:"; // database name // $data
 $shortopts .= "u:"; // user name // $user
 $shortopts .= "p:"; // password // $pass
 $shortopts .= "c:"; // character set // $char
+$shortopts .= "t:"; // tables // $tables
 $shortopts .= "s:"; // search // $srch
 $shortopts .= "r:"; // replace // $rplc
 $shortopts .= ""; // These options do not accept values
+//
 // All long options require values
 $longopts = array(
 	"host:", // $host
@@ -30,6 +34,7 @@ $longopts = array(
 	"user:", // $user
 	"pass:", // $pass
 	"charset:", // $char
+	"tables:", // $tables
 	"search:", // $srch
 	"replace:", // $rplc
 	"help", // $help_text
@@ -41,7 +46,6 @@ $longopts = array(
 $arg_count = $_SERVER["argc"];
 $args_array = $_SERVER["argv"];
 $options = getopt( $shortopts, $longopts ); // Store array of options and values
-// var_dump($options); // return all the values
 
 /* Map options to correct vars from srdb script */
 if ( isset( $options["h"] ) ) {
@@ -92,6 +96,15 @@ if ( isset( $options["r"] ) ) {
 	$rplc = $options["replace"];
 }
 
+// Tables to scanned
+if ( isset( $options["t"] ) ) {
+	$tables = $options["t"];
+} elseif ( isset( $options["tables"] ) ) {
+	$tables = $options["tables"];
+} else {
+	$tables = "";
+}
+
 /* Show values if this is a dry-run */
 if ( isset( $options["dry-run"] ) ) {
 	echo "Are you sure these are correct?\n";
@@ -103,6 +116,7 @@ echo "pass: " . $pass . "\n";
 echo "charset: " . $char . "\n";
 echo "search: " . $srch . "\n";
 echo "replace: " . $rplc . "\n\n";
+echo "tables: " . $tables . "\n\n";
 
 /* Reproduce what's done in Case 3 to test the server before proceeding */
 $connection = @mysql_connect( $host, $user, $pass );
@@ -110,6 +124,7 @@ if ( !$connection ) {
 	$errors[] = mysql_error();
 	echo "MySQL Connection Error: ";
 	print_r( $errors );
+	die();
 }
 
 if ( !empty( $char ) ) {
@@ -129,20 +144,37 @@ if ( !$all_tables_mysql ) {
 	$errors[] = mysql_error();
 	echo "MySQL Table Error: ";
 	print_r( $errors );
+	die();
 } else {
 	while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
 		$all_tables[] = $table[0];
 	}
-	echo "Tables: ";
+	echo "All tables: ";
 	foreach ( $all_tables as $a_table ) {
 		echo $a_table . ", ";
 	}
 }
 
-/**
- * @TODO allow selection of one or more tables. For now, use all.
- */
-$tables = $all_tables;
+// Tables restriction ?
+if ( !empty($tables) ) {
+	// Explode strings to array
+	$tables = explode(',', $tables);
+	
+	// Remove superfluous whitespace
+	$tables = array_map('trim', $tables);
+	
+	// Check and clean the tables array
+	$tables = array_filter( $tables, 'check_table_array' );
+	
+	// Make an error message if no tables
+	if ( empty( $tables ) ) {
+		echo 'You didn\'t select any tables, or not existing tables.';
+		die();
+	}
+} else { 
+	// No restriction ? Use all tables !
+	$tables = $all_tables;
+}
 
 /* Execute Case 5 with the actual search + replace */
 
