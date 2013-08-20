@@ -206,5 +206,6 @@ if ( !isset( $options["dry-run"] ) ) { // check if dry-run
 
 	echo "Done. Report:".PHP_EOL.PHP_EOL;
 	printf( 'In the process of replacing "%s" with "%s" we scanned %d tables with a total of %d rows, %d cells were changed and %d db update performed and it all took %f seconds.', $srch, $rplc, $report['tables'], $report['rows'], $report['change'], $report['updates'], $time );
+	echo PHP_EOL.PHP_EOL;
 }
 ?>
