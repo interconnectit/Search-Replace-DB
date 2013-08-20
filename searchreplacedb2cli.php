@@ -176,7 +176,7 @@ if ( !empty( $tables ) ) {
 	// No restriction ? Use all tables !
 	$tables = $all_tables;
 }
-die();
+
 /* Execute Case 5 with the actual search + replace */
 
 if ( !isset( $options["dry-run"] ) ) { // check if dry-run
