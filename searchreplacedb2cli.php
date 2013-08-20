@@ -10,10 +10,14 @@
  * `--tables = "table1,table2"` or `-ttable1,table2`
  */
 
+// Wrap require with OB functions for not display HTML on shell
+ob_start();
+
+// source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
 require_once('searchreplacedb2.php'); // include the proper srdb script
 echo "########################### Ignore Above ###############################\n\n";
 
-// source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
+ob_end_clean();
 
 /* Flags for options, all values required */
 $shortopts = "";
@@ -26,7 +30,7 @@ $shortopts .= "t:"; // tables // $tables
 $shortopts .= "s:"; // search // $srch
 $shortopts .= "r:"; // replace // $rplc
 $shortopts .= ""; // These options do not accept values
-//
+
 // All long options require values
 $longopts = array(
 	"host:", // $host
