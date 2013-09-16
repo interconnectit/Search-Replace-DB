@@ -386,10 +386,10 @@ function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '
 
 
 /**
- * Search through the file name passed for a set of defines used to set up
+ * Filter and include the file name passed for a set of defines used to set up
  * WordPress db access.
  *
- * @param string $filename The file name we need to scan for the defines.
+ * @param string $filename The file name we need to filter and include for the defines.
  *
  * @return array    List of db connection details.
  */
@@ -402,37 +402,31 @@ function icit_srdb_define_find( $filename = 'wp-config.php' ) {
 		$filename = dirname( __FILE__ ) . '/../' . basename( $filename );
 
 	if ( file_exists( $filename ) && is_file( $filename ) && is_readable( $filename ) ) {
-		$file = @fopen( $filename, 'r' );
-		$file_content = fread( $file, filesize( $filename ) );
-		@fclose( $file );
+		// this filter will strip out the wp-settings require line
+		// preventing the full WP stack from bootstrapping
+		stream_filter_register("stopwpbootstrap", "stopwpbootstrap_filter");
+		
+		// by reading this file via the php filter protocol,
+		// we can safely include wp-config.php in our function scope now 
+		include("php://filter/read=stopwpbootstrap/resource=$filename");
 	}
 
-	preg_match_all( '/define\s*?\(\s*?([\'"])(DB_NAME|DB_USER|DB_PASSWORD|DB_HOST|DB_CHARSET)\1\s*?,\s*?([\'"])([^\3]*?)\3\s*?\)\s*?;/si', $file_content, $defines );
+	return array( DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_CHARSET );
+}
 
-	if ( ( isset( $defines[ 2 ] ) && ! empty( $defines[ 2 ] ) ) && ( isset( $defines[ 4 ] ) && ! empty( $defines[ 4 ] ) ) ) {
-		foreach( $defines[ 2 ] as $key => $define ) {
-
-			switch( $define ) {
-				case 'DB_NAME':
-					$name = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_USER':
-					$user = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_PASSWORD':
-					$pass = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_HOST':
-					$host = $defines[ 4 ][ $key ];
-					break;
-				case 'DB_CHARSET':
-					$char = $defines[ 4 ][ $key ];
-					break;
-			}
-		}
-	}
-
-	return array( $host, $name, $user, $pass, $char );
+/*
+ Define a filter class to strip out the wp-settings require
+ */
+class stopwpbootstrap_filter extends php_user_filter {
+  function filter($in, $out, &$consumed, $closing)
+  {
+    while ($bucket = stream_bucket_make_writeable($in)) {
+      $bucket->data = str_replace("require_once(ABSPATH . 'wp-settings.php');", "", $bucket->data);
+      $consumed += $bucket->datalen;
+      stream_bucket_append($out, $bucket);
+    }
+    return PSFS_PASS_ON;
+  }
 }
 
 /*
