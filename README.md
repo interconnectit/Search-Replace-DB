@@ -15,7 +15,10 @@ If you find a problem let us know in the issues area and if you can improve the 
 ### CLI script
 
 1. Run the CLI script from the command line like so:
-   ```./searchreplacedb2cli.php --host localhost --user root --database test --pass "pass" --charset utf\-8 --search "findMe" --replace "replaceMe"```
+   ```
+   ./searchreplacedb2cli.php --host localhost --user root --database test --pass "pass" 
+      --charset utf8 --search "findMe" --replace "replaceMe"
+   ```
 2. use the `--dry-run` flag to do a dry run without searching/replacing
 
 You can use short form arguments too so `--host` becomes `-h` and so on.
