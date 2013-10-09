@@ -445,7 +445,7 @@ class icit_srdb_ui extends icit_srdb {
 		if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
 
 			// require the bootstrap include
-			require_once './includes/bootstrap.inc';
+			require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
 
 			// load drupal
 			drupal_bootstrap( DRUPAL_BOOTSTRAP_FULL );
