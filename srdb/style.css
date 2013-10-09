@@ -159,6 +159,10 @@ legend, fieldset {
 	background: #671301;
 	padding: 10px;
 	font-weight: bold;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	border: 2px solid rgba(0,0,0,.3);
 }
@@ -225,6 +229,10 @@ legend, fieldset {
 .field {
 	float: left;
 	padding-right: 20px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 }
 .field label {
@@ -242,6 +250,10 @@ legend, fieldset {
 .field-long input[type="email"],
 .field-short input[type="email"] {
 	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	margin-bottom: 10px;
 }
@@ -272,6 +284,10 @@ input[type="email"],
 	padding: 10px 10px 10px;
 	font-family: Monaco, Consolas, monospace;
 	font-weight: bold;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 }
 .regex-on .regex-left + input[type="text"] {
@@ -305,11 +321,11 @@ input[type="email"],
 	margin-right: 20px;
 	margin-bottom: 10px;
 	display: inlin-block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
-	/*-webkit-transition: all 0.3s ease-in;*/
-	/*-moz-transition: all 0.3s ease-in;*/
-	/*-ms-transition: all 0.3s ease-in;*/
-	/*transition: all 0.3s ease-in;*/
 }
 
 .separator {
@@ -371,6 +387,10 @@ input, select, textarea, button {
 select[multiple] {
 	height: 16em;
 	font-family: Monaco, Consolas, monospace;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	width: 100%;
 	margin: 20px 0 0;
@@ -502,6 +522,10 @@ input[type="radio"] {
 .diff pre {
 	float: left;
 	width: 50%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 5px;
 	background: #fff;
@@ -588,6 +612,10 @@ h1 a {
 }
 
 .product {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	padding-right: 20px;
 	margin-bottom: 20px;
@@ -618,6 +646,10 @@ h1 a {
 .product a {
 	display: block;
 	text-decoration: none;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 20px 20px 40px 20px;
 	border: 2px solid rgba(0,0,0,.1);
