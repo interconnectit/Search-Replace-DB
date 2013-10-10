@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.2.0
+ * Safe Search and Replace on Database with Serialized Data v3.0.0
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -37,7 +37,7 @@
  * License URL: http://www.gnu.org/copyleft/gpl.html
  *
  *
- * Version 3.0:
+ * Version 3.0.0:
  * 		* Major overhaul
  * 		* Multibyte string replacements
  * 		* UI completely redesigned
@@ -47,6 +47,7 @@
  * 		* Replacements done table by table to avoid timeouts
  * 		* Convert tables to InnoDB
  * 		* Convert tables to utf8_unicode_ci
+ * 		* Use PDO if available
  * 		* Preview/view changes
  * 		* Optionally use preg_replace()
  * 		* Scripts bootstraps WordPress/Drupal to avoid issues with unknown
@@ -200,8 +201,6 @@ class icit_srdb_ui extends icit_srdb {
 		// body callback
 		$html = 'ui';
 
-		error_log( $show );
-
 		switch( $show ) {
 
 			// remove search replace
@@ -223,12 +222,6 @@ class icit_srdb_ui extends icit_srdb {
 				break;
 
 			case 'liverun':
-
-				// increase time out limit
-				@set_time_limit( 60 * 10 );
-
-				// try to push the allowed memory up, while we're at it
-				@ini_set( 'memory_limit', '1024M' );
 
 				// bsy-web, 20130621: Check live run was explicitly clicked and only set false then
 				$this->set( 'dry_run', false );
@@ -525,27 +518,6 @@ class icit_srdb_ui extends icit_srdb {
 		);
 	}
 
-
-	// ajax
-
-
-
-	//
-
-
-
-	/**
-	 * Create a submit button with a JS confirm popup if there is need.
-	 *
-	 * @param string $text    Button string.
-	 * @param string $warning Submit warning pop up text.
-	 *
-	 * @return null
-	 */
-	public function submit_button( $text = 'Submit', $warning = '' ) {
-		$warning = str_replace( "'", "\'", $warning ); ?>
-		<input type="submit" class="button" value="<?php echo htmlentities( $text, ENT_QUOTES, 'UTF-8' ); ?>" <?php echo ! empty( $warning ) ? 'onclick="if (confirm(\'' . htmlentities( $warning, ENT_QUOTES, 'UTF-8' ) . '\')){return true;}return false;"' : ''; ?>/> <?php
-	}
 
 	/**
 	* Simple html escaping
@@ -893,7 +865,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			<h1 class="branding">interconnect/it</h1>
 
-			<h2>Safe Search and Replace on Database with Serialized Data v2.1.2</h2>
+			<h2>Safe Search and Replace on Database with Serialized Data v3.0.0</h2>
 
 			<p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised PHP Arrays and Objects.</p>
 

@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v2.2.0
+ * Safe Search and Replace on Database with Serialized Data v3.0.0
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -262,6 +262,12 @@ class icit_srdb {
 				$value = array_map( 'stripcslashes', $value );
 			$this->set( $name, $value );
 		}
+
+		// increase time out limit
+		@set_time_limit( 60 * 10 );
+
+		// try to push the allowed memory up, while we're at it
+		@ini_set( 'memory_limit', '1024M' );
 
 		// set up db connection
 		$this->db_setup();
