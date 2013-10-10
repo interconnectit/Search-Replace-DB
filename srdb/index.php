@@ -294,7 +294,7 @@ class icit_srdb_ui extends icit_srdb {
 			default:
 
 				// get tables or error messages
-				$this->connection();
+				$this->db_setup();
 
 				break;
 		}

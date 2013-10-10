@@ -264,60 +264,34 @@ class icit_srdb {
 		}
 
 		// set up db connection
-		$this->connection();
+		$this->db_setup();
 
-		// modify db table engine
+		// update engines
 		if ( $this->alter_engine ) {
-
-			if ( in_array( $this->alter_engine, $this->engines ) ) {
-
-				$this->report = $this->update_engine( $this->alter_engine, $this->tables );
-
-				return $this->report;
-
-			} else {
-
-				$this->add_error( 'Cannot convert tables to unsupported table engine &rdquo;' . $this->alter_engine . '&ldquo;', 'results' );
-
-			}
-
-		// modify db table collation & charset
-		} elseif ( $this->alter_collate ) {
-
-			if ( is_string( $this->alter_collate ) ) {
-
-				$this->report = $this->update_collation( $this->alter_collate, $this->tables );
-
-				return $this->report;
-
-			} else {
-
-				$this->add_error( 'Collation must be a valid string', 'results' );
-
-			}
-
-		// search & replace
-		} else {
-
-			// if we have search string
-			if ( ! empty( $this->search ) ) {
-
-				// go ahead with dry/live run
-				$this->report = $this->replacer( $this->search, $this->replace, $this->tables );
-
-				return $this->report;
-
-			} else {
-
-				$this->add_error( 'Search string is empty', 'search' );
-
-			}
-
+			$report = $this->update_engine( $this->alter_engines, $this->tables );
 		}
 
+		// update collation
+		elseif ( $this->alter_collate ) {
+			$report = $this->update_collation( $this->alter_collate, $this->tables );
+		}
+
+		// default search/replace action
+		else {
+			$report = $this->replacer( $this->search, $this->replace, $this->tables );
+		}
+
+		// store report
+		$this->set( 'report', $report );
+		return $report;
 	}
 
 
+	/**
+	 * Terminates db connection
+	 *
+	 * @return void
+	 */
 	public function __destruct() {
 		$this->db_close();
 	}
@@ -354,73 +328,143 @@ class icit_srdb {
 
 
 	/**
-	 * Creates the database connection and gathers table names
+	 * Setup connection, populate tables array
 	 *
-	 * @return resource DB connection
+	 * @return void
 	 */
-	public function connection() {
+	public function db_setup() {
 
-		if ( ! class_exists( 'PDO' ) )
-			$this->set( 'use_pdo', false );
+		$connection_type = class_exists( 'PDO' ) ? 'pdo' : 'mysql';
 
-		if ( $this->use_pdo() ) {
-			try {
-				$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
-			} catch( PDOException $e ) {
-				return $this->add_error( $e->getMessage(), 'db' );
-			}
+		// connect
+		$this->set( 'db', $this->connect( $connection_type ) );
+
+		if ( $this->db_valid() ) {
+
+			// get tables
+			$this->set( 'all_tables', $this->get_tables() );
+
+			// get engines
+			$this->set( 'engines', $this->get_engines() );
+
 		}
-		else {
-			$connection = @mysql_connect( $this->host, $this->user, $this->pass );
-		}
 
-		// set database resource
-		$this->set( 'db', $connection );
+	}
+
+
+	/**
+	 * Database connection type router
+	 *
+	 * @param string $type
+	 *
+	 * @return callback
+	 */
+	public function connect( $type = '' ) {
+		$method = "connect_{$type}";
+		return $this->$method();
+	}
+
+
+	/**
+	 * Creates the database connection using old mysql functions
+	 *
+	 * @return resource|bool
+	 */
+	public function connect_mysql() {
+
+		// switch off PDO
+		$this->set( 'use_pdo', false );
+
+		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
 
 		// unset if not available
-		if ( ! $this->use_pdo() && ! $connection ) {
-			$this->set( 'db', false );
-			return $this->add_error( 'Unable to connect to database. Please check your host', 'db' );
+		if ( ! $connection ) {
+			$connection = false;
+			$this->add_error( mysql_error(), 'db' );
 		}
 
 		// select the database for non PDO
-		if ( ! $this->use_pdo() && ! mysql_select_db( $this->name, $connection ) )
-			return $this->add_error( 'Could not select the database. Please check the database name, user and password', 'db' );
+		if ( $connection && ! mysql_select_db( $this->name, $connection ) ) {
+			$connection = false;
+			$this->add_error( mysql_error(), 'db' );
+		}
 
-		// set the character set
-		$this->db_set_charset( $this->get( 'charset' ) );
+		return $connection;
+	}
+
+
+	/**
+	 * Sets up database connection using PDO
+	 *
+	 * @return PDO|bool
+	 */
+	public function connect_pdo() {
+
+		try {
+			$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+		} catch( PDOException $e ) {
+			$this->add_error( $e->getMessage(), 'db' );
+			$connection = false;
+		}
+
+		// check if there's a problem with our database at this stage
+		if ( $connection && ! $connection->query( 'SHOW TABLES' ) ) {
+			$this->add_error( array_pop( $connection->errorInfo() ), 'db' );
+			$connection = false;
+		}
+
+		return $connection;
+	}
+
+
+	/**
+	 * Retrieve all tables from the database
+	 *
+	 * @return array
+	 */
+	public function get_tables() {
 
 		// get tables
 		$all_tables_mysql = $this->db_query( 'SHOW TABLE STATUS' );
-
-		// check if there's a problem with our database at this stage
-		if ( $this->use_pdo() && ! $all_tables_mysql ) {
-			$this->add_error( $this->db_error(), 'db' );
-			$this->set( 'db', false );
-			return;;
-		}
+		$all_tables = array();
 
 		if ( ! $all_tables_mysql ) {
 			$this->add_error( $this->db_error( ), 'db' );
 		} else {
+
+			// set the character set
+			$this->db_set_charset( $this->get( 'charset' ) );
+
 			while ( $table = $this->db_fetch( $all_tables_mysql ) ) {
-				$this->all_tables[ $table[0] ] = $table;
+				$all_tables[ $table[0] ] = $table;
 			}
 		}
 
+		return $all_tables;
+	}
+
+
+	/**
+	 * Retrieve all supported database engines
+	 *
+	 * @return array
+	 */
+	public function get_engines() {
+
 		// get available engines
 		$mysql_engines = $this->db_query( 'SHOW ENGINES;' );
+		$engines = array();
 
 		if ( ! $mysql_engines ) {
 			$this->add_error( $this->db_error( ), 'db' );
 		} else {
 			while ( $engine = $this->db_fetch( $mysql_engines ) ) {
 				if ( in_array( $engine[ 'Support' ], array( 'YES', 'DEFAULT' ) ) )
-					$this->engines[] = $engine[ 'Engine' ];
+					$engines[] = $engine[ 'Engine' ];
 			}
 		}
 
-		return $this->get( 'db' );
+		return $engines;
 	}
 
 
@@ -588,7 +632,6 @@ class icit_srdb {
 	 * We split large tables into 50,000 row blocks when dealing with them to save
 	 * on memmory consumption.
 	 *
-	 * @param mysql  $connection The db connection object
 	 * @param string $search     What we want to replace
 	 * @param string $replace    What we want to replace it with.
 	 * @param array  $tables     The tables we want to look at.
@@ -596,6 +639,12 @@ class icit_srdb {
 	 * @return array    Collection of information gathered during the run.
 	 */
 	public function replacer( $search = '', $replace = '', $tables = array( ) ) {
+
+		// check we have a search string, bail if not
+		if ( empty( $search ) ) {
+			$this->add_error( 'Search string is empty', 'search' );
+			return false;
+		}
 
 		$report = array( 'tables' => 0,
 						 'rows' => 0,
@@ -617,13 +666,15 @@ class icit_srdb {
 						 'errors' => array( ),
 						 );
 
-		if ( $this->dry_run ) { 	// Report this as a search-only run.
+		$dry_run = $this->get( 'dry_run' );
+		$all_tables = $this->get( 'all_tables' );
+
+		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements were actually made.', 'results' );
-		}
 
 		// if no tables selected assume all
 		if ( empty( $tables ) )
-			$tables = array_keys( $this->all_tables );
+			$tables = array_keys( $all_tables );
 
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 			foreach( $tables as $table ) {
@@ -707,10 +758,9 @@ class icit_srdb {
 
 						}
 
-						if ( $this->dry_run ) {
+						if ( $dry_run ) {
 							// nothing for this state
-						}
-						elseif ( $upd && ! empty( $where_sql ) ) {
+						} elseif ( $upd && ! empty( $where_sql ) ) {
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
 							$result = $this->db_query( $sql );
 							if ( ! $result ) {
@@ -738,60 +788,49 @@ class icit_srdb {
 
 		$report[ 'end' ] = microtime( );
 
-		// store in the class
-		$this->set( 'report', $report );
-
 		return $report;
 	}
 
 
+	/**
+	 * Convert table engines
+	 *
+	 * @param string $engine Engine type
+	 * @param array $tables
+	 *
+	 * @return array    Modification report
+	 */
 	public function update_engine( $engine = 'MyISAM', $tables = array() ) {
 
-		$report = array( 'engine' => $engine, 'converted' => array() );
+		$report = false;
 
-		if ( empty( $tables ) )
-			$tables = array_keys( $this->all_tables );
+		if ( in_array( $engine, $this->get( 'engines' ) ) ) {
 
-		foreach( $tables as $table ) {
-			$table_info = $this->all_tables[ $table ];
+			$report = array( 'engine' => $engine, 'converted' => array() );
 
-			// are we updating the engine?
-			if ( $table_info[ 'Engine' ] != $engine ) {
-				$engine_converted = $this->db_query( "alter table {$table} engine = {$engine};" );
-				if ( ! $engine_converted )
-					$this->add_error( $this->db_error( ), 'results' );
-				else
-					$report[ 'converted' ][] = $table;
-				continue;
+			$all_tables = $this->get( 'all_tables' );
+
+			if ( empty( $tables ) )
+				$tables = array_keys( $all_tables );
+
+			foreach( $tables as $table ) {
+				$table_info = $all_tables[ $table ];
+
+				// are we updating the engine?
+				if ( $table_info[ 'Engine' ] != $engine ) {
+					$engine_converted = $this->db_query( "alter table {$table} engine = {$engine};" );
+					if ( ! $engine_converted )
+						$this->add_error( $this->db_error( ), 'results' );
+					else
+						$report[ 'converted' ][] = $table;
+					continue;
+				}
 			}
-		}
 
-		return $report;
-	}
+		} else {
 
+			$this->add_error( 'Cannot convert tables to unsupported table engine &rdquo;' . $engine . '&ldquo;', 'results' );
 
-	public function update_collation( $collate = 'utf8_unicode_ci', $tables = array() ) {
-
-		$report = array( 'collation' => $collate, 'converted' => array() );
-
-		if ( empty( $tables ) )
-			$tables = array_keys( $this->all_tables );
-
-		// charset is same as collation up to first underscore
-		$charset = preg_replace( '/^([^_]+).*$/', '$1', $collate );
-
-		foreach( $tables as $table ) {
-			$table_info = $this->all_tables[ $table ];
-
-			// are we updating the engine?
-			if ( $table_info[ 'Collate' ] != $collate ) {
-				$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collate};" );
-				if ( ! $engine_converted )
-					$this->add_error( $this->db_error( ), 'results' );
-				else
-					$report[ 'converted' ][] = $table;
-				continue;
-			}
 		}
 
 		return $report;
@@ -799,27 +838,52 @@ class icit_srdb {
 
 
 	/**
-	 * Take an array and turn it into an English formatted list. Like so:
-	 * array( 'a', 'b', 'c', 'd' ); = a, b, c, or d.
+	 * Updates the characterset and collation on the specified tables
 	 *
-	 * @param array $input_arr The source array
+	 * @param string $collate table collation
+	 * @param array $tables  tables to modify
 	 *
-	 * @return string    English formatted string
+	 * @return array    Modification report
 	 */
-	public function eng_list( $input_arr = array( ), $sep = ', ', $before = '"', $after = '"' ) {
-		if ( ! is_array( $input_arr ) )
-			return false;
+	public function update_collation( $collate = 'utf8_unicode_ci', $tables = array() ) {
 
-		$_tmp = $input_arr;
+		$report = false;
 
-		if ( count( $_tmp ) >= 2 ) {
-			$end2 = array_pop( $_tmp );
-			$end1 = array_pop( $_tmp );
-			array_push( $_tmp, $end1 . $after . ' or ' . $before . $end2 );
+		if ( is_string( $collate ) ) {
+
+			$report = array( 'collation' => $collate, 'converted' => array() );
+
+			$all_tables = $this->get( 'all_tables' );
+
+			if ( empty( $tables ) )
+				$tables = array_keys( $all_tables );
+
+			// charset is same as collation up to first underscore
+			$charset = preg_replace( '/^([^_]+).*$/', '$1', $collate );
+
+			foreach( $tables as $table ) {
+				$table_info = $all_tables[ $table ];
+
+				// are we updating the engine?
+				if ( $table_info[ 'Collate' ] != $collate ) {
+					$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collate};" );
+					if ( ! $engine_converted )
+						$this->add_error( $this->db_error( ), 'results' );
+					else
+						$report[ 'converted' ][] = $table;
+					continue;
+				}
+			}
+
+		} else {
+
+			$this->add_error( 'Collation must be a valid string', 'results' );
+
 		}
 
-		return $before . implode( $before . $sep . $after, $_tmp ) . $after;
+		return $report;
 	}
+
 
 	/**
 	 * Replace all occurrences of the search string with the replacement string.

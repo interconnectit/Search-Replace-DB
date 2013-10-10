@@ -248,7 +248,7 @@ window.console = window.console || { log: function(){} };
 							if ( ! error_list.length ) {
 								if ( type == 'db' ) {
 									$( '[name="use_tables"]' ).removeAttr( 'disabled' );
-									if ( $( '.table-select' ).html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ) )
+									if ( ! t.prev_data.name || t.prev_data.name !== data.name )
 										$( '.table-select' ).html( info.table_select );
 									if ( $.inArray( 'InnoDB', info.engines ) >= 0 && ! $( '[name="submit\[innodb\]"]' ).length )
 										$( '[name="submit\[utf8\]"]' ).before( '<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />' );
