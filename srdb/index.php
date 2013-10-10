@@ -807,21 +807,19 @@ class icit_srdb_ui extends icit_srdb {
 
 					<div class="field radio">
 						<label for="all_tables">
-							<input id="all_tables" name="use_tables" value="all" type="radio" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> <?php $this->checked( true, empty( $this->tables ) ); ?> />
+							<input id="all_tables" name="use_tables" value="all" type="radio" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> <?php $this->checked( true, empty( $this->tables ) ); ?> />
 							all tables
 						</label>
 					</div>
 
 					<div class="field radio">
 						<label for="subset_tables">
-							<input id="subset_tables" name="use_tables" value="subset" type="radio" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> <?php $this->checked( false, empty( $this->tables ) ); ?> />
+							<input id="subset_tables" name="use_tables" value="subset" type="radio" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> <?php $this->checked( false, empty( $this->tables ) ); ?> />
 							select tables
 						</label>
 					</div>
 
-					<div class="field table-select hide-if-js">
-						<?php $this->table_select(); ?>
-					</div>
+					<div class="field table-select hide-if-js"><?php $this->table_select(); ?></div>
 
 				</div>
 
@@ -852,19 +850,19 @@ class icit_srdb_ui extends icit_srdb {
 					<span class="submit-group">
 						<input type="submit" name="submit[update]" value="update details" />
 
-						<input type="submit" name="submit[dryrun]" value="dry run" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> class="db-required" />
+						<input type="submit" name="submit[dryrun]" value="dry run" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required" />
 
-						<input type="submit" name="submit[liverun]" value="live run" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> class="db-required" />
+						<input type="submit" name="submit[liverun]" value="live run" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required" />
 
 						<span class="separator">/</span>
 					</span>
 
 					<span class="submit-group">
 						<?php if ( in_array( 'InnoDB', $this->get( 'engines' ) ) ) { ?>
-						<input type="submit" name="submit[innodb]" value="convert to innodb" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
+						<input type="submit" name="submit[innodb]" value="convert to innodb" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
 						<?php } ?>
 
-						<input type="submit" name="submit[utf8]" value="convert to utf8 unicode" <?php if ( ! $this->db ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
+						<input type="submit" name="submit[utf8]" value="convert to utf8 unicode" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
 
 					</span>
 

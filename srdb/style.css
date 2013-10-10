@@ -484,8 +484,9 @@ input[type="radio"] {
 }
 
 .changes-overlay h1 {
-	margin: 40px 20px 20px;
+	margin: 20px;
 	float: none;
+	font-weight: normal;
 }
 
 .changes-overlay .changes {

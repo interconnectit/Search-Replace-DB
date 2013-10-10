@@ -14,6 +14,8 @@ window.console = window.console || { log: function(){} };
 
 			errors: {},
 			report: {},
+			info: {},
+			prev_data: {},
 			tables: 0,
 			rows: 0,
 			changes: 0,
@@ -232,7 +234,7 @@ window.console = window.console || { log: function(){} };
 				post_data[ 'tables[]' ] = [ data[ 'tables[]' ][ i ] ];
 				post_data.use_tables = 'subset';
 
-				$.post( window.location.href, post_data, function( response ) {
+				return $.post( window.location.href, post_data, function( response ) {
 
 					if ( response ) {
 
@@ -246,7 +248,8 @@ window.console = window.console || { log: function(){} };
 							if ( ! error_list.length ) {
 								if ( type == 'db' ) {
 									$( '[name="use_tables"]' ).removeAttr( 'disabled' );
-									$( '.table-select' ).html( info.table_select );
+									if ( $( '.table-select' ).html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ) )
+										$( '.table-select' ).html( info.table_select );
 									if ( $.inArray( 'InnoDB', info.engines ) >= 0 && ! $( '[name="submit\[innodb\]"]' ).length )
 										$( '[name="submit\[utf8\]"]' ).before( '<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />' );
 								}
@@ -268,6 +271,7 @@ window.console = window.console || { log: function(){} };
 
 							if ( type == 'db' ) {
 								$( '[name="use_tables"]' ).eq(0).click().end().attr( 'disabled', 'disabled' );
+								$( '.table-select' ).html( '' );
 								$( '[name="submit\[innodb\]"]' ).remove();
 							}
 
@@ -279,6 +283,9 @@ window.console = window.console || { log: function(){} };
 
 						// track errors
 						$.extend( true, t.errors, errors );
+
+						// track info
+						$.extend( true, t.info, info );
 
 						// append reports
 						if ( report.tables ) {
@@ -331,10 +338,11 @@ window.console = window.console || { log: function(){} };
 
 							$.each( report.table_reports, function( table, table_report ) {
 
-								var $view_changes = '';
+								var $view_changes = '',
+									changes_length = table_report.changes.length;
 
-								if ( table_report.changes.length ) {
-									$view_changes = $( '<a href="#">view changes</a>' )
+								if ( changes_length ) {
+									$view_changes = $( '<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>' )
 										.data( 'report', table_report )
 										.data( 'table', table )
 										.click( t.changes_overlay );
@@ -431,29 +439,24 @@ window.console = window.console || { log: function(){} };
 
 						} else {
 
-							console.log( 'no report', result );
+							console.log( 'no report' );
 							t.complete();
-
-							// break loop
-							return false;
 
 						}
 
 					} else {
 
-						console.log( 'no response', result );
+						console.log( 'no response' );
 						t.complete();
 
-						// break
-						return false;
-
 					}
+
+					// remember previous request
+					t.prev_data = $.extend( {}, data );
 
 					return true;
 
 				}, 'json' );
-
-				return true;
 
 			},
 

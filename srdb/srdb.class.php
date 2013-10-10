@@ -189,6 +189,12 @@ class icit_srdb {
 
 
 	/**
+	 * @var use PDO
+	 */
+	public $use_pdo = true;
+
+
+	/**
 	 * @var int How many rows to select at a time when replacing
 	 */
 	public $page_size = 50000;
@@ -297,7 +303,7 @@ class icit_srdb {
 			if ( ! empty( $this->search ) ) {
 
 				// go ahead with dry/live run
-				$this->report = $this->replacer( $this->db, $this->search, $this->replace, $this->tables );
+				$this->report = $this->replacer( $this->search, $this->replace, $this->tables );
 
 				return $this->report;
 
@@ -313,8 +319,7 @@ class icit_srdb {
 
 
 	public function __destruct() {
-		if ( is_resource( $this->db ) )
-			mysql_close( $this->db );
+		$this->db_close();
 	}
 
 
@@ -343,6 +348,11 @@ class icit_srdb {
 	}
 
 
+	public function use_pdo() {
+		return $this->get( 'use_pdo' );
+	}
+
+
 	/**
 	 * Creates the database connection and gathers table names
 	 *
@@ -350,51 +360,123 @@ class icit_srdb {
 	 */
 	public function connection() {
 
-		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
+		if ( ! class_exists( 'PDO' ) )
+			$this->set( 'use_pdo', false );
 
-		if ( ! $connection )
-			return $this->add_error( 'Unable to connect to database. Please check your host', 'db' );
-
-		if ( ! empty( $this->charset ) ) {
-			if ( function_exists( 'mysql_set_charset' ) )
-				mysql_set_charset( $this->charset, $connection );
-			else
-				mysql_query( 'SET NAMES ' . $this->charset, $connection );  // Shouldn't really use this, but there for backwards compatibility
+		if ( $this->use_pdo() ) {
+			try {
+				$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+			} catch( PDOException $e ) {
+				return $this->add_error( $e->getMessage(), 'db' );
+			}
+		}
+		else {
+			$connection = @mysql_connect( $this->host, $this->user, $this->pass );
 		}
 
-		// Do we have any tables and if so build the all tables array
-		if ( ! mysql_select_db( $this->name, $connection ) )
+		// set database resource
+		$this->set( 'db', $connection );
+
+		// unset if not available
+		if ( ! $this->use_pdo() && ! $connection ) {
+			$this->set( 'db', false );
+			return $this->add_error( 'Unable to connect to database. Please check your host', 'db' );
+		}
+
+		// select the database for non PDO
+		if ( ! $this->use_pdo() && ! mysql_select_db( $this->name, $connection ) )
 			return $this->add_error( 'Could not select the database. Please check the database name, user and password', 'db' );
 
+		// set the character set
+		$this->db_set_charset( $this->get( 'charset' ) );
+
 		// get tables
-		$all_tables_mysql = @mysql_query( 'SHOW TABLE STATUS', $connection );
+		$all_tables_mysql = $this->db_query( 'SHOW TABLE STATUS' );
+
+		// check if there's a problem with our database at this stage
+		if ( $this->use_pdo() && ! $all_tables_mysql ) {
+			$this->add_error( $this->db_error(), 'db' );
+			$this->set( 'db', false );
+			return;;
+		}
 
 		if ( ! $all_tables_mysql ) {
-			$this->add_error( mysql_error( ), 'db' );
+			$this->add_error( $this->db_error( ), 'db' );
 		} else {
-			while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
+			while ( $table = $this->db_fetch( $all_tables_mysql ) ) {
 				$this->all_tables[ $table[0] ] = $table;
 			}
 		}
 
 		// get available engines
-		$mysql_engines = @mysql_query( 'SHOW ENGINES;', $connection );
+		$mysql_engines = $this->db_query( 'SHOW ENGINES;' );
 
 		if ( ! $mysql_engines ) {
-			$this->add_error( mysql_error( ), 'db' );
+			$this->add_error( $this->db_error( ), 'db' );
 		} else {
-			while ( $engine = mysql_fetch_array( $mysql_engines ) ) {
+			while ( $engine = $this->db_fetch( $mysql_engines ) ) {
 				if ( in_array( $engine[ 'Support' ], array( 'YES', 'DEFAULT' ) ) )
 					$this->engines[] = $engine[ 'Engine' ];
 			}
 		}
 
-		$this->set( 'db', $connection );
-
 		return $this->get( 'db' );
 	}
 
-	public function disconnect( $connection = null ) {
+
+	public function db_query( $query ) {
+		if ( $this->use_pdo() )
+			return $this->db->query( $query );
+		else
+			return mysql_query( $query, $this->db );
+	}
+
+	public function db_error() {
+		if ( $this->use_pdo() )
+			return array_pop( $this->db->errorInfo() );
+		else
+			return mysql_error();
+	}
+
+	public function db_fetch( $data ) {
+		if ( $this->use_pdo() )
+			return $data->fetch();
+		else
+			return mysql_fetch_array( $data );
+	}
+
+	public function db_escape( $string ) {
+		if ( $this->use_pdo() )
+			return $this->db->quote( $string );
+		else
+			return mysql_real_escape_string( $string );
+	}
+
+	public function db_free_result( $data ) {
+		if ( $this->use_pdo() )
+			return $data->closeCursor();
+		else
+			return mysql_free_result( $data );
+	}
+
+	public function db_set_charset( $charset = '' ) {
+		if ( ! empty( $charset ) ) {
+			if ( ! $this->use_pdo() && function_exists( 'mysql_set_charset' ) )
+				mysql_set_charset( $charset, $this->db );
+			else
+				$this->db_query( 'SET NAMES ' . $charset );
+		}
+	}
+
+	public function db_close() {
+		if ( $this->use_pdo() )
+			unset( $this->db );
+		else
+			mysql_close( $this->db );
+	}
+
+	public function db_valid() {
+		return (bool)$this->db;
 	}
 
 
@@ -513,7 +595,7 @@ class icit_srdb {
 	 *
 	 * @return array    Collection of information gathered during the run.
 	 */
-	public function replacer( $connection, $search = '', $replace = '', $tables = array( ) ) {
+	public function replacer( $search = '', $replace = '', $tables = array( ) ) {
 
 		$report = array( 'tables' => 0,
 						 'rows' => 0,
@@ -554,18 +636,18 @@ class icit_srdb {
 				$columns = array( );
 
 				// Get a list of columns in this table
-				$fields = mysql_query( 'DESCRIBE ' . $table, $connection );
+				$fields = $this->db_query( 'DESCRIBE ' . $table );
 				if ( ! $fields ) {
-					$this->add_error( mysql_error( ), 'db' );
+					$this->add_error( $this->db_error( ), 'db' );
 					continue;
 				}
-				while( $column = mysql_fetch_array( $fields ) ) {
+				while( $column = $this->db_fetch( $fields ) ) {
 					$columns[ $column[ 'Field' ] ] = $column[ 'Key' ] == 'PRI' ? true : false;
 				}
 
 				// Count the number of rows we have in the table if large we'll split into blocks, This is a mod from Simon Wheatley
-				$row_count = mysql_query( 'SELECT COUNT(*) FROM ' . $table, $connection );
-				$rows_result = mysql_fetch_array( $row_count );
+				$row_count = $this->db_query( 'SELECT COUNT(*) FROM ' . $table );
+				$rows_result = $this->db_fetch( $row_count );
 				$row_count = $rows_result[ 0 ];
 				if ( $row_count == 0 )
 					continue;
@@ -579,12 +661,12 @@ class icit_srdb {
 					$start = $page * $page_size;
 					//$end = $start + $page_size;
 					// Grab the content of the table
-					$data = mysql_query( sprintf( 'SELECT * FROM %s LIMIT %d, %d', $table, $start, $page_size ), $connection );
+					$data = $this->db_query( sprintf( 'SELECT * FROM %s LIMIT %d, %d', $table, $start, $page_size ) );
 
 					if ( ! $data )
-						$this->add_error( mysql_error( ), 'db' );
+						$this->add_error( $this->db_error( ), 'db' );
 
-					while ( $row = mysql_fetch_array( $data ) ) {
+					while ( $row = $this->db_fetch( $data ) ) {
 
 						$report[ 'rows' ]++; // Increment the row counter
 						$report[ 'table_reports' ][ $table ][ 'rows' ]++;
@@ -599,7 +681,7 @@ class icit_srdb {
 							$edited_data = $data_to_fix = $row[ $column ];
 
 							if ( $primary_key )
-								$where_sql[] = $column . ' = "' . mysql_real_escape_string( $data_to_fix ) . '"';
+								$where_sql[] = $column . ' = "' . $this->db_escape( $data_to_fix ) . '"';
 
 							// exclude cols
 							if ( in_array( $column, $this->exclude_cols ) )
@@ -619,7 +701,7 @@ class icit_srdb {
 								// log first 20 changes
 								if ( $report[ 'change' ] <= $this->report_change_num )
 									$report[ 'table_reports' ][ $table ][ 'changes' ][] = array( 'row' => $report[ 'rows' ], 'column' => $column, 'from' => $data_to_fix, 'to' => $edited_data );
-								$update_sql[] = $column . ' = "' . mysql_real_escape_string( $edited_data ) . '"';
+								$update_sql[] = $column . ' = "' . $this->db_escape( $edited_data ) . '"';
 								$upd = true;
 							}
 
@@ -630,9 +712,9 @@ class icit_srdb {
 						}
 						elseif ( $upd && ! empty( $where_sql ) ) {
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
-							$result = mysql_query( $sql, $connection );
+							$result = $this->db_query( $sql );
 							if ( ! $result ) {
-								$this->add_error( mysql_error( ), 'results' );
+								$this->add_error( $this->db_error( ), 'results' );
 							}
 							else {
 								$report[ 'updates' ]++;
@@ -645,7 +727,7 @@ class icit_srdb {
 
 					}
 
-					mysql_free_result( $data );
+					$this->db_free_result( $data );
 
 				}
 
@@ -675,9 +757,9 @@ class icit_srdb {
 
 			// are we updating the engine?
 			if ( $table_info[ 'Engine' ] != $engine ) {
-				$engine_converted = mysql_query( "alter table {$table} engine = {$engine};", $this->db );
+				$engine_converted = $this->db_query( "alter table {$table} engine = {$engine};" );
 				if ( ! $engine_converted )
-					$this->add_error( mysql_error( ), 'results' );
+					$this->add_error( $this->db_error( ), 'results' );
 				else
 					$report[ 'converted' ][] = $table;
 				continue;
@@ -703,9 +785,9 @@ class icit_srdb {
 
 			// are we updating the engine?
 			if ( $table_info[ 'Collate' ] != $collate ) {
-				$engine_converted = mysql_query( "alter table {$table} convert to character set {$charset} collate {$collate}", $this->db );
+				$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collate};" );
 				if ( ! $engine_converted )
-					$this->add_error( mysql_error( ), 'results' );
+					$this->add_error( $this->db_error( ), 'results' );
 				else
 					$report[ 'converted' ][] = $table;
 				continue;
