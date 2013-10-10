@@ -222,22 +222,22 @@ class icit_srdb {
 	public function __construct( $args ) {
 
 		$args = array_merge( array(
-			'name' 			=> '',
-			'user' 			=> '',
-			'pass' 			=> '',
-			'host' 			=> '',
-			'search' 		=> '',
-			'replace' 		=> '',
-			'tables'		=> array(),
-			'exclude_cols' 	=> array(),
-			'include_cols' 	=> array(),
-			'dry_run' 		=> true,
-			'regex' 		=> false,
-			'utf8' 			=> false,
-			'innodb' 		=> false,
-			'pagesize' 		=> 50000,
-			'alter_engine' 	=> false,
-			'alter_collate' => false
+			'name' 				=> '',
+			'user' 				=> '',
+			'pass' 				=> '',
+			'host' 				=> '',
+			'search' 			=> '',
+			'replace' 			=> '',
+			'tables'			=> array(),
+			'exclude_cols' 		=> array(),
+			'include_cols' 		=> array(),
+			'dry_run' 			=> true,
+			'regex' 			=> false,
+			'utf8' 				=> false,
+			'innodb' 			=> false,
+			'pagesize' 			=> 50000,
+			'alter_engine' 		=> false,
+			'alter_collation' 	=> false
 		), $args );
 
 		// handle exceptions
@@ -272,8 +272,8 @@ class icit_srdb {
 		}
 
 		// update collation
-		elseif ( $this->alter_collate ) {
-			$report = $this->update_collation( $this->alter_collate, $this->tables );
+		elseif ( $this->alter_collation ) {
+			$report = $this->update_collation( $this->alter_collation, $this->tables );
 		}
 
 		// default search/replace action
@@ -822,8 +822,10 @@ class icit_srdb {
 					if ( ! $engine_converted )
 						$this->add_error( $this->db_error( ), 'results' );
 					else
-						$report[ 'converted' ][] = $table;
+						$report[ 'converted' ][ $table ] = true;
 					continue;
+				} else {
+					$report[ 'converted' ][ $table ] = false;
 				}
 			}
 
@@ -845,13 +847,13 @@ class icit_srdb {
 	 *
 	 * @return array    Modification report
 	 */
-	public function update_collation( $collate = 'utf8_unicode_ci', $tables = array() ) {
+	public function update_collation( $collation = 'utf8_unicode_ci', $tables = array() ) {
 
 		$report = false;
 
-		if ( is_string( $collate ) ) {
+		if ( is_string( $collation ) ) {
 
-			$report = array( 'collation' => $collate, 'converted' => array() );
+			$report = array( 'collation' => $collation, 'converted' => array() );
 
 			$all_tables = $this->get( 'all_tables' );
 
@@ -859,19 +861,21 @@ class icit_srdb {
 				$tables = array_keys( $all_tables );
 
 			// charset is same as collation up to first underscore
-			$charset = preg_replace( '/^([^_]+).*$/', '$1', $collate );
+			$charset = preg_replace( '/^([^_]+).*$/', '$1', $collation );
 
 			foreach( $tables as $table ) {
 				$table_info = $all_tables[ $table ];
 
 				// are we updating the engine?
-				if ( $table_info[ 'Collate' ] != $collate ) {
-					$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collate};" );
+				if ( $table_info[ 'Collation' ] != $collation ) {
+					$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collation};" );
 					if ( ! $engine_converted )
 						$this->add_error( $this->db_error( ), 'results' );
 					else
-						$report[ 'converted' ][] = $table;
+						$report[ 'converted' ][ $table ] = true;
 					continue;
+				} else {
+					$report[ 'converted' ][ $table ] = false;
 				}
 			}
 

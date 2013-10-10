@@ -248,7 +248,7 @@ window.console = window.console || { log: function(){} };
 							if ( ! error_list.length ) {
 								if ( type == 'db' ) {
 									$( '[name="use_tables"]' ).removeAttr( 'disabled' );
-									if ( ! t.prev_data.name || t.prev_data.name !== data.name )
+									if ( ( ! t.prev_data.name || t.prev_data.name !== data.name ) )
 										$( '.table-select' ).html( info.table_select );
 									if ( $.inArray( 'InnoDB', info.engines ) >= 0 && ! $( '[name="submit\[innodb\]"]' ).length )
 										$( '[name="submit\[utf8\]"]' ).before( '<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />' );
@@ -386,12 +386,16 @@ window.console = window.console || { log: function(){} };
 										<tbody></tbody>\
 									</table>' ).appendTo( $report );
 
-							$.each( report.converted, function( i, table ) {
+							$.each( report.converted, function( table, converted ) {
 
 								$( '<tr class="' + table + '"><td>' + table + '</td><td>' + report.engine + '</td></tr>' )
 									.hide()
 									.prependTo( $table_reports.find( 'tbody' ) )
 									.fadeIn( 150 );
+
+								$( '.table-select option[value="' + table + '"]' ).html( function(){
+									return $( this ).html().replace( new RegExp( table + ': [^,]+' ), table + ': ' + report.engine );
+								} );
 
 							} );
 
@@ -420,7 +424,7 @@ window.console = window.console || { log: function(){} };
 										<tbody></tbody>\
 									</table>' ).appendTo( $report );
 
-							$.each( report.converted, function( i, table ) {
+							$.each( report.converted, function( table, converted ) {
 
 								$( '\
 											<tr class="' + table + '">\
@@ -431,6 +435,10 @@ window.console = window.console || { log: function(){} };
 									.hide()
 									.prependTo( $table_reports.find( 'tbody' ) )
 									.fadeIn( 150 );
+
+								$( '.table-select option[value="' + table + '"]' ).html( function(){
+									return $( this ).html().replace( new RegExp( 'collation: .*?$' ), 'collation: ' + report.collation );
+								} );
 
 							} );
 

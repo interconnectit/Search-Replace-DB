@@ -191,15 +191,16 @@ class icit_srdb_ui extends icit_srdb {
 			if ( is_array( $_POST[ 'submit' ] ) )
 				$show = array_shift( array_keys( $_POST[ 'submit' ] ) );
 			if ( is_string( $_POST[ 'submit' ] ) )
-				$show = preg_replace( '/submit\[([a-z]+)\]/', '$1', $_POST[ 'submit' ] );
+				$show = preg_replace( '/submit\[([a-z0-9]+)\]/', '$1', $_POST[ 'submit' ] );
 		}
 
 		// is it an AJAX call
 		$ajax = isset( $_POST[ 'ajax' ] );
 
-
 		// body callback
 		$html = 'ui';
+
+		error_log( $show );
 
 		switch( $show ) {
 
@@ -285,7 +286,7 @@ class icit_srdb_ui extends icit_srdb {
 					'pass' => $this->get( 'pass' ),
 					'host' => $this->get( 'host' ),
 					'tables' => $this->get( 'tables' ),
-					'alter_collate' => 'utf8_unicode_ci',
+					'alter_collation' => 'utf8_unicode_ci',
 				) );
 
 				break;
@@ -300,9 +301,8 @@ class icit_srdb_ui extends icit_srdb {
 		}
 
 		$info = array(
-			'tables' => $this->all_tables,
 			'table_select' => $this->table_select( false ),
-			'engines' => $this->engines
+			'engines' => $this->get( 'engines' )
 		);
 
 		// output
@@ -701,7 +701,7 @@ class icit_srdb_ui extends icit_srdb {
 				if ( $table[ 'Comment' ] == 'VIEW' ) {
 					$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . $table[0] . ': VIEW</option>';
 				} else {
-					$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . "{$table[0]}: {$table['Engine']}, {$table['Rows']} rows, size: {$size}, collation: {$table['Collation']}" . '</option>';
+					$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . "{$table[0]}: {$table['Engine']}, rows: {$table['Rows']}, size: {$size}, collation: {$table['Collation']}" . '</option>';
 				}
 			}
 			$table_select .= '</select>';
