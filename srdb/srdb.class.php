@@ -525,18 +525,6 @@ class icit_srdb {
 
 
 	/**
-	 * Used to check the $_post tables array and remove any that don't exist.
-	 *
-	 * @param array $table The list of tables from the $_post var to be checked.
-	 *
-	 * @return array	Same array as passed in but with any tables that don'e exist removed.
-	 */
-	public function check_table_array( $table = '' ) {
-		return in_array( $table, $this->all_tables );
-	}
-
-
-	/**
 	 * Walk an array replacing one element for another. ( NOT USED ANY MORE )
 	 *
 	 * @param string $find    The string we want to replace.
