@@ -114,6 +114,9 @@ class icit_srdb_ui extends icit_srdb {
 
 	public function __construct() {
 
+		// php 5.4 date timezone requirement, shouldn't affect anything
+		date_default_timezone_set( 'Europe/London' );
+
 		// discover environment
 		if ( $this->is_wordpress() ) {
 

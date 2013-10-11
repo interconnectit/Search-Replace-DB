@@ -183,6 +183,12 @@ class icit_srdb {
 
 
 	/**
+	 * @var bool Whether to echo report as script runs
+	 */
+	public $verbose = false;
+
+
+	/**
 	 * @var resource Database connection
 	 */
 	public $db;
@@ -233,15 +239,15 @@ class icit_srdb {
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
 			'regex' 			=> false,
-			'utf8' 				=> false,
-			'innodb' 			=> false,
 			'pagesize' 			=> 50000,
 			'alter_engine' 		=> false,
-			'alter_collation' 	=> false
+			'alter_collation' 	=> false,
+			'verbose'			=> false
 		), $args );
 
 		// handle exceptions
 		set_exception_handler( array( $this, 'exceptions' ) );
+
 		// handle errors
 		set_error_handler( array( $this, 'errors' ), E_ERROR | E_WARNING );
 
@@ -249,7 +255,7 @@ class icit_srdb {
 		mb_internal_encoding( 'UTF-8' );
 
 		// allow a string for columns
-		foreach( array( 'exclude_cols', 'include_cols' ) as $maybe_string_arg ) {
+		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
 		}
@@ -263,11 +269,16 @@ class icit_srdb {
 			$this->set( $name, $value );
 		}
 
-		// increase time out limit
-		@set_time_limit( 60 * 10 );
+		// only for non cli call, cli set no timeout, no memory limit
+		if( ! defined( 'STDIN' ) ) {
 
-		// try to push the allowed memory up, while we're at it
-		@ini_set( 'memory_limit', '1024M' );
+			// increase time out limit
+			@set_time_limit( 60 * 10 );
+
+			// try to push the allowed memory up, while we're at it
+			@ini_set( 'memory_limit', '1024M' );
+
+		}
 
 		// set up db connection
 		$this->db_setup();
@@ -316,8 +327,16 @@ class icit_srdb {
 		echo $exception->getMessage() . "\n";
 	}
 
+	
 	public function errors( $no, $message, $file, $line ) {
 		echo $message . "\n";
+	}
+
+
+	public function log( $type = '', $message ) {
+		if ( $this->get( 'verbose' ) )
+			echo $message . "\n";
+		return $message . "\n";
 	}
 
 
@@ -325,6 +344,7 @@ class icit_srdb {
 		if ( $type !== null )
 			$this->error_type = $type;
 		$this->errors[ $this->error_type ][] = $error;
+		$this->log( "error_{$this->error_type}", "{$this->error_type}: {$error}" );
 	}
 
 
@@ -664,7 +684,7 @@ class icit_srdb {
 		$all_tables = $this->get( 'all_tables' );
 
 		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
-			$this->add_error( 'The dry-run option was selected. No replacements were actually made.', 'results' );
+			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
 		// if no tables selected assume all
 		if ( empty( $tables ) )
@@ -675,8 +695,10 @@ class icit_srdb {
 
 				$report[ 'tables' ]++;
 
-				$report[ 'table_reports' ][ $table ] = $table_report;
-				$report[ 'table_reports' ][ $table ][ 'start' ] = microtime();
+				$new_table_report = $table_report;
+				$new_table_report[ 'start' ] = microtime();
+
+				$this->log( 'search_replace_table_start', "{$table}: replacing {$search} with {$replace}" );
 
 				$columns = array( );
 
@@ -704,7 +726,6 @@ class icit_srdb {
 
 					$current_row = 0;
 					$start = $page * $page_size;
-					//$end = $start + $page_size;
 					// Grab the content of the table
 					$data = $this->db_query( sprintf( 'SELECT * FROM %s LIMIT %d, %d', $table, $start, $page_size ) );
 
@@ -714,7 +735,7 @@ class icit_srdb {
 					while ( $row = $this->db_fetch( $data ) ) {
 
 						$report[ 'rows' ]++; // Increment the row counter
-						$report[ 'table_reports' ][ $table ][ 'rows' ]++;
+						$new_table_report[ 'rows' ]++;
 						$current_row++;
 
 						$update_sql = array( );
@@ -742,10 +763,16 @@ class icit_srdb {
 							// Something was changed
 							if ( $edited_data != $data_to_fix ) {
 								$report[ 'change' ]++;
-								$report[ 'table_reports' ][ $table ][ 'change' ]++;
+								$new_table_report[ 'change' ]++;
 								// log first 20 changes
-								if ( $report[ 'change' ] <= $this->report_change_num )
-									$report[ 'table_reports' ][ $table ][ 'changes' ][] = array( 'row' => $report[ 'rows' ], 'column' => $column, 'from' => $data_to_fix, 'to' => $edited_data );
+								if ( $new_table_report[ 'change' ] <= $this->get( 'report_change_num' ) ) {
+									$new_table_report[ 'changes' ][] = array(
+										'row' => $new_table_report[ 'rows' ],
+										'column' => $column,
+										'from' => $data_to_fix,
+										'to' => $edited_data
+									);
+								}
 								$update_sql[] = $column . ' = "' . $this->db_escape( $edited_data ) . '"';
 								$upd = true;
 							}
@@ -762,11 +789,11 @@ class icit_srdb {
 							}
 							else {
 								$report[ 'updates' ]++;
-								$report[ 'table_reports' ][ $table ][ 'updates' ]++;
+								$new_table_report[ 'updates' ]++;
 							}
 
 						} elseif ( $upd ) {
-							$this->add_error( sprintf( '"%s" has no primary key, manual change needed on row %s.', $table, $current_row ), 'results' );
+							$this->add_error( sprintf( '"%s" has no primary key, manual change needed on row %s.', $table, $new_table_report[ 'rows' ] ), 'results' );
 						}
 
 					}
@@ -775,12 +802,27 @@ class icit_srdb {
 
 				}
 
-				$report[ 'table_reports' ][ $table ][ 'end' ] = microtime();
+				$new_table_report[ 'end' ] = microtime();
+
+				// store table report in main
+				$report[ 'table_reports' ][ $table ] = $new_table_report;
+
+				// log result
+				$time = number_format( $new_table_report[ 'end' ] - $new_table_report[ 'start' ], 8 );
+				$this->log( 'search_replace_table_end', "{$table}: {$new_table_report['rows']} rows, {$new_table_report['change']} changes found, {$new_table_report['updates']} updates made in {$time} seconds" );
 			}
 
 		}
 
 		$report[ 'end' ] = microtime( );
+
+		$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
+		$dry_run_string = $dry_run ? "would have been" : "were";
+		$this->log( 'search_replace_end', "
+Replacing {$search} with {$replace} on {$report['tables']} tables with {$report['rows']} rows
+{$report['change']} changes {$dry_run_string} made
+{$report['updates']} updates were actually made
+It took {$time} seconds" );
 
 		return $report;
 	}
@@ -821,6 +863,9 @@ class icit_srdb {
 				} else {
 					$report[ 'converted' ][ $table ] = false;
 				}
+
+				if ( isset( $report[ 'converted' ][ $table ] ) )
+					$this->log( 'update_engine', $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $engine );
 			}
 
 		} else {
@@ -871,6 +916,9 @@ class icit_srdb {
 				} else {
 					$report[ 'converted' ][ $table ] = false;
 				}
+
+				if ( isset( $report[ 'converted' ][ $table ] ) )
+					$this->log( 'update_collation', $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $collation );
 			}
 
 		} else {

@@ -14,4 +14,47 @@ If you find a problem let us know in the issues area and if you can improve the 
 
 ### CLI script
 
-The client script will be returning soon once it has been updated to use the new search/replace class.
+```ARGS
+	-h, --host
+		Required. The hostname of the database server.
+	-n, --name
+		Required. Database name.
+	-u, --user
+		Required. Database user.
+	-p, --pass
+		Required. Database user's password.
+	-s, --search
+		String to search for or `preg_replace()` style
+		regular expression.
+	-r, --replace
+		None empty string to replace search with or
+		`preg_replace()` style replacement.
+	-t, --tables
+		If set only runs the script on the specified table, comma
+		separate for multiple values.
+	-i, --include-cols
+		If set only runs the script on the specified columns, comma
+		separate for multiple values.
+	-x, --exclude-cols
+		If set excludes the specified columns, comma separate for
+		multiple values.
+	-g, --regex [no value]
+		Treats value for -s or --search as a regular expression and
+		-r or --replace as a regular expression replacement.
+	-l, --pagesize
+		How rows to fetch at a time from a table.
+	-z, --dry-run [no value]
+		Prevents any updates happening so you can preview the number
+		of changes to be made
+	-e, --alter-engine
+		Changes the database table to the specified database engine
+		eg. InnoDB or MyISAM. If specified search/replace arguments
+		are ignored. They will not be run simultaneously.
+	-a, --alter-collation
+		Changes the database table to the specified collation
+		eg. utf8_unicode_ci. If specified search/replace arguments
+		are ignored. They will not be run simultaneously.
+	-v, --verbose [true|false]
+		Defaults to true, can be set to false to run script silently.
+	--help
+		Displays this help message ;)```
