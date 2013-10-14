@@ -14,7 +14,8 @@ If you find a problem let us know in the issues area and if you can improve the 
 
 ### CLI script
 
-```ARGS
+```
+ARGS
 	-h, --host
 		Required. The hostname of the database server.
 	-n, --name
@@ -57,4 +58,5 @@ If you find a problem let us know in the issues area and if you can improve the 
 	-v, --verbose [true|false]
 		Defaults to true, can be set to false to run script silently.
 	--help
-		Displays this help message ;)```
+		Displays this help message ;)
+```
