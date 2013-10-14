@@ -128,15 +128,18 @@ class icit_srdb_ui extends icit_srdb {
 			$charset 	= DB_CHARSET;
 			$collate 	= DB_COLLATE;
 
-		} elseif( ! isset( $_POST ) && $this->is_drupal() ) {
+		} elseif( $this->is_drupal() ) {
+
+			$database = Database::getConnection();
+			$database_opts = $database->getConnectionOptions();
 
 			// populate db details
-			//$name 	= DB_NAME;
-			//$user 	= DB_USER;
-			//$pass 	= DB_PASSWORD;
-			//$host 	= DB_HOST;
-			//$charset 	= DB_CHARSET;
-			//$collate 	= DB_COLLATE;
+			$name 		= $database_opts[ 'database' ];
+			$user 		= $database_opts[ 'username' ];
+			$pass 		= $database_opts[ 'password' ];
+			$host 		= $database_opts[ 'host' ];
+			$charset 	= 'utf8';
+			$collate 	= '';
 
 		}
 
@@ -410,7 +413,7 @@ class icit_srdb_ui extends icit_srdb {
 					define( 'DB_COLLATE', $db_details[ 'coll' ] );
 
 					// additional error message
-					$this->add_error( 'Could not bootstrap WordPress environment. There might be a PHP error, possibly caused by changes to the database', 'db' );
+					$this->add_error( 'WordPress detected but could not bootstrap environment. There might be a PHP error, possibly caused by changes to the database', 'db' );
 
 				}
 
@@ -425,7 +428,7 @@ class icit_srdb_ui extends icit_srdb {
 	}
 
 
-	public function is_drupal( $version = 7 ) {
+	public function is_drupal() {
 
 		$path_mod = '';
 		$depth = 0;
@@ -440,18 +443,27 @@ class icit_srdb_ui extends icit_srdb {
 
 		if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
 
-			// require the bootstrap include
-			require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
+			try {
+				// require the bootstrap include
+				require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
 
-			// load drupal
-			drupal_bootstrap( DRUPAL_BOOTSTRAP_FULL );
+				// define drupal root
+				if ( ! defined( 'DRUPAL_ROOT' ) )
+					define( 'DRUPAL_ROOT', dirname( __FILE__ ) . $path_mod );
 
-			// confirm environment
-			$this->set( 'is_drupal', true );
+				// load drupal
+				drupal_bootstrap( DRUPAL_BOOTSTRAP_FULL );
 
-			$database = Database::getConnectionOptions();
+				// confirm environment
+				$this->set( 'is_drupal', true );
 
-			error_log( var_export( $database, true ) );
+				return true;
+
+			} catch( Exception $error ) {
+
+				$this->add_error( 'Drupal detected but could not bootstrap environment. There might be a PHP error, possibly caused by changes to the database', 'db' );
+
+			}
 
 		}
 
