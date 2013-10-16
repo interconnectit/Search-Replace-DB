@@ -719,26 +719,24 @@ class icit_srdb {
 			$tables = array_keys( $all_tables );
 
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
+
 			foreach( $tables as $table ) {
 
 				$report[ 'tables' ]++;
 
+				// get primary key and columns
+				list( $primary_key, $columns ) = $this->get_columns( $table );
+
+				if ( $primary_key === null ) {
+					$this->add_error( "The table \"{$table}\" has no primary key. No changes can be made.", 'db' );
+					continue;
+				}
+
+				// create new table report instance
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
 
 				$this->log( 'search_replace_table_start', $table, $search, $replace );
-
-				$columns = array( );
-
-				// Get a list of columns in this table
-				$fields = $this->db_query( 'DESCRIBE ' . $table );
-				if ( ! $fields ) {
-					$this->add_error( $this->db_error( ), 'db' );
-					continue;
-				}
-				while( $column = $this->db_fetch( $fields ) ) {
-					$columns[ $column[ 'Field' ] ] = $column[ 'Key' ] == 'PRI' ? true : false;
-				}
 
 				// Count the number of rows we have in the table if large we'll split into blocks, This is a mod from Simon Wheatley
 				$row_count = $this->db_query( 'SELECT COUNT(*) FROM ' . $table );
@@ -752,8 +750,8 @@ class icit_srdb {
 
 				for( $page = 0; $page < $pages; $page++ ) {
 
-					$current_row = 0;
 					$start = $page * $page_size;
+
 					// Grab the content of the table
 					$data = $this->db_query( sprintf( 'SELECT * FROM %s LIMIT %d, %d', $table, $start, $page_size ) );
 
@@ -764,18 +762,19 @@ class icit_srdb {
 
 						$report[ 'rows' ]++; // Increment the row counter
 						$new_table_report[ 'rows' ]++;
-						$current_row++;
 
 						$update_sql = array( );
 						$where_sql = array( );
 						$upd = false;
 
-						foreach( $columns as $column => $primary_key ) {
+						foreach( $columns as $column ) {
 
 							$edited_data = $data_to_fix = $row[ $column ];
 
-							if ( $primary_key )
+							if ( $primary_key == $column ) {
 								$where_sql[] = $column . ' = ' . $this->db_escape( $data_to_fix );
+								continue;
+							}
 
 							// exclude cols
 							if ( in_array( $column, $this->exclude_cols ) )
@@ -790,9 +789,11 @@ class icit_srdb {
 
 							// Something was changed
 							if ( $edited_data != $data_to_fix ) {
+
 								$report[ 'change' ]++;
 								$new_table_report[ 'change' ]++;
-								// log first 20 changes
+
+								// log first x changes
 								if ( $new_table_report[ 'change' ] <= $this->get( 'report_change_num' ) ) {
 									$new_table_report[ 'changes' ][] = array(
 										'row' => $new_table_report[ 'rows' ],
@@ -801,8 +802,10 @@ class icit_srdb {
 										'to' => $edited_data
 									);
 								}
+
 								$update_sql[] = $column . ' = ' . $this->db_escape( $edited_data );
 								$upd = true;
+
 							}
 
 						}
@@ -810,18 +813,20 @@ class icit_srdb {
 						if ( $dry_run ) {
 							// nothing for this state
 						} elseif ( $upd && ! empty( $where_sql ) ) {
+
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
 							$result = $this->db_update( $sql );
+
 							if ( ! is_int( $result ) && ! $result ) {
+
 								$this->add_error( $this->db_error( ), 'results' );
-							}
-							else {
+
+							} else {
+
 								$report[ 'updates' ]++;
 								$new_table_report[ 'updates' ]++;
 							}
 
-						} elseif ( $upd ) {
-							$this->add_error( sprintf( '"%s" has no primary key, manual change needed on row %s.', $table, $new_table_report[ 'rows' ] ), 'results' );
 						}
 
 					}
@@ -846,6 +851,32 @@ class icit_srdb {
 		$this->log( 'search_replace_end', $search, $replace, $report );
 
 		return $report;
+	}
+
+
+	public function get_columns( $table ) {
+
+		$primary_key = null;
+		$columns = array( );
+
+		// Get a list of columns in this table
+		$fields = $this->db_query( "DESCRIBE {$table}" );
+		if ( ! $fields ) {
+			$this->add_error( $this->db_error( ), 'db' );
+		} else {
+			while( $column = $this->db_fetch( $fields ) ) {
+				$columns[] = $column[ 'Field' ];
+				if ( $column[ 'Key' ] == 'PRI' )
+					$primary_key = $column[ 'Field' ];
+			}
+		}
+
+		return array( $primary_key, $columns );
+	}
+
+
+	public function do_column() {
+
 	}
 
 
