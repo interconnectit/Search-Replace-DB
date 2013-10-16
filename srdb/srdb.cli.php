@@ -59,7 +59,12 @@ $long_opts_normal = array_map( 'strip_colons', $long_opts );
 $options = getopt( implode( '', $short_opts ), $long_opts );
 
 if ( isset( $options[ 'help' ] ) ) {
-	echo "Welcome to the interconnect/it Safe Search & Replace tool
+	echo "
+#####################################################################
+
+interconnect/it Safe Search & Replace tool
+
+#####################################################################
 
 This script allows you to search and replace strings in your database
 safely without breaking serialised PHP.
@@ -70,49 +75,49 @@ Github: https://github.com/interconnectit/search-replace-db
 Argument values are strings unless otherwise specified.
 
 ARGS
-	-h, --host
-		Required. The hostname of the database server.
-	-n, --name
-		Required. Database name.
-	-u, --user
-		Required. Database user.
-	-p, --pass
-		Required. Database user's password.
-	-s, --search
-		String to search for or `preg_replace()` style
-		regular expression.
-	-r, --replace
-		None empty string to replace search with or
-		`preg_replace()` style replacement.
-	-t, --tables
-		If set only runs the script on the specified table, comma
-		separate for multiple values.
-	-i, --include-cols
-		If set only runs the script on the specified columns, comma
-		separate for multiple values.
-	-x, --exclude-cols
-		If set excludes the specified columns, comma separate for
-		multiple values.
-	-g, --regex [no value]
-		Treats value for -s or --search as a regular expression and
-		-r or --replace as a regular expression replacement.
-	-l, --pagesize
-		How rows to fetch at a time from a table.
-	-z, --dry-run [no value]
-		Prevents any updates happening so you can preview the number
-		of changes to be made
-	-e, --alter-engine
-		Changes the database table to the specified database engine
-		eg. InnoDB or MyISAM. If specified search/replace arguments
-		are ignored. They will not be run simultaneously.
-	-a, --alter-collation
-		Changes the database table to the specified collation
-		eg. utf8_unicode_ci. If specified search/replace arguments
-		are ignored. They will not be run simultaneously.
-	-v, --verbose [true|false]
-		Defaults to true, can be set to false to run script silently.
-	--help
-		Displays this help message ;)
+  -h, --host
+    Required. The hostname of the database server.
+  -n, --name
+    Required. Database name.
+  -u, --user
+    Required. Database user.
+  -p, --pass
+    Required. Database user's password.
+  -s, --search
+    String to search for or `preg_replace()` style
+    regular expression.
+  -r, --replace
+    None empty string to replace search with or
+    `preg_replace()` style replacement.
+  -t, --tables
+    If set only runs the script on the specified table, comma
+    separate for multiple values.
+  -i, --include-cols
+    If set only runs the script on the specified columns, comma
+    separate for multiple values.
+  -x, --exclude-cols
+    If set excludes the specified columns, comma separate for
+    multiple values.
+  -g, --regex [no value]
+    Treats value for -s or --search as a regular expression and
+    -r or --replace as a regular expression replacement.
+  -l, --pagesize
+    How rows to fetch at a time from a table.
+  -z, --dry-run [no value]
+    Prevents any updates happening so you can preview the number
+    of changes to be made
+  -e, --alter-engine
+    Changes the database table to the specified database engine
+    eg. InnoDB or MyISAM. If specified search/replace arguments
+    are ignored. They will not be run simultaneously.
+  -a, --alter-collation
+    Changes the database table to the specified collation
+    eg. utf8_unicode_ci. If specified search/replace arguments
+    are ignored. They will not be run simultaneously.
+  -v, --verbose [true|false]
+    Defaults to true, can be set to false to run script silently.
+  --help
+    Displays this help message ;)
 ";
 	exit;
 }
@@ -164,7 +169,57 @@ foreach( $options as $key => $value ) {
 	$args[ $key ] = $value;
 }
 
-$report = new icit_srdb( $args );
+// modify the log output
+class icit_srdb_cli extends icit_srdb {
+
+	public function log( $type ) {
+
+		$args = array_slice( func_get_args(), 1 );
+
+		$output = "";
+
+		switch( $type ) {
+			case 'error':
+				list( $error_type, $error ) = $args;
+				$output .= "$error_type: $error";
+				break;
+			case 'search_replace_table_start':
+				list( $table, $search, $replace ) = $args;
+				$output .= "{$table}: replacing {$search} with {$replace}";
+				break;
+			case 'search_replace_table_end':
+				list( $table, $report ) = $args;
+				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
+				$output .= "{$table}: {$report['rows']} rows, {$report['change']} changes found, {$report['updates']} updates made in {$time} seconds";
+				break;
+			case 'search_replace_end':
+				list( $search, $replace, $report ) = $args;
+				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
+				$dry_run_string = $this->dry_run ? "would have been" : "were";
+				$output .= "
+Replacing {$search} with {$replace} on {$report['tables']} tables with {$report['rows']} rows
+{$report['change']} changes {$dry_run_string} made
+{$report['updates']} updates were actually made
+It took {$time} seconds";
+				break;
+			case 'update_engine':
+				list( $table, $report, $engine ) = $args;
+				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $engine;
+				break;
+			case 'update_collation':
+				list( $table, $report, $collation ) = $args;
+				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $collation;
+				break;
+		}
+
+		if ( $this->verbose )
+			echo $output . "\n";
+
+	}
+
+}
+
+$report = new icit_srdb_cli( $args );
 
 if ( $report && ( $args[ 'dry_run' ] || empty( $report->errors[ 'results' ] ) ) ) {
 	echo "\nAnd we're done!";

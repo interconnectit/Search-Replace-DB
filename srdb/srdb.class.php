@@ -251,9 +251,6 @@ class icit_srdb {
 		// handle errors
 		set_error_handler( array( $this, 'errors' ), E_ERROR | E_WARNING );
 
-		// use unicode support for replacements
-		mb_internal_encoding( 'UTF-8' );
-
 		// allow a string for columns
 		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
@@ -327,16 +324,20 @@ class icit_srdb {
 		echo $exception->getMessage() . "\n";
 	}
 
-	
+
 	public function errors( $no, $message, $file, $line ) {
 		echo $message . "\n";
 	}
 
 
-	public function log( $type = '', $message ) {
-		if ( $this->get( 'verbose' ) )
-			echo $message . "\n";
-		return $message . "\n";
+	public function log( $type = '' ) {
+		$args = array_slice( func_get_args(), 1 );
+		if ( $this->get( 'verbose' ) ) {
+			echo "{$type}: ";
+			print_r( $args );
+			echo "\n";
+		}
+		return $args;
 	}
 
 
@@ -344,7 +345,7 @@ class icit_srdb {
 		if ( $type !== null )
 			$this->error_type = $type;
 		$this->errors[ $this->error_type ][] = $error;
-		$this->log( "error_{$this->error_type}", "{$this->error_type}: {$error}" );
+		$this->log( 'error', $this->error_type, $error );
 	}
 
 
@@ -455,15 +456,18 @@ class icit_srdb {
 		$all_tables = array();
 
 		if ( ! $all_tables_mysql ) {
+
 			$this->add_error( $this->db_error( ), 'db' );
+
 		} else {
 
 			// set the character set
-			$this->db_set_charset( $this->get( 'charset' ) );
+			//$this->db_set_charset( $this->get( 'charset' ) );
 
 			while ( $table = $this->db_fetch( $all_tables_mysql ) ) {
 				$all_tables[ $table[0] ] = $table;
 			}
+
 		}
 
 		return $all_tables;
@@ -501,6 +505,13 @@ class icit_srdb {
 			return mysql_query( $query, $this->db );
 	}
 
+	public function db_update( $query ) {
+		if ( $this->use_pdo() )
+			return $this->db->exec( $query );
+		else
+			return mysql_query( $query, $this->db );
+	}
+
 	public function db_error() {
 		if ( $this->use_pdo() )
 			return array_pop( $this->db->errorInfo() );
@@ -519,7 +530,7 @@ class icit_srdb {
 		if ( $this->use_pdo() )
 			return $this->db->quote( $string );
 		else
-			return mysql_real_escape_string( $string );
+			return "'" . mysql_real_escape_string( $string ) . "'";
 	}
 
 	public function db_free_result( $data ) {
@@ -622,8 +633,10 @@ class icit_srdb {
 			}
 
 			else {
-				if ( is_string( $data ) )
+				if ( is_string( $data ) ) {
 					$data = $this->str_replace( $from, $to, $data );
+
+				}
 			}
 
 			if ( $serialised )
@@ -636,6 +649,21 @@ class icit_srdb {
 		}
 
 		return $data;
+	}
+
+
+	/**
+	 * Regular expression callback to fix serialised string lengths
+	 *
+	 * @param array $matches matches from the regular expression
+	 *
+	 * @return string
+	 */
+	public function preg_fix_serialised_count( $matches ) {
+		$length = mb_strlen( $matches[ 2 ] );
+		if ( $length !== intval( $matches[ 1 ] ) )
+			return "s:{$length}:\"{$matches[2]}\";";
+		return $matches[ 0 ];
 	}
 
 
@@ -698,7 +726,7 @@ class icit_srdb {
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
 
-				$this->log( 'search_replace_table_start', "{$table}: replacing {$search} with {$replace}" );
+				$this->log( 'search_replace_table_start', $table, $search, $replace );
 
 				$columns = array( );
 
@@ -747,7 +775,7 @@ class icit_srdb {
 							$edited_data = $data_to_fix = $row[ $column ];
 
 							if ( $primary_key )
-								$where_sql[] = $column . ' = "' . $this->db_escape( $data_to_fix ) . '"';
+								$where_sql[] = $column . ' = ' . $this->db_escape( $data_to_fix );
 
 							// exclude cols
 							if ( in_array( $column, $this->exclude_cols ) )
@@ -773,7 +801,7 @@ class icit_srdb {
 										'to' => $edited_data
 									);
 								}
-								$update_sql[] = $column . ' = "' . $this->db_escape( $edited_data ) . '"';
+								$update_sql[] = $column . ' = ' . $this->db_escape( $edited_data );
 								$upd = true;
 							}
 
@@ -783,8 +811,8 @@ class icit_srdb {
 							// nothing for this state
 						} elseif ( $upd && ! empty( $where_sql ) ) {
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
-							$result = $this->db_query( $sql );
-							if ( ! $result ) {
+							$result = $this->db_update( $sql );
+							if ( ! is_int( $result ) && ! $result ) {
 								$this->add_error( $this->db_error( ), 'results' );
 							}
 							else {
@@ -808,21 +836,14 @@ class icit_srdb {
 				$report[ 'table_reports' ][ $table ] = $new_table_report;
 
 				// log result
-				$time = number_format( $new_table_report[ 'end' ] - $new_table_report[ 'start' ], 8 );
-				$this->log( 'search_replace_table_end', "{$table}: {$new_table_report['rows']} rows, {$new_table_report['change']} changes found, {$new_table_report['updates']} updates made in {$time} seconds" );
+				$this->log( 'search_replace_table_end', $table, $new_table_report );
 			}
 
 		}
 
 		$report[ 'end' ] = microtime( );
 
-		$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
-		$dry_run_string = $dry_run ? "would have been" : "were";
-		$this->log( 'search_replace_end', "
-Replacing {$search} with {$replace} on {$report['tables']} tables with {$report['rows']} rows
-{$report['change']} changes {$dry_run_string} made
-{$report['updates']} updates were actually made
-It took {$time} seconds" );
+		$this->log( 'search_replace_end', $search, $replace, $report );
 
 		return $report;
 	}
@@ -865,7 +886,7 @@ It took {$time} seconds" );
 				}
 
 				if ( isset( $report[ 'converted' ][ $table ] ) )
-					$this->log( 'update_engine', $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $engine );
+					$this->log( 'update_engine', $table, $report, $engine );
 			}
 
 		} else {
@@ -918,7 +939,7 @@ It took {$time} seconds" );
 				}
 
 				if ( isset( $report[ 'converted' ][ $table ] ) )
-					$this->log( 'update_collation', $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $collation );
+					$this->log( 'update_collation', $table, $report, $collation );
 			}
 
 		} else {
