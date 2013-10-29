@@ -25,8 +25,6 @@ window.console = window.console || { log: function(){} };
 			// constructor
 			init: function() {
 
-				console.log( $( '.row-db'  ) );
-
 				// search replace ui
 				if ( $( '.row-db' ).length ) {
 
@@ -144,7 +142,6 @@ window.console = window.console || { log: function(){} };
 
 				var $button = $( this ),
 					$form = $button.parents( 'form' ),
-					tables = [],
 					submit = $button.attr( 'name' ),
 					$feedback = $( '.errors, .report' ),
 					feedback_length = $feedback.length;
@@ -172,12 +169,14 @@ window.console = window.console || { log: function(){} };
 				data = t.map_form_data( $form );
 
 				// use all tables if none selected
-				if ( ! data[ 'tables[]' ] || ! data[ 'tables[]' ].length )
+				if ( dom.find( '#all_tables' ).is( ':checked' ) || ! data[ 'tables[]' ] || ! data[ 'tables[]' ].length )
 					data[ 'tables[]' ] = $.map( $( 'select[name^="tables"] option' ), function( el, i ) { return $( el ).attr( 'value' ); } );
 
 				// check we don't just have one table selected as we get a string not array
 				if ( ! $.isArray( data[ 'tables[]' ] ) )
 					data[ 'tables[]' ] = [ data[ 'tables[]' ] ];
+
+				console.log( data, t.prev_data );
 
 				// add in ajax and submit params
 				data = $.extend( {
@@ -248,8 +247,10 @@ window.console = window.console || { log: function(){} };
 							if ( ! error_list.length ) {
 								if ( type == 'db' ) {
 									$( '[name="use_tables"]' ).removeAttr( 'disabled' );
-									if ( ( ! t.prev_data.name || t.prev_data.name !== data.name ) )
+									// update the table dropdown if we're changing db
+									if ( $( '.table-select' ).html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ) )
 										$( '.table-select' ).html( info.table_select );
+									// add/remove innodb button if innodb is available or not
 									if ( $.inArray( 'InnoDB', info.engines ) >= 0 && ! $( '[name="submit\[innodb\]"]' ).length )
 										$( '[name="submit\[utf8\]"]' ).before( '<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />' );
 								}
@@ -278,8 +279,8 @@ window.console = window.console || { log: function(){} };
 						} );
 
 						// scroll back to top most errors block
-						if ( $( '.errors' ).length && $( '.errors' ).eq( 0 ).offset().top < $( 'body' ).scrollTop() )
-							$( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
+						//if ( t.errors !== errors && $( '.errors' ).length && $( '.errors' ).eq( 0 ).offset().top < $( 'body' ).scrollTop() )
+						//	$( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
 
 						// track errors
 						$.extend( true, t.errors, errors );

@@ -728,7 +728,7 @@ class icit_srdb {
 				list( $primary_key, $columns ) = $this->get_columns( $table );
 
 				if ( $primary_key === null ) {
-					$this->add_error( "The table \"{$table}\" has no primary key. No changes can be made.", 'db' );
+					$this->add_error( "The table \"{$table}\" has no primary key. No changes can be made.", 'results' );
 					continue;
 				}
 
@@ -739,11 +739,9 @@ class icit_srdb {
 				$this->log( 'search_replace_table_start', $table, $search, $replace );
 
 				// Count the number of rows we have in the table if large we'll split into blocks, This is a mod from Simon Wheatley
-				$row_count = $this->db_query( 'SELECT COUNT(*) FROM ' . $table );
+				$row_count = $this->db_query( "SELECT COUNT(*) FROM `{$table}`" );
 				$rows_result = $this->db_fetch( $row_count );
 				$row_count = $rows_result[ 0 ];
-				if ( $row_count == 0 )
-					continue;
 
 				$page_size = $this->get( 'page_size' );
 				$pages = ceil( $row_count / $page_size );
@@ -753,10 +751,10 @@ class icit_srdb {
 					$start = $page * $page_size;
 
 					// Grab the content of the table
-					$data = $this->db_query( sprintf( 'SELECT * FROM %s LIMIT %d, %d', $table, $start, $page_size ) );
+					$data = $this->db_query( sprintf( 'SELECT * FROM `%s` LIMIT %d, %d', $table, $start, $page_size ) );
 
 					if ( ! $data )
-						$this->add_error( $this->db_error( ), 'db' );
+						$this->add_error( $this->db_error( ), 'results' );
 
 					while ( $row = $this->db_fetch( $data ) ) {
 
@@ -765,14 +763,14 @@ class icit_srdb {
 
 						$update_sql = array( );
 						$where_sql = array( );
-						$upd = false;
+						$update = false;
 
 						foreach( $columns as $column ) {
 
 							$edited_data = $data_to_fix = $row[ $column ];
 
 							if ( $primary_key == $column ) {
-								$where_sql[] = $column . ' = ' . $this->db_escape( $data_to_fix );
+								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
 								continue;
 							}
 
@@ -803,8 +801,8 @@ class icit_srdb {
 									);
 								}
 
-								$update_sql[] = $column . ' = ' . $this->db_escape( $edited_data );
-								$upd = true;
+								$update_sql[] = "`{$column}` = " . $this->db_escape( $edited_data );
+								$update = true;
 
 							}
 
@@ -812,7 +810,7 @@ class icit_srdb {
 
 						if ( $dry_run ) {
 							// nothing for this state
-						} elseif ( $upd && ! empty( $where_sql ) ) {
+						} elseif ( $update && ! empty( $where_sql ) ) {
 
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
 							$result = $this->db_update( $sql );
