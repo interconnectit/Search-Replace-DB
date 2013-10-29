@@ -465,6 +465,10 @@ class icit_srdb {
 			//$this->db_set_charset( $this->get( 'charset' ) );
 
 			while ( $table = $this->db_fetch( $all_tables_mysql ) ) {
+				// ignore views
+				if ( $table[ 'Comment' ] == 'VIEW' )
+					continue;
+
 				$all_tables[ $table[0] ] = $table;
 			}
 
@@ -728,7 +732,7 @@ class icit_srdb {
 				list( $primary_key, $columns ) = $this->get_columns( $table );
 
 				if ( $primary_key === null ) {
-					$this->add_error( "The table \"{$table}\" has no primary key. No changes can be made.", 'results' );
+					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
 

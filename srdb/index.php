@@ -685,11 +685,8 @@ class icit_srdb_ui extends icit_srdb {
 				}
 				$size = number_format( $size, 2 ) . $size_unit;
 				$rows = $table[ 'Rows' ] > 1 ? 'rows' : 'row';
-				if ( $table[ 'Comment' ] == 'VIEW' ) {
-					$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . $table[0] . ': VIEW</option>';
-				} else {
-					$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . "{$table[0]}: {$table['Engine']}, rows: {$table['Rows']}, size: {$size}, collation: {$table['Collation']}" . '</option>';
-				}
+
+				$table_select .= '<option value="' . $this->esc_html_attr( $table[ 0 ], false ) . '" ' . $this->selected( true, in_array( $table[ 0 ], $this->tables ), false ) . '>' . "{$table[0]}: {$table['Engine']}, rows: {$table['Rows']}, size: {$size}, collation: {$table['Collation']}" . '</option>';
 			}
 			$table_select .= '</select>';
 		}
