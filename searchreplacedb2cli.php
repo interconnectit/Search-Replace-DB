@@ -24,6 +24,7 @@ $shortopts .= "p:"; // password // $pass
 $shortopts .= "c:"; // character set // $char
 $shortopts .= "s:"; // search // $srch
 $shortopts .= "r:"; // replace // $rplc
+$shortopts .= "t:"; // tables // $tbls
 $shortopts .= ""; // These options do not accept values
 
 // All long options require values
@@ -35,6 +36,7 @@ $longopts  = array(
     "charset:", // $char
     "search:", // $srch
     "replace:", // $rplc
+    "tables:", // $tbls
     "help", // $help_text
     //@TODO write dry-run to also do a search without a replace.
     "dry-run", // engage in a dry run, print options, show results
@@ -54,6 +56,13 @@ elseif(isset($options["host"])){
 else{
   echo "Abort! Host name required, use --host or -h\n";
   exit;}
+
+$tbls = "*";
+if (isset($options["t"])){
+  $tbls = $options["t"];}
+elseif(isset($options["tables"])){
+  $tbls = $options["tables"];}
+$tbls = str_replace( array( '_', '*' ), array( '\_','%' ), $tbls );
 
 if (isset($options["d"])){
   $data = $options["d"];}
@@ -98,6 +107,7 @@ echo "user: ".$user."\n";
 echo "pass: ".$pass."\n";
 echo "charset: ".$char."\n";
 echo "search: ".$srch."\n";
+echo "tables: ".$tbls."\n";
 echo "replace: ".$rplc."\n\n";
 
 /* Reproduce what's done in Case 3 to test the server before proceeding */
@@ -116,9 +126,10 @@ echo "replace: ".$rplc."\n\n";
         }
 
         // Do we have any tables and if so build the all tables array
-        $all_tables = array( );
+        $tables = array( );
         @mysql_select_db( $data, $connection );
-        $all_tables_mysql = @mysql_query( 'SHOW TABLES', $connection );
+        $tbls = @mysql_real_escape_string( $tbls );
+        $all_tables_mysql = @mysql_query( 'SHOW TABLES LIKE \'' . $tbls . '\'', $connection );
 
         if ( ! $all_tables_mysql ) {
                 $errors[] = mysql_error( );
@@ -126,18 +137,13 @@ echo "replace: ".$rplc."\n\n";
                 print_r($errors);
         } else {
                 while ( $table = mysql_fetch_array( $all_tables_mysql ) ) {
-                        $all_tables[] = $table[ 0 ];
+                        $tables[] = $table[ 0 ];
                 }
                 echo "Tables: ";
-                foreach($all_tables as $a_table){
+                foreach($tables as $a_table){
                         echo $a_table . ", ";
                 }
         }
-
-/**
- * @TODO allow selection of one or more tables. For now, use all.
- */
-$tables = $all_tables;
 
 /* Execute Case 5 with the actual search + replace */
 
