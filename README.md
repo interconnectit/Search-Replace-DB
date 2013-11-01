@@ -6,15 +6,19 @@ If you find a problem let us know in the issues area and if you can improve the 
 
 ## Usage
 
-* Migrate all your website files
-* Upload the script to your web root (or the same folder as wp-config.php)
-* Browse to the script's URL in your web browser
-* Follow the on-screen instructions
+1. Migrate all your website files
+2. Upload the script to your web root (or the same folder as wp-config.php)
+3. Browse to the script's URL in your web browser
+4. Follow the on-screen instructions
+5. Select the `Dry-run` checkbox to do a dry run without searching/replacing
 
 ### CLI script
 
 1. Run the CLI script from the command line like so:
-   ```./searchreplacedb2cli.php --host localhost --user root --database test --pass "pass" --charset utf\-8 --search "findMe" --replace "replaceMe"```
+   ```
+   ./searchreplacedb2cli.php --host localhost --user root --database test --pass "pass" 
+      --charset utf8 --search "findMe" --replace "replaceMe"
+   ```
 2. use the `--dry-run` flag to do a dry run without searching/replacing
 
 You can use short form arguments too so `--host` becomes `-h` and so on.

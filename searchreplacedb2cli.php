@@ -4,7 +4,7 @@
 
 /**
  * To run this script, execute something like this:
- * `./searchreplacedb2cli.php -h localhost -u root -d test -c utf\-8 -s "findMe" -r "replaceMe"`
+ * `./searchreplacedb2cli.php -h localhost -u root -d test -c utf8 -s "findMe" -r "replaceMe"`
  * use the --dry-run flag to do a dry run without searching/replacing.
  * this script currently affects all tables in a db there are @TODOs below...
  */
@@ -58,7 +58,8 @@ else{
 if (isset($options["d"])){
   $data = $options["d"];}
 elseif(isset($options["database"])){
-  $data = $options["database"];
+  $data = $options["database"];}
+else{
   echo "Abort! Database name required, use --database or -d\n";
   exit;}
 
@@ -144,9 +145,13 @@ if(!isset($options["dry-run"])){ // check if dry-run
 
 echo "\n\nWorking...";
 
-@ set_time_limit( 60 * 10 );
-// Try to push the allowed memory up, while we're at it
-@ ini_set( 'memory_limit', '1024M' );
+if( !defined('STDIN') ) { // Only for NO CLI call, CLI set no timeout, no memory limit
+
+    @ set_time_limit( 60 * 10 );
+    // Try to push the allowed memory up, while we're at it
+    @ ini_set( 'memory_limit', '1024M' );
+    
+}
 
 // Process the tables
 if ( isset( $connection ) )
