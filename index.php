@@ -1350,7 +1350,7 @@ input[type="email"],
 	border: 2px solid rgba(0,0,0,.15);
 	margin-right: 20px;
 	margin-bottom: 10px;
-	display: inlin-block;
+	display: inline-block;
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-ms-box-sizing: border-box;
