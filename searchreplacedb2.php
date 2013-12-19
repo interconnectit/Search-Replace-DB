@@ -103,6 +103,16 @@ function check_table_array( $table = '' ){
 
 
 /**
+ * Used to check if the current script are running in a command-line environment.
+ *
+ * @return bool    true if is cli
+ */
+function is_cli(){
+        return (!isset($_SERVER['SERVER_SOFTWARE']) && (php_sapi_name() == 'cli' || (is_numeric($_SERVER['argc']) && $_SERVER['argc'] > 0)));
+}
+
+
+/**
  * Simply create a submit button with a JS confirm popup if there is need.
  *
  * @param string $text    Button string.
@@ -533,6 +543,7 @@ if ( $step == 5 ) {
 /*
  Send the HTML to the screen.
 */
+if( !is_cli() ):
 @header('Content-Type: text/html; charset=UTF-8');?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/terms/" dir="ltr" lang="en-US">
@@ -892,3 +903,4 @@ if ( ini_get( 'safe_mode' ) ) {
 	</div>
 </body>
 </html>
+<?php endif; ?>

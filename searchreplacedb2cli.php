@@ -11,8 +11,6 @@
 
 require_once('searchreplacedb2.php'); // include the proper srdb script
 
-echo "########################### Ignore Above ###############################\n\n";
-
 // source: https://github.com/interconnectit/Search-Replace-DB/blob/master/searchreplacedb2.php
 
 /* Flags for options, all values required */
