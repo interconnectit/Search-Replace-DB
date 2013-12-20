@@ -327,6 +327,9 @@ class icit_srdb_ui extends icit_srdb {
 			'engines' => $this->get( 'engines' )
 		);
 
+		// set header again before output in case WP does it's thing
+		header( 'HTTP/1.1 200 OK' );
+
 		if ( ! $ajax )
 			$this->html( $html );
 		else {
@@ -847,11 +850,11 @@ class icit_srdb_ui extends icit_srdb {
 
 				<div class="fields field-advanced">
 
-					<div class="field field-advanced field-long">
+					<div class="field field-advanced field-medium">
 						<label for="exclude_cols">columns to exclude (optional, comma separated)</label>
 						<input id="exclude_cols" type="text" name="exclude_cols" value="<?php $this->esc_html_attr( implode( ',', $this->get( 'exclude_cols' ) ) ) ?>" placeholder="eg. guid" />
 					</div>
-					<div class="field field-advanced field-long">
+					<div class="field field-advanced field-medium">
 						<label for="include_cols">columns to include only (optional, comma separated)</label>
 						<input id="include_cols" type="text" name="include_cols" value="<?php $this->esc_html_attr( implode( ',', $this->get( 'include_cols' ) ) ) ?>" placeholder="eg. post_content, post_excerpt" />
 					</div>
@@ -1318,15 +1321,16 @@ legend, fieldset {
 	display: block;
 }
 
-.field-long {
-	width: 100%;
-}
+.field-long,
+.field-medium,
 .field-short {
 	width: 100%;
 }
 .field-long input[type="text"],
+.field-medium input[type="text"],
 .field-short input[type="text"],
 .field-long input[type="email"],
+.field-medium input[type="email"],
 .field-short input[type="email"] {
 	width: 100%;
 	-webkit-box-sizing: border-box;
@@ -1342,6 +1346,9 @@ legend, fieldset {
 	}
 }
 @media only screen and (min-width: 700px) {
+	.field-medium {
+		width: 50%;
+	}
 	.field-short {
 		width: 25%;
 	}
@@ -1405,30 +1412,30 @@ input[type="email"],
 	-ms-box-sizing: border-box;
 	-o-box-sizing: border-box;
 	box-sizing: border-box;
+	-webkit-transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
+	-moz-transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
+	-ms-transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
+	transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
 }
 
 .separator {
 	margin-right: 20px;
 }
 
-[type="submit"][disabled],
-[type="submit"][disabled]:hover,
-[type="submit"][disabled]:active,
-[type="submit"][disabled]:focus {
-	background: #999;
-	color: #ccc;
-	cursor: default;
-	outline: none;
-}
 
-[type="submit"]:focus {
+[type="submit"]:focus,
+[type="submit"]:active {
 	outline: 2px solid #ab1301;
 }
-[type="submit"]:active,
 [type="submit"].active,
-[type="submit"]:active:hover,
-[type="submit"].active:hover {
-	outline: 2px solid #ab1301;
+[type="submit"].active:hover,
+[type="submit"].active:active,
+[type="submit"][disabled].active,
+[type="submit"][disabled].active:hover,
+[type="submit"][disabled].active:active,
+[type="submit"][disabled].active:active:hover {
+	outline: none;
+	color: #fff;
 	background:
 		#900
 		url(data:image/gif;base64,R0lGODlhEAAQAPQAAJkAAP///5sGBufGxsl6evv4+O7Y2KgoKLtWVvXo6M+IiNWYmKMaGsFmZq84OOG2ttuoqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAAFUCAgjmRpnqUwFGwhKoRgqq2YFMaRGjWA8AbZiIBbjQQ8AmmFUJEQhQGJhaKOrCksgEla+KIkYvC6SJKQOISoNSYdeIk1ayA8ExTyeR3F749CACH5BAAKAAEALAAAAAAQABAAAAVoICCKR9KMaCoaxeCoqEAkRX3AwMHWxQIIjJSAZWgUEgzBwCBAEQpMwIDwY1FHgwJCtOW2UDWYIDyqNVVkUbYr6CK+o2eUMKgWrqKhj0FrEM8jQQALPFA3MAc8CQSAMA5ZBjgqDQmHIyEAIfkEAAoAAgAsAAAAABAAEAAABWAgII4j85Ao2hRIKgrEUBQJLaSHMe8zgQo6Q8sxS7RIhILhBkgumCTZsXkACBC+0cwF2GoLLoFXREDcDlkAojBICRaFLDCOQtQKjmsQSubtDFU/NXcDBHwkaw1cKQ8MiyEAIfkEAAoAAwAsAAAAABAAEAAABVIgII5kaZ6AIJQCMRTFQKiDQx4GrBfGa4uCnAEhQuRgPwCBtwK+kCNFgjh6QlFYgGO7baJ2CxIioSDpwqNggWCGDVVGphly3BkOpXDrKfNm/4AhACH5BAAKAAQALAAAAAAQABAAAAVgICCOZGmeqEAMRTEQwskYbV0Yx7kYSIzQhtgoBxCKBDQCIOcoLBimRiFhSABYU5gIgW01pLUBYkRItAYAqrlhYiwKjiWAcDMWY8QjsCf4DewiBzQ2N1AmKlgvgCiMjSQhACH5BAAKAAUALAAAAAAQABAAAAVfICCOZGmeqEgUxUAIpkA0AMKyxkEiSZEIsJqhYAg+boUFSTAkiBiNHks3sg1ILAfBiS10gyqCg0UaFBCkwy3RYKiIYMAC+RAxiQgYsJdAjw5DN2gILzEEZgVcKYuMJiEAOwAAAAAAAAAAAA==)
@@ -1436,6 +1443,18 @@ input[type="email"],
 		8px
 		center;
 	padding-left: 30px;
+}
+
+[type="submit"][disabled],
+[type="submit"][disabled]:hover,
+[type="submit"][disabled]:active,
+[type="submit"][disabled]:focus,
+[type="submit"][disabled]:active:hover {
+	background: #999;
+	color: #ccc;
+	cursor: default;
+	outline: none;
+	padding-left: 10px;
 }
 
 .submit-group {
@@ -1566,6 +1585,12 @@ input[type="radio"] {
 	margin: 20px;
 	float: none;
 	font-weight: normal;
+}
+
+.changes-overlay h1 small {
+	vertical-align: baseline;
+	font-size: 14rem;
+	color: #999;
 }
 
 .changes-overlay .changes {
@@ -1796,6 +1821,9 @@ window.console = window.console || { log: function(){} };
 			updates: 0,
 			time: 0.0,
 			button: false,
+			running: false,
+			countdown: null,
+			escape: false,
 
 			// constructor
 			init: function() {
@@ -1814,6 +1842,11 @@ window.console = window.console || { log: function(){} };
 					// ajax form
 					dom.on( 'submit', 'form', t.submit_proxy );
 					dom.on( 'click', '[type="submit"]', t.submit );
+
+					// prevent accidental browsing away
+					window.onbeforeunload = function() {
+						return t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default;
+					};
 
 				// deleted ui
 				} else {
@@ -1858,6 +1891,13 @@ window.console = window.console || { log: function(){} };
 				search_replace: 'replacing <strong data-report="search"></strong> with\
 								<strong data-report="replace"></strong>',
 				updates: 'were'
+			},
+
+			confirm_strings: {
+				live_run: 'Are you absolutely ready to run search/replace? Make sure you have backed up your database!',
+				modify: 'Are you absolutely ready to modify the tables? Make sure you have backed up your database!',
+				unload_default: 'DON\'T FORGET TO DELETE THIS SCRIPT!!!\n\nClick the delete button at the bottom to remove it.',
+				unload_running: 'The script is still in progress, do you definitely want to leave this page?'
 			},
 
 			toggle_tables: function() {
@@ -1915,25 +1955,33 @@ window.console = window.console || { log: function(){} };
 				var $button = $( this ),
 					$form = $( this ).parents( 'form' ),
 					submit = $button.attr( 'name' ),
-					$feedback = $( '.errors, .report' ),
-					feedback_length = $feedback.length;
+					button_text = $button.val(),
+					seconds = 5;
 
 				// track button clicked
 				t.button = submit;
 
+				// reset escape parameter
+				t.escape = false;
+
 				// add spinner
 				$button.addClass( 'active' );
 
-				if ( submit == 'submit[delete]' ) {
+				if ( submit == 'submit[delete]' && ! t.running ) {
+					window.onbeforeunload = null;
 					$( '[type="submit"]' ).not( $button ).attr( 'disabled', 'disabled' );
 					return true;
 				}
 
-				if ( submit == 'submit[liverun]' && ! window.confirm( 'Are you absolutely ready to run search/replace? Make sure you have backed up your database!' ) )
+				if ( submit == 'submit[liverun]' && ! window.confirm( t.confirm_strings.live_run ) ) {
+					t.complete();
 					return false;
+				}
 
-				if ( ( submit == 'submit[innodb]' || submit == 'submit[utf8]' ) && ! window.confirm( 'Are you absolutely ready to modify the tables? Make sure you have backed up your database!' ) )
+				if ( ( submit == 'submit[innodb]' || submit == 'submit[utf8]' ) && ! window.confirm( t.confirm_strings.modify ) ) {
+					t.complete();
 					return false;
+				}
 
 				// disable buttons & add spinner
 				$( '[type="submit"]' ).attr( 'disabled', 'disabled' );
@@ -1960,6 +2008,54 @@ window.console = window.console || { log: function(){} };
 					ajax: true,
 					submit: submit
 				}, data );
+
+				// count down & stop button
+				if ( submit.match( /dryrun|liverun|innodb|utf8/ ) ) {
+
+					// insert stop button
+					$( '<input type="submit" name="submit[stop]" value="stop" class="stop-button" />' )
+						.click( function() {
+							clearInterval( t.countdown );
+							t.escape = true;
+							t.complete();
+							$( '[type="submit"].db-required' ).removeAttr( 'disabled' );
+							$button.val( button_text );
+							$( this ).remove();
+						} )
+						.insertAfter( $button );
+
+					if ( submit.match( /liverun|innodb|utf8/ ) ) {
+
+						$button.val( button_text + ' in ... ' + seconds );
+
+						t.countdown = setInterval( function() {
+							if ( seconds == 0 ) {
+								clearInterval( t.countdown );
+								$button.val( button_text );
+								t.run( data );
+								return;
+							}
+							$button.val( button_text + ' in ... ' + --seconds );
+						}, 1000 );
+
+					} else {
+						t.run( data );
+					}
+
+				} else {
+					t.run( data );
+				}
+
+				return false;
+			},
+
+			// trigger ajax
+			run: function( data ) {
+				var $feedback = $( '.errors, .report' ),
+					feedback_length = $feedback.length;
+
+				// set running flag
+				t.running = true;
 
 				// clear previous errors
 				if ( feedback_length ) {
@@ -1988,11 +2084,15 @@ window.console = window.console || { log: function(){} };
 					.removeAttr( 'disabled' );
 				if ( typeof t.errors.db != 'undefined' && ! t.errors.db.length )
 					$( '[type="submit"].db-required' ).removeAttr( 'disabled' );
+				t.running = false;
 			},
 
 			recursive_fetch_json: function( data, i ) {
 
 				// break from loop
+				if ( t.escape ) {
+					return false;
+				}
 				if ( data[ 'tables[]' ].length && typeof data[ 'tables[]' ][ i ] == 'undefined' ) {
 					t.complete();
 					return false;
@@ -2010,17 +2110,8 @@ window.console = window.console || { log: function(){} };
 				post_data[ 'tables[]' ] = [ data[ 'tables[]' ][ i ] ];
 				post_data.use_tables = 'subset';
 
-				return $.ajax( {
-					url: window.location.href,
-					data: post_data,
-					type: 'POST',
-					dataType: 'json',
-					always: function( xhr, textstatus ) {
-
-						t.complete();
-
-					},
-					success: function( response ) {
+				// processing function
+				function process_response( response ) {
 
 					if ( response ) {
 
@@ -2143,7 +2234,7 @@ window.console = window.console || { log: function(){} };
 									.find( '[data-report="changes"]' ).html( table_report.change + ' ' ).append( $view_changes ).end()
 									.find( '[data-report="updates"]' ).html( table_report.updates ).end()
 									.find( '[data-report="time"]' ).html( t.get_time( start, end ).toFixed( 7 ) ).end()
-									.prependTo( $table_reports.find( 'tbody' ) )
+									.appendTo( $table_reports.find( 'tbody' ) )
 									.fadeIn( 150 );
 
 							} );
@@ -2221,7 +2312,7 @@ window.console = window.console || { log: function(){} };
 												<td>' + report.collation + '</td>\
 											</tr>' )
 									.hide()
-									.prependTo( $table_reports.find( 'tbody' ) )
+									.appendTo( $table_reports.find( 'tbody' ) )
 									.fadeIn( 150 );
 
 								$( '.table-select option[value="' + table + '"]' ).html( function(){
@@ -2254,6 +2345,25 @@ window.console = window.console || { log: function(){} };
 
 				}
 
+				return $.ajax( {
+					url: window.location.href,
+					data: post_data,
+					type: 'POST',
+					dataType: 'json',
+					always: function( xhr, textstatus ) {
+						t.complete();
+					},
+					// sometimes WordPress forces a 404, we still get responseJSON though
+					error: function( xhr ) {
+						if ( xhr.responseJSON )
+							process_response( xhr.responseJSON );
+						else {
+							// handle error
+						}
+					},
+					success: function( data ) {
+						process_response( data );
+					}
 				} );
 
 			},
@@ -2292,12 +2402,18 @@ window.console = window.console || { log: function(){} };
 							} )
 							.end()
 						.appendTo( $( 'body' ) );
+					$( document ).on( 'keyup', function( e ) {
+						// escape key
+						if ( $overlay.is( ':visible' ) && e.which == 27 ) {
+							$overlay.find( '.close' ).click();
+						}
+					} );
 				}
 
 				$( 'body' ).css( { overflow: 'hidden' } );
 
 				$overlay
-					.find( 'h1' ).html( table ).end()
+					.find( 'h1' ).html( table + ' <small>Showing first 20 changes</small>' ).end()
 					.find( '.changes' ).html( '' ).end()
 					.fadeIn( 300 )
 					.find( '.changes' ).html( function() {
@@ -2335,6 +2451,10 @@ window.console = window.console || { log: function(){} };
 							} );
 						} ).end();
 
+			},
+
+			onunload: function() {
+				return window.confirm( t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default );
 			},
 
 			fetch_products: function() {
