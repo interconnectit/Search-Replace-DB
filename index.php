@@ -265,7 +265,7 @@ class icit_srdb_ui extends icit_srdb {
 					if ( $this->regex_s ) $mods .= 's';
 					if ( $this->regex_m ) $mods .= 'm';
 					if ( $this->regex_x ) $mods .= 'x';
-					$this->search = '/' . $this->search . '/u' . $mods;
+					$this->search = '/' . $this->search . '/' . $mods;
 				}
 
 				// call search replace class
@@ -2020,7 +2020,6 @@ window.console = window.console || { log: function(){} };
 							t.complete();
 							$( '[type="submit"].db-required' ).removeAttr( 'disabled' );
 							$button.val( button_text );
-							$( this ).remove();
 						} )
 						.insertAfter( $button );
 
@@ -2085,6 +2084,7 @@ window.console = window.console || { log: function(){} };
 				if ( typeof t.errors.db != 'undefined' && ! t.errors.db.length )
 					$( '[type="submit"].db-required' ).removeAttr( 'disabled' );
 				t.running = false;
+				$( '.stop-button' ).remove();
 			},
 
 			recursive_fetch_json: function( data, i ) {
@@ -2349,7 +2349,7 @@ window.console = window.console || { log: function(){} };
 					data: post_data,
 					type: 'POST',
 					dataType: 'json',
-					// sometimes WordPress forces a 404, we still get responseJSON though
+					// sometimes WordPress forces a 404, we can still get responseJSON in some cases though
 					error: function( xhr ) {
 						if ( xhr.responseJSON )
 							process_response( xhr.responseJSON );
@@ -2453,6 +2453,7 @@ See the README for details.'
 								}
 								return true;
 							} );
+							$( this ).scrollTop( 0 );
 						} ).end();
 
 			},
