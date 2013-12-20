@@ -2342,7 +2342,6 @@ window.console = window.console || { log: function(){} };
 					t.prev_data = $.extend( {}, data );
 
 					return true;
-
 				}
 
 				return $.ajax( {
@@ -2350,15 +2349,20 @@ window.console = window.console || { log: function(){} };
 					data: post_data,
 					type: 'POST',
 					dataType: 'json',
-					always: function( xhr, textstatus ) {
-						t.complete();
-					},
 					// sometimes WordPress forces a 404, we still get responseJSON though
 					error: function( xhr ) {
 						if ( xhr.responseJSON )
 							process_response( xhr.responseJSON );
 						else {
 							// handle error
+							alert(
+'The script encountered an error while running an AJAX request.\
+\
+If you are using your hosts file to map a domain try browsing via the IP address directly.\
+\
+If you are still running into problems we recommend trying the CLI script bundled with this package.\
+See the README for details.'
+							);
 						}
 					},
 					success: function( data ) {
