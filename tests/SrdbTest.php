@@ -94,6 +94,40 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertRegExp( "/{$replace}/", $modified );
 
 	}
+	
+	public function testSearchReplaceUnicode() {
+
+		// search replace strings
+		$search = 'perspiciatis';
+		$replace = '😸';
+
+		// runs search/replace
+		$srdb = new icit_srdb( array_merge( array(
+			'search' 	=> $search,
+			'replace' 	=> $replace,
+			'dry_run' 	=> false
+		), $this->testdb ) );
+
+		// results from sample data
+
+		// no errors
+		$this->assertEmpty( $srdb->errors[ 'results' ], "Search replace script errors were found: \n" . implode( "\n", $srdb->errors[ 'results' ] ) );
+		$this->assertEmpty( $srdb->errors[ 'db' ], "Search replace script database errors were found: \n" . implode( "\n", $srdb->errors[ 'db' ] ) );
+
+		// update statements run
+		$updates = $srdb->report[ 'updates' ];
+		$this->assertEquals( 50, $updates, 'Wrong number of updates reported' );
+
+		// cells changed
+		$changes = $srdb->report[ 'change' ];
+		$this->assertEquals( 50, $changes, 'Wrong number of cells changed reported' );
+
+		// test the database is actually changed
+		$modified = self::$pdo->query('SELECT content FROM posts LIMIT 1;')->fetchColumn();
+		$this->assertRegExp( "/{$replace}/", $modified );
+
+	}
+	
 
 	/*
 	 * @test str_replace regex
