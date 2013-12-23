@@ -1431,6 +1431,20 @@ input[type="email"],
 [type="submit"]:active {
 	outline: 2px solid #ab1301;
 }
+
+
+[type="submit"][disabled],
+[type="submit"][disabled]:hover,
+[type="submit"][disabled]:active,
+[type="submit"][disabled]:focus,
+[type="submit"][disabled]:active:hover {
+	background: #999;
+	color: #ccc;
+	cursor: default;
+	outline: none;
+	padding-left: 10px;
+}
+
 [type="submit"].active,
 [type="submit"].active:hover,
 [type="submit"].active:active,
@@ -1447,18 +1461,6 @@ input[type="email"],
 		8px
 		center;
 	padding-left: 30px;
-}
-
-[type="submit"][disabled],
-[type="submit"][disabled]:hover,
-[type="submit"][disabled]:active,
-[type="submit"][disabled]:focus,
-[type="submit"][disabled]:active:hover {
-	background: #999;
-	color: #ccc;
-	cursor: default;
-	outline: none;
-	padding-left: 10px;
 }
 
 .submit-group {
