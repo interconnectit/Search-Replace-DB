@@ -1321,6 +1321,10 @@ legend, fieldset {
 	display: block;
 }
 
+.table-select {
+	clear: both;
+}
+
 .field-long,
 .field-medium,
 .field-short {

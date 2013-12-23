@@ -290,19 +290,27 @@ class icit_srdb {
 		// set up db connection
 		$this->db_setup();
 
-		// update engines
-		if ( $this->alter_engine ) {
-			$report = $this->update_engine( $this->alter_engines, $this->tables );
-		}
+		if ( $this->db_valid() ) {
 
-		// update collation
-		elseif ( $this->alter_collation ) {
-			$report = $this->update_collation( $this->alter_collation, $this->tables );
-		}
+			// update engines
+			if ( $this->alter_engine ) {
+				$report = $this->update_engine( $this->alter_engines, $this->tables );
+			}
 
-		// default search/replace action
-		else {
-			$report = $this->replacer( $this->search, $this->replace, $this->tables );
+			// update collation
+			elseif ( $this->alter_collation ) {
+				$report = $this->update_collation( $this->alter_collation, $this->tables );
+			}
+
+			// default search/replace action
+			else {
+				$report = $this->replacer( $this->search, $this->replace, $this->tables );
+			}
+
+		} else {
+
+			$report = $this->report;
+
 		}
 
 		// store report
