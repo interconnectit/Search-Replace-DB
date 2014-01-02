@@ -325,7 +325,8 @@ class icit_srdb {
 	 * @return void
 	 */
 	public function __destruct() {
-		$this->db_close();
+		if ( $this->db_valid() )
+			$this->db_close();
 	}
 
 
