@@ -12,6 +12,13 @@ If you find a problem let us know in the issues area and if you can improve the 
 4. Fill in the fields as needed
 5. Choose the `Dry run` button to do a dry run without searching/replacing
 
+## Warnings & Limitations
+
+1. Three character UTF8 seems to break in certain cases.
+2. We can't test every possible case, though we do our best. Backups and verifications are important.
+3. The license for this script is GPL v3 and no longer WTFPL. Please bear this in mind if contributing or branching.
+4. You use this script at your own risk and we have no responsibility for any problems it may cause. Do backups.
+
 ### CLI script
 
 ```
