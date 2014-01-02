@@ -143,7 +143,8 @@ if ( $missing_arg ) {
 
 // new args array
 $args = array(
-	'verbose' => true
+	'verbose' => true,
+	'dry_run' => false
 );
 
 // create $args array
