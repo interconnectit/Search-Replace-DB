@@ -157,6 +157,10 @@ class icit_srdb_ui extends icit_srdb {
 
 		    $this->response( $name, $user, $pass, $host, $charset, $collate );
 
+		} else {
+
+			$this->response();
+
 		}
 
 	}
