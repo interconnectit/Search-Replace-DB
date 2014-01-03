@@ -1,0 +1,21 @@
+{
+  "name": "Search-Replace-DB",
+  "version": "2.2.0",
+  "description": "A PHP search replace tool for quickly modifying a string throughout a database. Useful for changing the base URL when migrating a WordPress site from development to production.",
+  "main": "srdb.cli.php",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/getdave/Search-Replace-DB.git"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/getdave/Search-Replace-DB/issues"
+  }
+}
