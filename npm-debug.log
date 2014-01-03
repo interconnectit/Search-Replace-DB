@@ -1,0 +1,66 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz',
+1 verbose cli   '--save' ]
+2 info using npm@1.3.11
+3 info using node@v0.10.21
+4 verbose readDependencies using package.json deps
+5 verbose cache add [ 'https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz',
+5 verbose cache add   null ]
+6 verbose cache add name=undefined spec="https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz" args=["https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz",null]
+7 verbose parsed url { protocol: 'https:',
+7 verbose parsed url   slashes: true,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: 'github.com',
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: 'github.com',
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: '/getdave/Search-Replace-DB/archive/2.2.0.tar.gz',
+7 verbose parsed url   path: '/getdave/Search-Replace-DB/archive/2.2.0.tar.gz',
+7 verbose parsed url   href: 'https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz' }
+8 silly lockFile c3548db2--Replace-DB-archive-2-2-0-tar-gz https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz
+9 verbose lock https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz /Users/davidsmith/.npm/c3548db2--Replace-DB-archive-2-2-0-tar-gz.lock
+10 verbose addRemoteTarball [ 'https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz',
+10 verbose addRemoteTarball   null ]
+11 info retry fetch attempt 1 at 14:23:56
+12 verbose fetch to= /Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz
+13 http GET https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz
+14 http 200 https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz
+15 verbose tar unpack /Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz
+16 silly lockFile ff3f1d19-36493-0-7600718033500016-package tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package
+17 verbose lock tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package /Users/davidsmith/.npm/ff3f1d19-36493-0-7600718033500016-package.lock
+18 silly lockFile dfae1d9d-36493-0-7600718033500016-tmp-tgz tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz
+19 verbose lock tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz /Users/davidsmith/.npm/dfae1d9d-36493-0-7600718033500016-tmp-tgz.lock
+20 silly gunzTarPerm modes [ '755', '644' ]
+21 silly gunzTarPerm extractEntry
+22 silly gunzTarPerm modified mode [ '', 509, 493 ]
+23 silly gunzTarPerm extractEntry README.md
+24 silly gunzTarPerm modified mode [ 'README.md', 436, 420 ]
+25 silly gunzTarPerm extractEntry searchreplacedb2.php
+26 silly gunzTarPerm modified mode [ 'searchreplacedb2.php', 436, 420 ]
+27 silly gunzTarPerm extractEntry searchreplacedb2cli.php
+28 silly gunzTarPerm modified mode [ 'searchreplacedb2cli.php', 509, 493 ]
+29 silly lockFile ff3f1d19-36493-0-7600718033500016-package tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package
+30 silly lockFile ff3f1d19-36493-0-7600718033500016-package tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package
+31 silly lockFile dfae1d9d-36493-0-7600718033500016-tmp-tgz tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz
+32 silly lockFile dfae1d9d-36493-0-7600718033500016-tmp-tgz tar:///Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/tmp.tgz
+33 silly lockFile c3548db2--Replace-DB-archive-2-2-0-tar-gz https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz
+34 silly lockFile c3548db2--Replace-DB-archive-2-2-0-tar-gz https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz
+35 error Error: ENOENT, open '/Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package/package.json'
+36 error If you need help, you may report this log at:
+36 error     <http://github.com/isaacs/npm/issues>
+36 error or email it to:
+36 error     <npm-@googlegroups.com>
+37 error System Darwin 11.4.2
+38 error command "/usr/local/bin/node" "/usr/local/bin/npm" "install" "https://github.com/getdave/Search-Replace-DB/archive/2.2.0.tar.gz" "--save"
+39 error cwd /Applications/MAMP/htdocs/Search-Replace-DB
+40 error node -v v0.10.21
+41 error npm -v 1.3.11
+42 error path /Users/davidsmith/tmp/npm-9662-oUWw8MW_/1388759036493-0.7600718033500016/package/package.json
+43 error code ENOENT
+44 error errno 34
+45 verbose exit [ 34, true ]
