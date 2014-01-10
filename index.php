@@ -244,10 +244,12 @@ class icit_srdb_ui extends icit_srdb {
 					$path = __FILE__;
 
 				if ( $this->delete_script( $path ) ) {
-					if ( is_file( __FILE__ ) )
+					if ( is_file( __FILE__ ) && file_exists( __FILE__ ) )
 						$this->add_error( 'Could not delete the search replace script. You will have to delete it manually', 'delete' );
 					else
 						$this->add_error( 'Search/Replace has been successfully removed from your server', 'delete' );
+				} else {
+					$this->add_error( 'Could not delete the search replace script automatically. You will have to delete it manually, sorry!', 'delete' );
 				}
 
 				$html = 'deleted';
