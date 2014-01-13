@@ -38,7 +38,6 @@ $required = array(
 	'h:',
 	'n:',
 	'u:',
-	'p:'
 );
 
 function strip_colons( $string ) {

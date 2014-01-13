@@ -421,7 +421,10 @@ class icit_srdb {
 		// switch off PDO
 		$this->set( 'use_pdo', false );
 
-		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
+		if ( $this->pass == '') 
+			$connection = @mysql_connect( $this->host, $this->user );
+		else
+			$connection = @mysql_connect( $this->host, $this->user, $this->pass );
 
 		// unset if not available
 		if ( ! $connection ) {
@@ -447,7 +450,10 @@ class icit_srdb {
 	public function connect_pdo() {
 
 		try {
-			$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+			if ($this->pass == '')
+				$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user );
+			else
+				$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
 		} catch( PDOException $e ) {
 			$this->add_error( $e->getMessage(), 'db' );
 			$connection = false;
