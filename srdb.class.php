@@ -294,7 +294,7 @@ class icit_srdb {
 
 			// update engines
 			if ( $this->alter_engine ) {
-				$report = $this->update_engine( $this->alter_engines, $this->tables );
+				$report = $this->update_engine( $this->alter_engine, $this->tables );
 			}
 
 			// update collation
@@ -384,16 +384,6 @@ class icit_srdb {
 
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
-
-		if ( $this->db_valid() ) {
-
-			// get tables
-			$this->set( 'all_tables', $this->get_tables() );
-
-			// get engines
-			$this->set( 'engines', $this->get_engines() );
-
-		}
 
 	}
 
@@ -732,14 +722,15 @@ class icit_srdb {
 						 );
 
 		$dry_run = $this->get( 'dry_run' );
-		$all_tables = $this->get( 'all_tables' );
 
 		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
 		// if no tables selected assume all
-		if ( empty( $tables ) )
+		if ( empty( $tables ) ) {
+			$all_tables = $this->get_tables();
 			$tables = array_keys( $all_tables );
+		}
 
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
@@ -913,14 +904,17 @@ class icit_srdb {
 
 		$report = false;
 
+		if ( empty( $this->engines ) )
+			$this->set( 'engines', $this->get_engines() );
+
 		if ( in_array( $engine, $this->get( 'engines' ) ) ) {
 
 			$report = array( 'engine' => $engine, 'converted' => array() );
 
-			$all_tables = $this->get( 'all_tables' );
-
-			if ( empty( $tables ) )
+			if ( empty( $tables ) ) {
+				$all_tables = $this->get_tables();
 				$tables = array_keys( $all_tables );
+			}
 
 			foreach( $tables as $table ) {
 				$table_info = $all_tables[ $table ];
@@ -967,10 +961,10 @@ class icit_srdb {
 
 			$report = array( 'collation' => $collation, 'converted' => array() );
 
-			$all_tables = $this->get( 'all_tables' );
-
-			if ( empty( $tables ) )
+			if ( empty( $tables ) ) {
+				$all_tables = $this->get_tables();
 				$tables = array_keys( $all_tables );
+			}
 
 			// charset is same as collation up to first underscore
 			$charset = preg_replace( '/^([^_]+).*$/', '$1', $collation );

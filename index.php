@@ -325,6 +325,16 @@ class icit_srdb_ui extends icit_srdb {
 				// get tables or error messages
 				$this->db_setup();
 
+				if ( $this->db_valid() ) {
+
+					// get engines
+					$this->set( 'engines', $this->get_engines() );
+
+					// get tables
+					$this->set( 'all_tables', $this->get_tables() );
+
+				}
+
 				break;
 		}
 
@@ -336,9 +346,9 @@ class icit_srdb_ui extends icit_srdb {
 		// set header again before output in case WP does it's thing
 		header( 'HTTP/1.1 200 OK' );
 
-		if ( ! $ajax )
+		if ( ! $ajax ) {
 			$this->html( $html );
-		else {
+		} else {
 
 			// return json version of results
 			header( 'Content-Type: application/json' );

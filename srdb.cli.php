@@ -222,7 +222,7 @@ It took {$time} seconds";
 
 $report = new icit_srdb_cli( $args );
 
-if ( $report && ( (isset($args[ 'dry_run' ]) && $args['dry_run']) || empty( $report->errors[ 'results' ] ) ) ) {
+if ( $report && ( ( isset( $args[ 'dry_run' ] ) && $args[ 'dry_run' ] ) || empty( $report->errors[ 'results' ] ) ) ) {
 	echo "\nAnd we're done!";
 } else {
 	echo "\nCheck the output for errors. You may need to ensure verbose output is on by using -v or --verbose.";
