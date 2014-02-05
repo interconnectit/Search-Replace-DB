@@ -648,11 +648,14 @@ class icit_srdb {
 			else {
 				if ( is_string( $data ) ) {
 				  // Check for possible json/base64 encoding
-				  $retval = json_decode(base64_decode($data), TRUE);
-				  if($retval != NULL) { // If decoded successfully
-				    $json_serialized = TRUE;
-				    $data = $this->recursive_unserialize_replace( $from, $to, $retval);
-				  } else {
+				  if(function_exists(json_decode)) {
+					  $retval = json_decode(base64_decode($data), TRUE);
+					  if($retval != NULL) { // If decoded successfully
+					    $json_serialized = TRUE;
+					    $data = $this->recursive_unserialize_replace( $from, $to, $retval);
+					  }
+				  }
+				  if(!$json_serialized) {
 	  				$data = $this->str_replace( $from, $to, $data );
   				}
 			  }
