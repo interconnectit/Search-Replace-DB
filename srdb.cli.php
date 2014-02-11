@@ -3,7 +3,7 @@
 
 /**
  * To run this script, execute something like this:
- * `./srdb.cli.php -h localhost -u root -d test -s "findMe" -r "replaceMe"`
+ * `./srdb.cli.php -h localhost -u root -n test -s "findMe" -r "replaceMe"`
  * use the --dry-run flag to do a dry run without searching/replacing.
  */
 
