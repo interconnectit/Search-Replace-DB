@@ -129,15 +129,15 @@ foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
 	$long_opt = strip_colons( $opts[ $key ] );
 	if ( ! isset( $options[ $short_opt ] ) && ! isset( $options[ $long_opt ] ) ) {
-		echo "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n";
+		fwrite(STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n");
 		$missing_arg = true;
 	}
 }
 
 // bail if requirements not met
 if ( $missing_arg ) {
-	echo "Please enter the missing arguments.\n";
-	exit;
+	fwrite(STDERR, "Please enter the missing arguments.\n";
+	exit 1;
 }
 
 // new args array
