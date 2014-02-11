@@ -136,8 +136,8 @@ foreach( $required as $key ) {
 
 // bail if requirements not met
 if ( $missing_arg ) {
-	fwrite(STDERR, "Please enter the missing arguments.\n";
-	exit 1;
+	fwrite(STDERR, "Please enter the missing arguments.\n");
+	exit(1);
 }
 
 // new args array
