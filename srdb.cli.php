@@ -221,8 +221,13 @@ It took {$time} seconds";
 
 $report = new icit_srdb_cli( $args );
 
+// Only print a separating newline if verbose mode is on to separate verbose output from result
+if ($args['verbose']) {
+	echo "\n";
+}
+
 if ( $report && ( ( isset( $args[ 'dry_run' ] ) && $args[ 'dry_run' ] ) || empty( $report->errors[ 'results' ] ) ) ) {
-	echo "\nAnd we're done!";
+	echo "And we're done!\n";
 } else {
-	echo "\nCheck the output for errors. You may need to ensure verbose output is on by using -v or --verbose.";
+	echo "Check the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n";
 }
