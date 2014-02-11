@@ -129,15 +129,15 @@ foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
 	$long_opt = strip_colons( $opts[ $key ] );
 	if ( ! isset( $options[ $short_opt ] ) && ! isset( $options[ $long_opt ] ) ) {
-		fwrite(STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n");
+		fwrite( STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n" );
 		$missing_arg = true;
 	}
 }
 
 // bail if requirements not met
 if ( $missing_arg ) {
-	fwrite(STDERR, "Please enter the missing arguments.\n");
-	exit(1);
+	fwrite( STDERR, "Please enter the missing arguments.\n" );
+	exit( 1 );
 }
 
 // new args array
@@ -222,7 +222,7 @@ It took {$time} seconds";
 $report = new icit_srdb_cli( $args );
 
 // Only print a separating newline if verbose mode is on to separate verbose output from result
-if ($args['verbose']) {
+if ($args[ 'verbose' ]) {
 	echo "\n";
 }
 
