@@ -220,8 +220,10 @@ class icit_srdb_ui extends icit_srdb {
 		// are doing something?
 		$show = '';
 		if ( isset( $_POST[ 'submit' ] ) ) {
-			if ( is_array( $_POST[ 'submit' ] ) )
-				$show = array_shift( array_keys( $_POST[ 'submit' ] ) );
+			if ( is_array( $_POST[ 'submit' ] ) ) {
+				$keys = array_keys( $_POST[ 'submit' ] );
+				$show = array_shift( $keys );
+			}
 			if ( is_string( $_POST[ 'submit' ] ) )
 				$show = preg_replace( '/submit\[([a-z0-9]+)\]/', '$1', $_POST[ 'submit' ] );
 		}
@@ -237,19 +239,40 @@ class icit_srdb_ui extends icit_srdb {
 			// remove search replace
 			case 'delete':
 
-				// determine if it's the folder of compiled version
-				if ( basename( __FILE__ ) == 'index.php' )
-					$path = str_replace( basename( __FILE__ ), '', __FILE__ );
-				else
-					$path = __FILE__;
-
-				if ( $this->delete_script( $path ) ) {
-					if ( is_file( __FILE__ ) && file_exists( __FILE__ ) )
-						$this->add_error( 'Could not delete the search replace script. You will have to delete it manually', 'delete' );
-					else
-						$this->add_error( 'Search/Replace has been successfully removed from your server', 'delete' );
+				// determine whether it's the folder or the compiled version
+				if ( basename( __FILE__ ) == 'index.php' ) {
+					// folder version
+					
+					$folderPath = trim( dirname( __FILE__ ), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
+					
+					$filePathsToRemove = array(
+						__FILE__,
+						$folderPath . 'srdb.class.php',
+						$folderPath . 'srdb.cli.php'
+					);
 				} else {
-					$this->add_error( 'Could not delete the search replace script automatically. You will have to delete it manually, sorry!', 'delete' );
+					// compiled-file version
+					
+					$filePathsToRemove = array(
+						__FILE__,
+					);
+				}
+				
+				$allDeleted = TRUE;
+				
+				foreach( $filePathsToRemove as $filePath ) {
+					if ( ! file_exists( $filePath ) ) {
+						continue;
+					}
+					
+					$deleted = @unlink( $filePath );
+					$allDeleted = $allDeleted && $deleted;
+				}
+				
+				if ($allDeleted) {
+					$this->add_error( 'Search/Replace script has been successfully removed from your server', 'delete' );
+				} else {
+					$this->add_error( 'Could not delete Search/Replace script. You will have to delete it manually, sorry!', 'delete' );
 				}
 
 				$html = 'deleted';
@@ -389,20 +412,6 @@ class icit_srdb_ui extends icit_srdb {
 				$this->response();
 			}
 		}
-	}
-
-
-	/**
-	 * http://stackoverflow.com/questions/3349753/delete-directory-with-files-in-it
-	 *
-	 * @param string $path directory/file path
-	 *
-	 * @return void
-	 */
-	public function delete_script( $path ) {
-		return is_file( $path ) ?
-				@unlink( $path ) :
-				array_map( array( $this, __FUNCTION__ ), glob( $path . '/*' ) ) == @rmdir( $path );
 	}
 
 
