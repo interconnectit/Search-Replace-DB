@@ -247,7 +247,7 @@ class icit_srdb {
 			'tables'			=> array(),
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
-			'dry_run' 			=> true,
+			'dry_run' 			=> false,
 			'regex' 			=> false,
 			'pagesize' 			=> 50000,
 			'alter_engine' 		=> false,

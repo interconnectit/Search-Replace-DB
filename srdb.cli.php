@@ -4,7 +4,7 @@
 
 /**
  * To run this script, execute something like this:
- * `./srdb.cli.php -h localhost -u root -d test -s "findMe" -r "replaceMe"`
+ * `./srdb.cli.php -h localhost -u root -p test -s "findMe" -r "replaceMe"`
  * use the --dry-run flag to do a dry run without searching/replacing.
  */
 
@@ -223,7 +223,7 @@ It took {$time} seconds";
 $report = new icit_srdb_cli( $args );
 
 if ( $report && ( ( isset( $args[ 'dry_run' ] ) && $args[ 'dry_run' ] ) || empty( $report->errors[ 'results' ] ) ) ) {
-	echo "\nAnd we're done!";
+	echo "\nAnd we're done!\n\n";
 } else {
-	echo "\nCheck the output for errors. You may need to ensure verbose output is on by using -v or --verbose.";
+	echo "\nCheck the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n\n";
 }
