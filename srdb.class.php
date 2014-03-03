@@ -648,7 +648,7 @@ class icit_srdb {
 			else {
 				if ( is_string( $data ) ) {
 				  // Check for possible json/base64 encoding
-				  if(function_exists(json_decode)) {
+				  if(function_exists('json_decode')) {
 					  $retval = json_decode(base64_decode($data), TRUE);
 					  if($retval != NULL) { // If decoded successfully
 					    $json_serialized = TRUE;
