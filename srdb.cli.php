@@ -1,10 +1,9 @@
 #!/usr/bin/php -q
-
 <?php
 
 /**
  * To run this script, execute something like this:
- * `./srdb.cli.php -h localhost -u root -d test -s "findMe" -r "replaceMe"`
+ * `./srdb.cli.php -h localhost -u root -n test -s "findMe" -r "replaceMe"`
  * use the --dry-run flag to do a dry run without searching/replacing.
  */
 
@@ -130,15 +129,15 @@ foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
 	$long_opt = strip_colons( $opts[ $key ] );
 	if ( ! isset( $options[ $short_opt ] ) && ! isset( $options[ $long_opt ] ) ) {
-		echo "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n";
+		fwrite( STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n" );
 		$missing_arg = true;
 	}
 }
 
 // bail if requirements not met
 if ( $missing_arg ) {
-	echo "Please enter the missing arguments.\n";
-	exit;
+	fwrite( STDERR, "Please enter the missing arguments.\n" );
+	exit( 1 );
 }
 
 // new args array
@@ -222,8 +221,13 @@ It took {$time} seconds";
 
 $report = new icit_srdb_cli( $args );
 
+// Only print a separating newline if verbose mode is on to separate verbose output from result
+if ($args[ 'verbose' ]) {
+	echo "\n";
+}
+
 if ( $report && ( ( isset( $args[ 'dry_run' ] ) && $args[ 'dry_run' ] ) || empty( $report->errors[ 'results' ] ) ) ) {
-	echo "\nAnd we're done!";
+	echo "And we're done!\n";
 } else {
-	echo "\nCheck the output for errors. You may need to ensure verbose output is on by using -v or --verbose.";
+	echo "Check the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n";
 }
