@@ -47,6 +47,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		if ( $this->conn === null ) {
 			if ( self::$pdo == null )
 				self::$pdo = new PDO( "mysql:host={$this->testdb['host']};dbname={$this->testdb['name']}", $this->testdb[ 'user' ], $this->testdb[ 'pass' ] );
+			self::$pdo->query( 'SET NAMES utf8;' );
 			$this->conn = $this->createDefaultDBConnection( self::$pdo, $this->testdb[ 'name' ] );
 		}
 		return $this->conn;
