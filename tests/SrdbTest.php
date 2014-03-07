@@ -26,7 +26,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		'host' => '127.0.0.1',
 		'name' => 'srdbtest',
 		'user' => 'root',
-		'pass' => ''
+		'pass' => '123'
 		);
 
 	public function setUp() {
@@ -94,7 +94,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertRegExp( "/{$replace}/", $modified );
 
 	}
-	
+
 	public function testSearchReplaceUnicode() {
 
 		// search replace strings
@@ -127,7 +127,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertRegExp( "/{$replace}/", $modified );
 
 	}
-	
+
 
 	/*
 	 * @test str_replace regex
