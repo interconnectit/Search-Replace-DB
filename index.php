@@ -221,7 +221,7 @@ class icit_srdb_ui extends icit_srdb {
 		$show = '';
 		if ( isset( $_POST[ 'submit' ] ) ) {
 			if ( is_array( $_POST[ 'submit' ] ) )
-				$show = array_shift( array_keys( $_POST[ 'submit' ] ) );
+				$show = key( $_POST[ 'submit' ] );
 			if ( is_string( $_POST[ 'submit' ] ) )
 				$show = preg_replace( '/submit\[([a-z0-9]+)\]/', '$1', $_POST[ 'submit' ] );
 		}
