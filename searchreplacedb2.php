@@ -197,7 +197,7 @@ function recursive_array_replace( $find, $replace, $data ) {
  *
  * @return array	The original array with all elements replaced as needed.
  */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $jsonencoded = false ) {
 
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
