@@ -243,8 +243,8 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 				}
 				if ($data === $fixed) { // It was not a base64 or no changed, so try without decoding
 					$data = str_replace( $from, $to, $data );
-                } else {
-                    $data = $fixed;
+				} else {
+					$data = $fixed;
 				}
 			}
 		}
