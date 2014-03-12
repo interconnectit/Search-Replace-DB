@@ -206,6 +206,11 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
 
+		elseif ( is_string( $data ) && function_exists('json_decode') &&
+			   ( $unjson = @json_decode( $data ) ) !== null ) {
+			$data = recursive_unserialize_replace( $from, $to, $unjson, false, true );
+		}
+		
 		elseif ( is_array( $data ) ) {
 			$_tmp = array( );
 			foreach ( $data as $key => $value ) {
@@ -246,6 +251,9 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 
 		if ( $serialised )
 			return serialize( $data );
+
+		if ( $jsonencoded && function_exists('json_encode') )
+			return json_encode( $data );
 
 	} catch( Exception $error ) {
 
