@@ -239,7 +239,7 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 				$decode = base64_decode($data);
 				$encode = base64_encode($decode);
 				if ($data === $encode) { // Maybe this is a base64
-					$fixed = base64_encode(recursive_unserialize_replace( $from, $to, $decode, false ));
+					$fixed = base64_encode(recursive_unserialize_replace( $from, $to, $decode ));
 				}
 				if ($data === $fixed) { // It was not a base64 or no changed, so try without decoding
 					$data = str_replace( $from, $to, $data );
