@@ -229,8 +229,19 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		}
 
 		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
+			if ( is_string( $data ) ) {
+				$fixed = $data;
+				$decode = base64_decode($data);
+				$encode = base64_encode($decode);
+				if ($data === $encode) { // Maybe this is a base64
+					$fixed = base64_encode(recursive_unserialize_replace( $from, $to, $decode, false ));
+				}
+				if ($data === $fixed) { // It was not a base64 or no changed, so try without decoding
+					$data = str_replace( $from, $to, $data );
+                } else {
+                    $data = $fixed;
+				}
+			}
 		}
 
 		if ( $serialised )
