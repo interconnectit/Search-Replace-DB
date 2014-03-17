@@ -50,16 +50,16 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 				self::$pdo = new PDO( "mysql:host={$this->testdb['host']}",
 										$this->testdb[ 'user' ],
 										$this->testdb[ 'pass' ],
-										array( PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8' ) );
+										array( PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4' ) );
 
-			self::$pdo->query( "CREATE DATABASE IF NOT EXISTS `{$this->testdb[ 'name' ]}` CHARACTER SET = 'utf8' COLLATE = 'utf8_general_ci';" );
+			self::$pdo->query( "CREATE DATABASE IF NOT EXISTS `{$this->testdb[ 'name' ]}` CHARACTER SET = 'utf8mb4' COLLATE = 'utf8mb4_general_ci';" );
 			self::$pdo->query( "CREATE TABLE IF NOT EXISTS `{$this->testdb[ 'name' ]}`.`{$this->testdb[ 'table' ]}` (
-				`id` int(11) NOT NULL,
+				`id` int(11) NOT NULL AUTO_INCREMENT,
 				`content` blob,
-				`url` varchar(1024) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
-				`serialised` varchar(2000) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+				`url` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+				`serialised` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
 				PRIMARY KEY (`id`)
-			  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;" );
+			  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;" );
 
 			self::$pdo->query( "USE `{$this->testdb[ 'name' ]}`;" );
 
