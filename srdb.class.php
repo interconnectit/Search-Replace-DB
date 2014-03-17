@@ -800,7 +800,22 @@ class icit_srdb {
 
 			foreach( $tables as $table ) {
 
-				$this->db_set_charset( $this->get_table_character_set( $table ) );
+				$encoding = $this->get_table_character_set( $table );
+				switch( $encoding ) {
+
+					// Tables encoded with this work for me only when I set names to utf8. I don't trust this in the wild so I'm going to avoid.
+					case 'utf16':
+					case 'utf32':
+						//$encoding = 'utf8';
+						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
+						continue;
+						break;
+
+					default:
+						$this->db_set_charset( $encoding );
+						break;
+				}
+
 
 				$report[ 'tables' ]++;
 
