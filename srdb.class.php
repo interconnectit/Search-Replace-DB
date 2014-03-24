@@ -445,7 +445,9 @@ class icit_srdb {
 
 		// check if there's a problem with our database at this stage
 		if ( $connection && ! $connection->query( 'SHOW TABLES' ) ) {
-			$this->add_error( array_pop( $connection->errorInfo() ), 'db' );
+			$error_info = $connection->errorInfo();
+			if ( !empty( $error_info ) && is_array( $error_info ) )
+				$this->add_error( array_pop( $error_info ), 'db' ); // Array pop will only accept a $var..
 			$connection = false;
 		}
 
@@ -459,9 +461,36 @@ class icit_srdb {
 	 * @return array
 	 */
 	public function get_tables() {
-
 		// get tables
-		$all_tables_mysql = $this->db_query( 'SHOW TABLE STATUS' );
+
+		// A clone of show table status but with character set for the table.
+		$show_table_status = "SELECT
+		  t.`TABLE_NAME` as Name,
+		  t.`ENGINE` as `Engine`,
+		  t.`version` as `Version`,
+		  t.`ROW_FORMAT` AS `Row_format`,
+		  t.`TABLE_ROWS` AS `Rows`,
+		  t.`AVG_ROW_LENGTH` AS `Avg_row_length`,
+		  t.`DATA_LENGTH` AS `Data_length`,
+		  t.`MAX_DATA_LENGTH` AS `Max_data_length`,
+		  t.`INDEX_LENGTH` AS `Index_length`,
+		  t.`DATA_FREE` AS `Data_free`,
+		  t.`AUTO_INCREMENT` as `Auto_increment`,
+		  t.`CREATE_TIME` AS `Create_time`,
+		  t.`UPDATE_TIME` AS `Update_time`,
+		  t.`CHECK_TIME` AS `Check_time`,
+		  t.`TABLE_COLLATION` as Collation,
+		  c.`CHARACTER_SET_NAME` as Character_set,
+		  t.`Checksum`,
+		  t.`Create_options`,
+		  t.`table_Comment` as `Comment`
+		FROM information_schema.`TABLES` t
+			LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
+				ON ( t.`TABLE_COLLATION` = c.`COLLATION_NAME` )
+		  WHERE t.`TABLE_SCHEMA` = '{$this->name}';
+		";
+
+		$all_tables_mysql = $this->db_query( $show_table_status );
 		$all_tables = array();
 
 		if ( ! $all_tables_mysql ) {
@@ -484,6 +513,39 @@ class icit_srdb {
 		}
 
 		return $all_tables;
+	}
+
+
+	/**
+	 * Get the character set for the current table
+	 *
+	 * @param string $table_name The name of the table we want to get the char
+	 * set for
+	 *
+	 * @return string    The character encoding;
+	 */
+	public function get_table_character_set( $table_name = '' ) {
+		$table_name = $this->db_escape( $table_name );
+		$schema = $this->db_escape( $this->name );
+
+		$charset = $this->db_query(  "SELECT c.`character_set_name`
+			FROM information_schema.`TABLES` t
+				LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
+				ON (t.`TABLE_COLLATION` = c.`COLLATION_NAME`)
+			WHERE t.table_schema = {$schema}
+				AND t.table_name = {$table_name}
+			LIMIT 1;" );
+
+		$encoding = false;
+		if ( ! $charset ) {
+			$this->add_error( $this->db_error( ), 'db' );
+		}
+		else {
+			$result = $this->db_fetch( $charset );
+			$encoding = isset( $result[ 'character_set_name' ] ) ? $result[ 'character_set_name' ] : false;
+		}
+
+		return $encoding;
 	}
 
 
@@ -526,8 +588,10 @@ class icit_srdb {
 	}
 
 	public function db_error() {
-		if ( $this->use_pdo() )
-			return array_pop( $this->db->errorInfo() );
+		if ( $this->use_pdo() ) {
+			$error_info = $this->db->errorInfo();
+			return !empty( $error_info ) && is_array( $error_info ) ? array_pop( $error_info ) : 'Unknown error';
+		}
 		else
 			return mysql_error();
 	}
@@ -735,6 +799,23 @@ class icit_srdb {
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
 			foreach( $tables as $table ) {
+
+				$encoding = $this->get_table_character_set( $table );
+				switch( $encoding ) {
+
+					// Tables encoded with this work for me only when I set names to utf8. I don't trust this in the wild so I'm going to avoid.
+					case 'utf16':
+					case 'utf32':
+						//$encoding = 'utf8';
+						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
+						continue;
+						break;
+
+					default:
+						$this->db_set_charset( $encoding );
+						break;
+				}
+
 
 				$report[ 'tables' ]++;
 

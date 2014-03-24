@@ -27,7 +27,7 @@ $serialised = array(
 				'float' => 12.345,
 				'string' => 'serialised string',
 				'accented' => 'föó ßåŗ',
-				'unicode' => '❤ ☀ ☆ ☂ ☻ ♞ ☯',
+				'unicode' => '❤ ☀ ☆ ☂ ☻ ♞ ☯ 😸 😹',
 				'url' => 'http://example.com/'
 			);
 

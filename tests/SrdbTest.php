@@ -26,7 +26,8 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		'host' => '127.0.0.1',
 		'name' => 'srdbtest',
 		'user' => 'root',
-		'pass' => ''
+		'pass' => '123',
+		'table'=> 'posts'
 		);
 
 	public function setUp() {
@@ -46,11 +47,52 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 	public function getConnection() {
 		if ( $this->conn === null ) {
 			if ( self::$pdo == null )
-				self::$pdo = new PDO( "mysql:host={$this->testdb['host']};dbname={$this->testdb['name']}", $this->testdb[ 'user' ], $this->testdb[ 'pass' ] );
+				self::$pdo = new PDO( "mysql:host={$this->testdb['host']}",
+										$this->testdb[ 'user' ],
+										$this->testdb[ 'pass' ],
+										array( PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4' ) );
+
+			self::$pdo->query( "CREATE DATABASE IF NOT EXISTS `{$this->testdb[ 'name' ]}` CHARACTER SET = 'utf8mb4' COLLATE = 'utf8mb4_general_ci';" );
+			self::$pdo->query( "CREATE TABLE IF NOT EXISTS `{$this->testdb[ 'name' ]}`.`{$this->testdb[ 'table' ]}` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`content` blob,
+				`url` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+				`serialised` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+				PRIMARY KEY (`id`)
+			  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;" );
+
+			self::$pdo->query( "USE `{$this->testdb[ 'name' ]}`;" );
+
 			$this->conn = $this->createDefaultDBConnection( self::$pdo, $this->testdb[ 'name' ] );
+
+			// Get the charset of the table.
+			$charset = $this->get_table_character_set( );
+			if ( $charset )
+				self::$pdo->query( "SET NAMES {$charset};" );
 		}
 		return $this->conn;
 	}
+
+
+	public function get_table_character_set( ) {
+		$charset = self::$pdo->query(  "SELECT c.`character_set_name`
+			FROM information_schema.`TABLES` t
+				LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
+				ON (t.`TABLE_COLLATION` = c.`COLLATION_NAME`)
+			WHERE t.table_schema = '{$this->testdb[ 'name' ]}'
+				AND t.table_name = '{$this->testdb[ 'table' ]}'
+			LIMIT 1;" );
+
+		$encoding = false;
+		if ( $charset ) {
+			$result = $charset->fetch( );
+			if ( isset( $result[ 'character_set_name' ] ) )
+				$encoding =  $result[ 'character_set_name' ];
+		}
+
+		return $encoding;
+	}
+
 
     /**
      * @return PHPUnit_Extensions_Database_DataSet_IDataSet
@@ -90,11 +132,11 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEquals( 150, $changes, 'Wrong number of cells changed reported' );
 
 		// test the database is actually changed
-		$modified = self::$pdo->query('SELECT url FROM posts LIMIT 1;')->fetchColumn();
+		$modified = self::$pdo->query( "SELECT url FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchColumn();
 		$this->assertRegExp( "/{$replace}/", $modified );
 
 	}
-	
+
 	public function testSearchReplaceUnicode() {
 
 		// search replace strings
@@ -123,11 +165,11 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEquals( 50, $changes, 'Wrong number of cells changed reported' );
 
 		// test the database is actually changed
-		$modified = self::$pdo->query('SELECT content FROM posts LIMIT 1;')->fetchColumn();
+		$modified = self::$pdo->query( "SELECT content FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchColumn();
 		$this->assertRegExp( "/{$replace}/", $modified );
 
 	}
-	
+
 
 	/*
 	 * @test str_replace regex
@@ -167,7 +209,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEquals( 150, $changes, 'Wrong number of changes reported' );
 
 		// test the database is actually changed
-		$modified = self::$pdo->query( 'SELECT url FROM posts LIMIT 1;' )->fetchColumn();
+		$modified = self::$pdo->query( "SELECT url FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchColumn();
 		$this->assertRegExp( "#{$result}#", $modified, 'Database not updated, modified result is ' . $modified );
 
 	}
@@ -203,7 +245,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEquals( 50, $changes, 'Wrong number of changes reported' );
 
 		// check unserialised values are what they should be
-		$modified = self::$pdo->query( 'SELECT serialised FROM posts LIMIT 1;' )->fetchColumn();
+		$modified = self::$pdo->query( "SELECT serialised FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchColumn();
 		$from = unserialize( $modified );
 
 		$this->assertEquals( $replace, $from[ 'string' ], 'Unserialised array value not updated' );
@@ -233,7 +275,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEmpty( $srdb->errors[ 'db' ], "Search replace script database errors were found: \n" . implode( "\n", $srdb->errors[ 'db' ] ) );
 
 		// check unserialised values are what they should be
-		$modified = self::$pdo->query( 'SELECT serialised FROM posts LIMIT 1;' )->fetchColumn();
+		$modified = self::$pdo->query( "SELECT serialised FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchColumn();
 		$from = unserialize( $modified );
 
 		$this->assertEquals( $replace, $from[ 'nested' ][ 'string' ], 'Unserialised nested array value not updated' );
@@ -273,7 +315,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 
 
 		// check unserialised values are what they should be
-		$modified = self::$pdo->query( 'SELECT content, url FROM posts LIMIT 1;' )->fetchAll();
+		$modified = self::$pdo->query( "SELECT content, url FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchAll();
 		$content = $modified[ 0 ][ 'content' ];
 		$url 	 = $modified[ 0 ][ 'url' ];
 
@@ -314,7 +356,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		$this->assertEquals( 100, $changes, 'Wrong number of changes reported' );
 
 		// check unserialised values are what they should be
-		$modified = self::$pdo->query( 'SELECT content, url FROM posts LIMIT 1;' )->fetchAll();
+		$modified = self::$pdo->query( "SELECT content, url FROM `{$this->testdb[ 'table' ]}` LIMIT 1;" )->fetchAll();
 		$content = $modified[ 0 ][ 'content' ];
 		$url 	 = $modified[ 0 ][ 'url' ];
 
