@@ -448,6 +448,17 @@ class icit_srdb_ui extends icit_srdb {
 				// prevent multisite redirect
 				define( 'WP_INSTALLING', true );
 
+				// prevent super/total cache
+				define( 'DONOTCACHEDB', true );
+				define( 'DONOTCACHEPAGE', true );
+				define( 'DONOTCACHEOBJECT', true );
+				define( 'DONOTCDN', true );
+				define( 'DONOTMINIFY', true );
+
+				// cancel batcache
+				if ( function_exists( 'batcache_cancel' ) )
+					batcache_cancel();
+
 				// bootstrap WordPress
 				require( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
 
