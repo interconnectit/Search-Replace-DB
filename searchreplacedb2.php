@@ -197,15 +197,20 @@ function recursive_array_replace( $find, $replace, $data ) {
  *
  * @return array	The original array with all elements replaced as needed.
  */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $jsonencoded = false ) {
 
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
 
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
+		if ( is_string( $data ) && !empty($data) && ( $unserialized = @unserialize( $data ) ) !== false ) {
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
 
+		elseif ( is_string( $data ) && !empty($data) && function_exists('json_decode') &&
+			   ( $unjson = @json_decode( $data ) ) !== null ) {
+			$data = recursive_unserialize_replace( $from, $to, $unjson, false, true );
+		}
+		
 		elseif ( is_array( $data ) ) {
 			$_tmp = array( );
 			foreach ( $data as $key => $value ) {
@@ -229,12 +234,26 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		}
 
 		else {
-			if ( is_string( $data ) )
-				$data = str_replace( $from, $to, $data );
+			if ( is_string( $data ) ) {
+				$fixed = $data;
+				$decode = base64_decode($data);
+				$encode = base64_encode($decode);
+				if ($data === $encode) { // Maybe this is a base64
+					$fixed = base64_encode(recursive_unserialize_replace( $from, $to, $decode ));
+				}
+				if ($data === $fixed) { // It was not a base64 or no changed, so try without decoding
+					$data = str_replace( $from, $to, $data );
+				} else {
+					$data = $fixed;
+				}
+			}
 		}
 
 		if ( $serialised )
 			return serialize( $data );
+
+		if ( $jsonencoded && function_exists('json_encode') )
+			return json_encode( $data );
 
 	} catch( Exception $error ) {
 
