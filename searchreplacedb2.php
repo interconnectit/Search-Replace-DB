@@ -202,11 +202,11 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
 
-		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
+		if ( is_string( $data ) && !empty($data) && ( $unserialized = @unserialize( $data ) ) !== false ) {
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
 
-		elseif ( is_string( $data ) && function_exists('json_decode') &&
+		elseif ( is_string( $data ) && !empty($data) && function_exists('json_decode') &&
 			   ( $unjson = @json_decode( $data ) ) !== null ) {
 			$data = recursive_unserialize_replace( $from, $to, $unjson, false, true );
 		}
