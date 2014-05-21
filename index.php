@@ -2224,8 +2224,8 @@ window.console = window.console || { log: function(){} };
 							if ( ! $report.find( '.main-report' ).length ) {
 								$( t.report_tpl )
 									.find( '[data-report="search_replace"]' ).html( strings.search_replace ).end()
-									.find( '[data-report="search"]' ).html( data.search ).end()
-									.find( '[data-report="replace"]' ).html( data.replace ).end()
+									.find( '[data-report="search"]' ).text( data.search ).end()
+									.find( '[data-report="replace"]' ).text( data.replace ).end()
 									.find( '[data-report="dry_run"]' ).html( strings.updates ).end()
 									.prependTo( $report );
 							}
