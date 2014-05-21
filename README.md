@@ -4,6 +4,13 @@ This script was made to aid the process of migrating PHP and MySQL based website
 
 If you find a problem let us know in the issues area and if you can improve the code then please fork the repository and send us a pull request :)
 
+## Warnings & Limitations
+
+1. Three character UTF8 seems to break in certain cases.
+2. We can't test every possible case, though we do our best. Backups and verifications are important.
+3. The license for this script is GPL v3 and no longer WTFPL. Please bear this in mind if contributing or branching.
+4. You use this script at your own risk and we have no responsibility for any problems it may cause. Do backups.
+
 ## Usage
 
 1. Migrate all your website files
@@ -11,13 +18,6 @@ If you find a problem let us know in the issues area and if you can improve the 
 3. Browse to the script folder URL in your web browser
 4. Fill in the fields as needed
 5. Choose the `Dry run` button to do a dry run without searching/replacing
-
-## Warnings & Limitations
-
-1. Three character UTF8 seems to break in certain cases.
-2. We can't test every possible case, though we do our best. Backups and verifications are important.
-3. The license for this script is GPL v3 and no longer WTFPL. Please bear this in mind if contributing or branching.
-4. You use this script at your own risk and we have no responsibility for any problems it may cause. Do backups.
 
 ### CLI script
 
@@ -67,3 +67,12 @@ ARGS
 	--help
 		Displays this help message ;)
 ```
+
+## Troubleshooting
+
+### I get a popup saying there was an AJAX error
+
+This happens occasionally and could be for a couple of reasons:
+
+ * script was unable to set the timeout so PHP closed the connection before the table could be processed, this can happen on some server configurations
+ * When using php-fpm (as you have with VVV) make sure that the socket is owned by the server user `chown www-data:www-data /var/run/php5-fpm.sock`
