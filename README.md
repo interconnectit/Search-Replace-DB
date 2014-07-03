@@ -32,8 +32,8 @@ ARGS
 	-p, --pass
 		Required. Database user's password.
 	-s, --search
-		String to search for or `preg_replace()` style
-		regular expression.
+		String to search for or `preg_replace()` style regular
+		expression.
 	-r, --replace
 		None empty string to replace search with or
 		`preg_replace()` style replacement.
