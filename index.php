@@ -132,6 +132,14 @@ class icit_srdb_ui extends icit_srdb {
 		// discover environment
 		if ( $bootstrap && $this->is_wordpress() ) {
 
+			// prevent warnings if the charset and collate aren't defined
+			if ( !defined( 'DB_CHARSET') ) {
+				define( 'DB_CHARSET', 'utf8' );
+			}
+			if ( !defined( 'DB_COLLATE') ) {
+				define( 'DB_COLLATE', '' );
+			}
+
 			// populate db details
 			$name 		= DB_NAME;
 			$user 		= DB_USER;
