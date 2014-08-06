@@ -95,6 +95,130 @@
 
 class icit_srdb {
 
+    /**
+     * @staticvar string MySQL PDO driver name.
+     */
+    const MYSQL_PDO_DRIVER      = 'mysql';
+
+    /**
+     * @staticvar string PostgreSQL PDO driver name.
+     */
+    const POSTGRESQL_PDO_DRIVER = 'pgsql';
+
+    /**
+     * @staticvar string Default PDO driver to use.
+     */
+    const DEFAULT_PDO_DRIVER    = self::MYSQL_PDO_DRIVER;
+     
+    /**
+     * @var array Supported PDO drivers. Keys are PDO driver names and values
+     * are arrays of the following form:
+     * array('ok'=> true|false, 'description'=>'This driver is supported ...')
+     */
+    protected $SUPPORTED_DRIVERS = array(
+        self::MYSQL_PDO_DRIVER => array(
+            'ok' => true,
+            'description' => 'Complete MySQL support',
+        ),
+        self::POSTGRESQL_PDO_DRIVER => array(
+            'ok' => true,
+            'description' => 'Partial PostgreSQL support',
+        ),
+    );
+
+    /**
+     * @var array SQL Queries for supported PDO drivers. First-level keys are
+     * query type and second level keys are PDO driver names.
+     */
+    protected $QUERIES = array(
+        'get_tables' => array(
+            self::MYSQL_PDO_DRIVER => "SELECT
+                  t.TABLE_NAME as Name,
+                  t.ENGINE as Engine,
+                  t.version as Version,
+                  t.ROW_FORMAT AS Row_format,
+                  t.TABLE_ROWS AS Rows,
+                  t.AVG_ROW_LENGTH AS Avg_row_length,
+                  t.DATA_LENGTH AS Data_length,
+                  t.MAX_DATA_LENGTH AS Max_data_length,
+                  t.INDEX_LENGTH AS Index_length,
+                  t.DATA_FREE AS Data_free,
+                  t.AUTO_INCREMENT as Auto_increment,
+                  t.CREATE_TIME AS Create_time,
+                  t.UPDATE_TIME AS Update_time,
+                  t.CHECK_TIME AS Check_time,
+                  t.TABLE_COLLATION as Collation,
+                  c.CHARACTER_SET_NAME as Character_set,
+                  t.Checksum,
+                  t.Create_options,
+                  t.table_Comment as Comment
+                FROM information_schema.TABLES t
+                    LEFT JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY c
+                        ON ( t.TABLE_COLLATION = c.COLLATION_NAME )
+                  WHERE t.TABLE_SCHEMA = :table_schema;
+                ",
+            self::POSTGRESQL_PDO_DRIVER => "SELECT
+                    t.table_name AS \"Name\",
+                    '' AS \"Engine\",
+                    t.table_type AS \"Comment\",
+                    c.datcollate AS \"Collation\"
+                FROM information_schema.tables t
+                    JOIN pg_catalog.pg_database c ON (c.datname = t.table_catalog)
+                WHERE
+                    t.table_catalog = :table_schema
+                    AND t.table_schema = 'public'
+                ;",
+        ),
+        'get_table_character_set' => array(
+            self::MYSQL_PDO_DRIVER => "SELECT
+                    c.character_set_name
+                FROM information_schema.TABLES t
+                    LEFT JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY c
+                    ON (t.TABLE_COLLATION = c.COLLATION_NAME)
+                WHERE t.table_schema = :schema
+                    AND t.table_name = :table_name
+                LIMIT 1;",
+            self::POSTGRESQL_PDO_DRIVER => "SELECT
+                    c.datcollate AS \"character_set_name\"
+                FROM pg_catalog.pg_database c
+                WHERE c.datname = :schema
+                    AND :table_name IS NOT NULL
+                ;",
+        ),
+        'get_engines' => array(
+            self::MYSQL_PDO_DRIVER => "SHOW ENGINES;",
+            self::POSTGRESQL_PDO_DRIVER => "SELECT '' AS \"Engine\", 'NO' AS \"Support\";",
+        ),
+        'get_columns' => array(
+            self::MYSQL_PDO_DRIVER => "DESCRIBE :table;",
+            self::POSTGRESQL_PDO_DRIVER => "SELECT
+                    c.column_name AS \"Field\",
+                    c.udt_name AS \"Type\",
+                    c.is_nullable AS \"Null\",
+                    CASE (c.column_default LIKE 'nextval%' AND c.is_nullable = 'NO')
+                        WHEN TRUE THEN 'PRI'
+                        WHEN FALSE THEN ''
+                    END AS \"Key\",
+                    c.column_default AS \"Default\"
+                FROM information_schema.columns c
+                WHERE c.table_catalog = CURRENT_CATALOG
+                    AND c.table_schema = 'public'
+                    AND c.table_name = :table
+            ;",
+        ),
+        'table_content' => array(
+            self::MYSQL_PDO_DRIVER => "SELECT * FROM {table} LIMIT :start, :page_size;",
+            self::POSTGRESQL_PDO_DRIVER => "SELECT * FROM {table} LIMIT :page_size OFFSET :start;",
+        ),
+        /*
+        'query_name' => array(
+            self::MYSQL_PDO_DRIVER => "MYSQL QUERY",
+            self::POSTGRESQL_PDO_DRIVER => "POSTGRESQL QUERY",
+        ),
+        // use: $sql_query = $this->get_sql_query('query_name');
+        */
+    );
+
 	/**
 	 * @var array List of all the tables in the database
 	 */
@@ -242,6 +366,7 @@ class icit_srdb {
 			'user' 				=> '',
 			'pass' 				=> '',
 			'host' 				=> '',
+            'pdo_driver'        => self::DEFAULT_PDO_DRIVER,
 			'search' 			=> '',
 			'replace' 			=> '',
 			'tables'			=> array(),
@@ -381,7 +506,7 @@ class icit_srdb {
 	public function db_setup() {
 
 		$connection_type = class_exists( 'PDO' ) ? 'pdo' : 'mysql';
-
+        
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
 
@@ -408,22 +533,29 @@ class icit_srdb {
 	 */
 	public function connect_mysql() {
 
-		// switch off PDO
-		$this->set( 'use_pdo', false );
-
-		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
-
-		// unset if not available
-		if ( ! $connection ) {
+        // check if another PDO driver than 'mysql' was specified
+        if ($this->pdo_driver && ($this->pdo_driver != 'mysql')) {
 			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
-		}
+			$this->add_error( 'PDO not available!', 'db' );
+        }
+        else {
+            // switch off PDO
+            $this->set( 'use_pdo', false );
 
-		// select the database for non PDO
-		if ( $connection && ! mysql_select_db( $this->name, $connection ) ) {
-			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
-		}
+            $connection = @mysql_connect( $this->host, $this->user, $this->pass );
+
+            // unset if not available
+            if ( ! $connection ) {
+                $connection = false;
+                $this->add_error( mysql_error(), 'db' );
+            }
+
+            // select the database for non PDO
+            if ( $connection && ! mysql_select_db( $this->name, $connection ) ) {
+                $connection = false;
+                $this->add_error( mysql_error(), 'db' );
+            }
+        }
 
 		return $connection;
 	}
@@ -436,23 +568,58 @@ class icit_srdb {
 	 */
 	public function connect_pdo() {
 
-		try {
-			$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
-		} catch( PDOException $e ) {
-			$this->add_error( $e->getMessage(), 'db' );
-			$connection = false;
-		}
+        # make sure a supported PDO driver as been specified
+        if ( ! $this->pdo_driver ) {
+            $this->add_error( 'No PDO driver specified! Please select one using the pdo-driver argument.', 'db' );
+            $connection = false;
+        }
+        elseif ( ! array_key_exists($this->pdo_driver, $this->SUPPORTED_DRIVERS) ) {
+            $this->add_error( "Unsupported PDO driver '" . $this->pdo_driver . "'! Supported drivers are :'" . implode("', '", array_keys($this->SUPPORTED_DRIVERS)) . "'", 'db' );
+            $connection = false;
+        }
+        elseif ( ! array_key_exists('ok', $this->SUPPORTED_DRIVERS[$this->pdo_driver] )
+            || ! $this->SUPPORTED_DRIVERS[$this->pdo_driver]['ok'] ) {
+            $this->add_error( 'The PDO driver ' . $this->pdo_driver . ' is not supported.' . (array_key_exists('description', $this->SUPPORTED_DRIVERS[$this->pdo_driver]) ? ' Description: ' . $this->SUPPORTED_DRIVERS[$this->pdo_driver]['description'] : ''), 'db' );
+            $connection = false;
+        }
+        else {
 
-		// check if there's a problem with our database at this stage
-		if ( $connection && ! $connection->query( 'SHOW TABLES' ) ) {
-			$error_info = $connection->errorInfo();
-			if ( !empty( $error_info ) && is_array( $error_info ) )
-				$this->add_error( array_pop( $error_info ), 'db' ); // Array pop will only accept a $var..
-			$connection = false;
-		}
+            # got a valid driver
+            try {
+                $connection = new PDO( $this->pdo_driver . ":host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+            } catch( PDOException $e ) {
+                $this->add_error( $e->getMessage(), 'db' );
+                $connection = false;
+            }
+
+            // check if there's a problem with our database at this stage
+            if ( $connection && ! $connection->query( 'SELECT 1' ) ) {
+                $error_info = $connection->errorInfo();
+                if ( !empty( $error_info ) && is_array( $error_info ) )
+                    $this->add_error( array_pop( $error_info ), 'db' ); // Array pop will only accept a $var..
+                $connection = false;
+            }
+        }
 
 		return $connection;
 	}
+
+	/**
+	 * Retrieve the corresponding SQL query according to selected PDO driver
+	 *
+	 * @return string
+	 */
+	public function get_sql_query($query_name) {
+        if ( ! array_key_exists($query_name, $this->QUERIES) ) {
+            $this->add_error( "SQL query '$query_name' nor available!", 'db' );
+            return '';
+        }
+        elseif ( ! array_key_exists($this->pdo_driver, $this->QUERIES[$query_name]) ) {
+            $this->add_error( "SQL query '$query_name' nor available for PDO driver '" . $this->pdo_driver . "'!", 'db' );
+            return '';
+        }
+        return $this->QUERIES[$query_name][$this->pdo_driver];
+    }
 
 
 	/**
@@ -464,33 +631,9 @@ class icit_srdb {
 		// get tables
 
 		// A clone of show table status but with character set for the table.
-		$show_table_status = "SELECT
-		  t.`TABLE_NAME` as Name,
-		  t.`ENGINE` as `Engine`,
-		  t.`version` as `Version`,
-		  t.`ROW_FORMAT` AS `Row_format`,
-		  t.`TABLE_ROWS` AS `Rows`,
-		  t.`AVG_ROW_LENGTH` AS `Avg_row_length`,
-		  t.`DATA_LENGTH` AS `Data_length`,
-		  t.`MAX_DATA_LENGTH` AS `Max_data_length`,
-		  t.`INDEX_LENGTH` AS `Index_length`,
-		  t.`DATA_FREE` AS `Data_free`,
-		  t.`AUTO_INCREMENT` as `Auto_increment`,
-		  t.`CREATE_TIME` AS `Create_time`,
-		  t.`UPDATE_TIME` AS `Update_time`,
-		  t.`CHECK_TIME` AS `Check_time`,
-		  t.`TABLE_COLLATION` as Collation,
-		  c.`CHARACTER_SET_NAME` as Character_set,
-		  t.`Checksum`,
-		  t.`Create_options`,
-		  t.`table_Comment` as `Comment`
-		FROM information_schema.`TABLES` t
-			LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
-				ON ( t.`TABLE_COLLATION` = c.`COLLATION_NAME` )
-		  WHERE t.`TABLE_SCHEMA` = '{$this->name}';
-		";
+		$show_table_status = $this->get_sql_query('get_tables');
 
-		$all_tables_mysql = $this->db_query( $show_table_status );
+		$all_tables_mysql = $this->db_query( $show_table_status , array(':table_schema' => $this->name));
 		$all_tables = array();
 
 		if ( ! $all_tables_mysql ) {
@@ -528,13 +671,8 @@ class icit_srdb {
 		$table_name = $this->db_escape( $table_name );
 		$schema = $this->db_escape( $this->name );
 
-		$charset = $this->db_query(  "SELECT c.`character_set_name`
-			FROM information_schema.`TABLES` t
-				LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
-				ON (t.`TABLE_COLLATION` = c.`COLLATION_NAME`)
-			WHERE t.table_schema = {$schema}
-				AND t.table_name = {$table_name}
-			LIMIT 1;" );
+        $table_character_set_query = $this->get_sql_query('get_table_character_set');
+		$charset = $this->db_query($table_character_set_query, array(':schema' => $schema, ':table_name' => $table_name, ));
 
 		$encoding = false;
 		if ( ! $charset ) {
@@ -557,7 +695,8 @@ class icit_srdb {
 	public function get_engines() {
 
 		// get available engines
-		$mysql_engines = $this->db_query( 'SHOW ENGINES;' );
+        $engine_query = $this->get_sql_query('get_engines');
+		$mysql_engines = $this->db_query( $engine_query );
 		$engines = array();
 
 		if ( ! $mysql_engines ) {
@@ -573,9 +712,19 @@ class icit_srdb {
 	}
 
 
-	public function db_query( $query ) {
+	public function db_query( $query , $bindings = null) {
 		if ( $this->use_pdo() )
-			return $this->db->query( $query );
+            if ($bindings) {
+                $sth = $this->db->prepare( $query );
+                foreach ( $bindings as $key => &$value ) {
+                    $sth->bindParam( $key, $value );
+                }
+                $sth->execute();
+                return $sth;
+            }
+            else {
+                return $this->db->query( $query );
+            }
 		else
 			return mysql_query( $query, $this->db );
 	}
@@ -834,7 +983,7 @@ class icit_srdb {
 				$this->log( 'search_replace_table_start', $table, $search, $replace );
 
 				// Count the number of rows we have in the table if large we'll split into blocks, This is a mod from Simon Wheatley
-				$row_count = $this->db_query( "SELECT COUNT(*) FROM `{$table}`" );
+				$row_count = $this->db_query( "SELECT COUNT(1) FROM {$table};" );
 				$rows_result = $this->db_fetch( $row_count );
 				$row_count = $rows_result[ 0 ];
 
@@ -846,8 +995,8 @@ class icit_srdb {
 					$start = $page * $page_size;
 
 					// Grab the content of the table
-					$data = $this->db_query( sprintf( 'SELECT * FROM `%s` LIMIT %d, %d', $table, $start, $page_size ) );
-
+                    $table_content_query = str_replace('{table}', $table, $this->get_sql_query('table_content'));
+					$data = $this->db_query( $table_content_query, array(':start' => $start, ':page_size' => $page_size, ) );
 					if ( ! $data )
 						$this->add_error( $this->db_error( ), 'results' );
 
@@ -861,11 +1010,10 @@ class icit_srdb {
 						$update = false;
 
 						foreach( $columns as $column ) {
-
 							$edited_data = $data_to_fix = $row[ $column ];
 
 							if ( $primary_key == $column ) {
-								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
+								$where_sql[] = "{$column} = " . $this->db_escape( $data_to_fix );
 								continue;
 							}
 
@@ -896,7 +1044,7 @@ class icit_srdb {
 									);
 								}
 
-								$update_sql[] = "`{$column}` = " . $this->db_escape( $edited_data );
+								$update_sql[] = "{$column} = " . $this->db_escape( $edited_data );
 								$update = true;
 
 							}
@@ -953,7 +1101,8 @@ class icit_srdb {
 		$columns = array( );
 
 		// Get a list of columns in this table
-		$fields = $this->db_query( "DESCRIBE {$table}" );
+        $columns_query = $this->get_sql_query('get_columns');
+		$fields = $this->db_query( $columns_query, array( ':table' => $table, ) );
 		if ( ! $fields ) {
 			$this->add_error( $this->db_error( ), 'db' );
 		} else {
@@ -1002,7 +1151,7 @@ class icit_srdb {
 
 				// are we updating the engine?
 				if ( $table_info[ 'Engine' ] != $engine ) {
-					$engine_converted = $this->db_query( "alter table {$table} engine = {$engine};" );
+					$engine_converted = $this->db_query( "ALTER TABLE {$table} ENGINE = {$engine};" );
 					if ( ! $engine_converted )
 						$this->add_error( $this->db_error( ), 'results' );
 					else
@@ -1055,7 +1204,7 @@ class icit_srdb {
 
 				// are we updating the engine?
 				if ( $table_info[ 'Collation' ] != $collation ) {
-					$engine_converted = $this->db_query( "alter table {$table} convert to character set {$charset} collate {$collation};" );
+					$engine_converted = $this->db_query( "ALTER TABLE {$table} CONVERT TO CHARACTER SET {$charset} COLLATE {$collation};" );
 					if ( ! $engine_converted )
 						$this->add_error( $this->db_error( ), 'results' );
 					else

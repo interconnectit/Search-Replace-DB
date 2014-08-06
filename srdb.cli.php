@@ -18,6 +18,7 @@ $opts = array(
 	'n:' => 'name:',
 	'u:' => 'user:',
 	'p:' => 'pass:',
+	'd:' => 'pdo-driver:',
 	'c:' => 'char:',
 	's:' => 'search:',
 	'r:' => 'replace:',
@@ -82,6 +83,9 @@ ARGS
     Required. Database user.
   -p, --pass
     Required. Database user's password.
+  -d, --pdo-driver
+    Select the appropriate PHP Data Objects driver to use (you must have PDO
+    installed with the driver you selected).
   -s, --search
     String to search for or `preg_replace()` style
     regular expression.
