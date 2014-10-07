@@ -8,5 +8,8 @@
 	},
 	"support": {
 		"issues": "https://github.com/interconnectit/Search-Replace-DB/issues"
-	}
+	},
+	"autoload": {
+		"files": ["srdb.class.php"]
+	},
 }
