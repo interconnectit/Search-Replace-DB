@@ -172,7 +172,7 @@ foreach( $options as $key => $value ) {
 // modify the log output
 class icit_srdb_cli extends icit_srdb {
 
-	public function log( $type ) {
+	public function log( $type = '' ) {
 
 		$args = array_slice( func_get_args(), 1 );
 
