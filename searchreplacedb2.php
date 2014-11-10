@@ -185,6 +185,19 @@ function recursive_array_replace( $find, $replace, $data ) {
     }
 }
 
+function base64_check_and_decode($s){
+    // Check if there are valid base64 characters
+    if (!preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $s)) return false;
+
+    // Decode the string in strict mode and check the results
+    $decoded = base64_decode($s, true);
+    if(false === $decoded) return false;
+
+    // Encode the string again
+    if(base64_encode($decoded) != $s) return false;
+
+    return $decoded;
+}
 
 /**
  * Take a serialised array and unserialise it replacing elements as needed and
@@ -203,6 +216,14 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 	try {
 
 		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
+		}
+		
+		if ( is_string( $data ) && ( $unserialized = base64_check_and_decode( $data ) ) !== false ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
+		}
+    
+    		if ( is_string( $data ) && ( $unserialized = json_decode( $data, true ) ) !== null ) {
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
 
