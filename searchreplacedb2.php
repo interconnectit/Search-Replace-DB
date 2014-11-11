@@ -210,7 +210,7 @@ function base64_check_and_decode($s){
  *
  * @return array	The original array with all elements replaced as needed.
  */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = true ) {
+function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
 
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
@@ -242,11 +242,11 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 				$data = str_replace( $from, $to, $data );
 		}
 
-		if ( $serialised === true || $serialised == 'php' {
+		if ( $serialised === true || $serialised == 'php') {
       			return serialize( $data );
-	    	} else if ( $serialised == 'base64' {
+	    	} else if ( $serialised == 'base64') {
 	      		return base64_encode( $data );
-	    	} else if ( $serialised == 'json' {
+	    	} else if ( $serialised == 'json') {
 			return json_encode( $data );
 	    	}
 
