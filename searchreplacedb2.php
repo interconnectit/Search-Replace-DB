@@ -210,7 +210,7 @@ function base64_check_and_decode($s){
  *
  * @return array	The original array with all elements replaced as needed.
  */
-function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = true ) {
 
 	// some unseriliased data cannot be re-serialised eg. SimpleXMLElements
 	try {
@@ -218,13 +218,13 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
-		
-		if ( is_string( $data ) && ( $unserialized = base64_check_and_decode( $data ) ) !== false ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
+    
+    		elseif ( is_string( $data ) && ( $unserialized = base64_check_and_decode( $data ) ) !== false ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, 'base64' );
 		}
     
-    		if ( is_string( $data ) && ( $unserialized = json_decode( $data, true ) ) !== null ) {
-			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
+    		elseif ( is_string( $data ) && ( $unserialized = json_decode( $data, true ) ) !== null ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, 'json' );
 		}
 
 		elseif ( is_array( $data ) ) {
@@ -237,25 +237,18 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
-		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-			unset( $_tmp );
-		}
-
 		else {
 			if ( is_string( $data ) )
 				$data = str_replace( $from, $to, $data );
 		}
 
-		if ( $serialised )
-			return serialize( $data );
+		if ( $serialised === true || $serialised == 'php' {
+      			return serialize( $data );
+	    	} else if ( $serialised == 'base64' {
+	      		return base64_encode( $data );
+	    	} else if ( $serialised == 'json' {
+			return json_encode( $data );
+	    	}
 
 	} catch( Exception $error ) {
 
