@@ -185,6 +185,19 @@ function recursive_array_replace( $find, $replace, $data ) {
     }
 }
 
+function base64_check_and_decode($s){
+    // Check if there are valid base64 characters
+    if (!preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $s)) return false;
+
+    // Decode the string in strict mode and check the results
+    $decoded = base64_decode($s, true);
+    if(false === $decoded) return false;
+
+    // Encode the string again
+    if(base64_encode($decoded) != $s) return false;
+
+    return $decoded;
+}
 
 /**
  * Take a serialised array and unserialise it replacing elements as needed and
@@ -205,6 +218,14 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 		if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
 			$data = recursive_unserialize_replace( $from, $to, $unserialized, true );
 		}
+    
+    		elseif ( is_string( $data ) && ( $unserialized = base64_check_and_decode( $data ) ) !== false ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, 'base64' );
+		}
+    
+    		elseif ( is_string( $data ) && ( $unserialized = json_decode( $data, true ) ) !== null ) {
+			$data = recursive_unserialize_replace( $from, $to, $unserialized, 'json' );
+		}
 
 		elseif ( is_array( $data ) ) {
 			$_tmp = array( );
@@ -216,25 +237,18 @@ function recursive_unserialize_replace( $from = '', $to = '', $data = '', $seria
 			unset( $_tmp );
 		}
 
-		// Submitted by Tina Matter
-		elseif ( is_object( $data ) ) {
-			$dataClass = get_class( $data );
-			$_tmp = new $dataClass( );
-			foreach ( $data as $key => $value ) {
-				$_tmp->$key = recursive_unserialize_replace( $from, $to, $value, false );
-			}
-
-			$data = $_tmp;
-			unset( $_tmp );
-		}
-
 		else {
 			if ( is_string( $data ) )
 				$data = str_replace( $from, $to, $data );
 		}
 
-		if ( $serialised )
-			return serialize( $data );
+		if ( $serialised === true || $serialised == 'php') {
+      			return serialize( $data );
+	    	} else if ( $serialised == 'base64') {
+	      		return base64_encode( $data );
+	    	} else if ( $serialised == 'json') {
+			return json_encode( $data );
+	    	}
 
 	} catch( Exception $error ) {
 
