@@ -9,5 +9,8 @@
 	"support": {
 		"issues": "https://github.com/interconnectit/Search-Replace-DB/issues"
 	},
-	"bin": [ "srdb.cli.php" ]
+	"bin": [ "srdb.cli.php" ],
+	"autoload": {
+		"files": [ "srdb.class.php" ]
+	}
 }
