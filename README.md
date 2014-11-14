@@ -32,8 +32,8 @@ ARGS
 	-p, --pass
 		Required. Database user's password.
 	-s, --search
-		String to search for or `preg_replace()` style
-		regular expression.
+		String to search for or `preg_replace()` style regular
+		expression.
 	-r, --replace
 		None empty string to replace search with or
 		`preg_replace()` style replacement.
@@ -50,7 +50,7 @@ ARGS
 		Treats value for -s or --search as a regular expression and
 		-r or --replace as a regular expression replacement.
 	-l, --pagesize
-		How rows to fetch at a time from a table.
+		How many rows to fetch at a time from a table.
 	-z, --dry-run [no value]
 		Prevents any updates happening so you can preview the number
 		of changes to be made
