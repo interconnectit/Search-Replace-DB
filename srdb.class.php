@@ -436,8 +436,17 @@ class icit_srdb {
 	 */
 	public function connect_pdo() {
 
+		$host = $this->host;
+		$port = 3306;
+		if (strpos($this->host, ':') !== false) {
+			$hostparts = explode(':', $this->host);
+			$host = $hostparts[0];
+			$port = $hostparts[1];
+		}
+
+
 		try {
-			$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+			$connection = new PDO( "mysql:host={$host};port=${port};dbname={$this->name}", $this->user, $this->pass );
 		} catch( PDOException $e ) {
 			$this->add_error( $e->getMessage(), 'db' );
 			$connection = false;
