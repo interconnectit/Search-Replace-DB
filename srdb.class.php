@@ -191,6 +191,33 @@ class icit_srdb {
         ),
         'get_columns' => array(
             self::MYSQL_PDO_DRIVER => "DESCRIBE :table;",
+            // see https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
+            self::POSTGRESQL_PDO_DRIVER => "SELECT
+              pg_attribute.attname as \"Field\",
+              format_type(pg_attribute.atttypid, pg_attribute.atttypmod) AS \"Type\",
+              CASE (pg_attribute.attnotnull)
+                  WHEN TRUE THEN 'NO'
+                  WHEN FALSE THEN 'YES'
+              END AS \"Null\",
+              CASE(pg_attribute.attnum = any(pg_index.indkey))
+                  WHEN TRUE THEN 'PRI'
+                  WHEN FALSE THEN ''
+              END AS \"Key\",
+              pg_attrdef.adsrc AS \"Default\"
+            FROM
+              pg_class
+                JOIN pg_index ON (pg_class.oid = pg_index.indrelid)
+                JOIN pg_namespace ON (pg_class.relnamespace = pg_namespace.oid)
+                JOIN pg_attribute ON (pg_class.oid = pg_attribute.attrelid)
+                LEFT JOIN pg_attrdef ON (pg_attribute.attrelid = pg_attrdef.adrelid AND pg_attribute.attnum = pg_attrdef.adnum)
+            WHERE
+              pg_class.oid = :table::regclass
+              AND pg_namespace.nspname = 'public'
+              AND pg_attribute.attnum > 0
+              AND pg_index.indisprimary
+            ORDER BY pg_attribute.attnum ASC
+            ;",
+/*
             self::POSTGRESQL_PDO_DRIVER => "SELECT
                     c.column_name AS \"Field\",
                     c.udt_name AS \"Type\",
@@ -205,6 +232,7 @@ class icit_srdb {
                     AND c.table_schema = 'public'
                     AND c.table_name = :table
             ;",
+*/
         ),
         'table_content' => array(
             self::MYSQL_PDO_DRIVER => "SELECT * FROM {table} LIMIT :start, :page_size;",
@@ -865,9 +893,10 @@ class icit_srdb {
 				}
 			}
 
-			if ( $serialised )
-				return serialize( $data );
-
+			if ( $serialised ) {
+				$data = serialize( $data );
+            }
+            
 		} catch( Exception $error ) {
 
 			$this->add_error( $error->getMessage(), 'results' );
@@ -896,9 +925,9 @@ class icit_srdb {
 	/**
 	 * The main loop triggered in step 5. Up here to keep it out of the way of the
 	 * HTML. This walks every table in the db that was selected in step 3 and then
-	 * walks every row and column replacing all occurences of a string with another.
+	 * walks every row and column replacing all occurrences of a string with another.
 	 * We split large tables into 50,000 row blocks when dealing with them to save
-	 * on memmory consumption.
+	 * on memory consumption.
 	 *
 	 * @param string $search     What we want to replace
 	 * @param string $replace    What we want to replace it with.
@@ -1010,7 +1039,18 @@ class icit_srdb {
 						$update = false;
 
 						foreach( $columns as $column ) {
+
 							$edited_data = $data_to_fix = $row[ $column ];
+
+                            // handle streams as strings
+                            if ( is_resource($data_to_fix) ) {
+                                if ( 'stream' == get_resource_type($data_to_fix) ) {
+                                    $edited_data = $data_to_fix = stream_get_contents($data_to_fix);
+                                }
+                                else {
+                                    $this->add_error( 'unsupported resource type: ' . get_resource_type($data_to_fix), 'results' );
+                                }
+                            }
 
 							if ( $primary_key == $column ) {
 								$where_sql[] = "{$column} = " . $this->db_escape( $data_to_fix );
@@ -1039,7 +1079,7 @@ class icit_srdb {
 									$new_table_report[ 'changes' ][] = array(
 										'row' => $new_table_report[ 'rows' ],
 										'column' => $column,
-										'from' => utf8_encode( $data_to_fix ),
+										'from' => utf8_encode( is_string($data_to_fix)? $data_to_fix : '"' . gettype($data_to_fix) . '"'),
 										'to' => utf8_encode( $edited_data )
 									);
 								}
@@ -1099,7 +1139,6 @@ class icit_srdb {
 
 		$primary_key = null;
 		$columns = array( );
-
 		// Get a list of columns in this table
         $columns_query = $this->get_sql_query('get_columns');
 		$fields = $this->db_query( $columns_query, array( ':table' => $table, ) );
@@ -1108,8 +1147,9 @@ class icit_srdb {
 		} else {
 			while( $column = $this->db_fetch( $fields ) ) {
 				$columns[] = $column[ 'Field' ];
-				if ( $column[ 'Key' ] == 'PRI' )
+				if ( $column[ 'Key' ] == 'PRI' ) {
 					$primary_key = $column[ 'Field' ];
+                }
 			}
 		}
 
