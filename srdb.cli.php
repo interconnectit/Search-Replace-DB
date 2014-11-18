@@ -11,7 +11,7 @@
 date_default_timezone_set( 'Europe/London' );
 
 // include the srdb class
-require_once( 'srdb.class.php' );
+require_once( realpath( dirname( __FILE__ ) ) . '/srdb.class.php' );
 
 $opts = array(
 	'h:' => 'host:',
@@ -176,7 +176,7 @@ foreach( $options as $key => $value ) {
 // modify the log output
 class icit_srdb_cli extends icit_srdb {
 
-	public function log( $type ) {
+	public function log( $type = '' ) {
 
 		$args = array_slice( func_get_args(), 1 );
 
