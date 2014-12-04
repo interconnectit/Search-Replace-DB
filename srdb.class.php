@@ -1004,6 +1004,10 @@ class icit_srdb {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
+				else if ( is_array($primary_key) ) {
+					$this->add_error( "The table \"{$table}\" has multiple primary keys (not supported). Changes will have to be made manually.", 'results' );
+					continue;
+				}
 
 				// create new table report instance
 				$new_table_report = $table_report;
@@ -1148,7 +1152,15 @@ class icit_srdb {
 			while( $column = $this->db_fetch( $fields ) ) {
 				$columns[] = $column[ 'Field' ];
 				if ( $column[ 'Key' ] == 'PRI' ) {
-					$primary_key = $column[ 'Field' ];
+                    if (isset($primary_key)) {
+                        if (!is_array($primary_key)) {
+                            $primary_key = array($primary_key);
+                        }
+                        $primary_key[] = $column[ 'Field' ];
+                    }
+                    else {
+					    $primary_key = $column[ 'Field' ];
+                    }
                 }
 			}
 		}
