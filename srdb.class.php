@@ -411,18 +411,19 @@ class icit_srdb {
 		// switch off PDO
 		$this->set( 'use_pdo', false );
 
-		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
+		$connection = @mysqli_connect( $this->host, $this->user, $this->pass );
 
 		// unset if not available
 		if ( ! $connection ) {
 			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
+			$this->add_error( mysqli_connect_error(), 'db' );
 		}
 
 		// select the database for non PDO
-		if ( $connection && ! mysql_select_db( $this->name, $connection ) ) {
+		if ( $connection && ! mysqli_select_db( $connection, $this->name ) ) {
+			$this->add_error( mysqli_error($connection), 'db' );
+			mysqli_close($connection);
 			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
 		}
 
 		return $connection;
@@ -577,14 +578,14 @@ class icit_srdb {
 		if ( $this->use_pdo() )
 			return $this->db->query( $query );
 		else
-			return mysql_query( $query, $this->db );
+			return mysqli_query( $this->db, $query );
 	}
 
 	public function db_update( $query ) {
 		if ( $this->use_pdo() )
 			return $this->db->exec( $query );
 		else
-			return mysql_query( $query, $this->db );
+			return mysql_query( $this->db, $query );
 	}
 
 	public function db_error() {
@@ -593,34 +594,34 @@ class icit_srdb {
 			return !empty( $error_info ) && is_array( $error_info ) ? array_pop( $error_info ) : 'Unknown error';
 		}
 		else
-			return mysql_error();
+			return mysqli_error($this->db);
 	}
 
 	public function db_fetch( $data ) {
 		if ( $this->use_pdo() )
 			return $data->fetch();
 		else
-			return mysql_fetch_array( $data );
+			return mysqli_fetch_array( $data );
 	}
 
 	public function db_escape( $string ) {
 		if ( $this->use_pdo() )
 			return $this->db->quote( $string );
 		else
-			return "'" . mysql_real_escape_string( $string ) . "'";
+			return "'" . mysqli_real_escape_string( $this->db, $string ) . "'";
 	}
 
 	public function db_free_result( $data ) {
 		if ( $this->use_pdo() )
 			return $data->closeCursor();
 		else
-			return mysql_free_result( $data );
+			return mysqli_free_result( $data );
 	}
 
 	public function db_set_charset( $charset = '' ) {
 		if ( ! empty( $charset ) ) {
-			if ( ! $this->use_pdo() && function_exists( 'mysql_set_charset' ) )
-				mysql_set_charset( $charset, $this->db );
+			if ( ! $this->use_pdo() && function_exists( 'mysqli_set_charset' ) )
+				mysqli_set_charset( $this->db, $charset );
 			else
 				$this->db_query( 'SET NAMES ' . $charset );
 		}
@@ -630,7 +631,7 @@ class icit_srdb {
 		if ( $this->use_pdo() )
 			unset( $this->db );
 		else
-			mysql_close( $this->db );
+			mysqli_close( $this->db );
 	}
 
 	public function db_valid() {
