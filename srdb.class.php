@@ -380,7 +380,15 @@ class icit_srdb {
 	 */
 	public function db_setup() {
 
-		$connection_type = class_exists( 'PDO' ) ? 'pdo' : 'mysql';
+		//default to mysql
+		$connection_type = 'mysql';
+
+		//try to use pdo if we can
+		if ( class_exists( 'PDO' ) ) {
+			$drivers = PDO::getAvailableDrivers();
+			if ( array_search( 'mysql', $drivers ) !== false )
+				$connection_type = 'pdo';
+		}
 
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
