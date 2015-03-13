@@ -1100,6 +1100,8 @@ class icit_srdb_ui extends icit_srdb {
 
 		<title>interconnect/it : search replace db</title>
 
+		<link rel="icon" type="image/x-icon" sizes="32x32" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAA3NCSVQICAjb4U/gAAAANlBMVEX////eEwEzMzPeEwEzMzMzMzPeEwEzMzMzMzPeEwEzMzPeEwEzMzMzMzPeEwEzMzPeEwEzMzMNiGOvAAAAEnRSTlMAEREiIkRVVWaIiKqqu+7u//8HnELPAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMC8xOC8xMDO41+AAAACsSURBVDiN1ZLbDsMgCEDVUWdpbeH/f3am4rWjr8t4MAon0SMY80/hiZ6Bjba0hrcKEHljdmaNsNcNkTkowEpHWl3c5exm4KC1Pzq+P8EO9RkQSUCEXGfEvJfIkgZTIdevwP4GX4GF74CVb0RJ8vyGLPkAFEkVKJIaUDupASKpAyKpArbOigIUyQHo29k6WYA0F+cCgWGUbADIX8Mo2QAhoqRf/SjUAPiW/Ul8AJy2C8u0V76KAAAAAElFTkSuQmCC" />
+
 		<?php $this->css(); ?>
 		<?php $this->js(); ?>
 
