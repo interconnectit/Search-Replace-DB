@@ -14,8 +14,8 @@ If you find a problem let us know in the issues area and if you can improve the 
 ## Usage
 
 1. Migrate all your website files
-2. Upload the script folder to your web root or higher (eg. the same folder as `wp-config.php` or `wp-content`)
-3. Browse to the script folder URL in your web browser
+2. Upload Search-Replace-DB (only `index.php` and `srdb.class.php`) to a new folder in your web root or higher (eg. the same folder as `wp-config.php` or `wp-content` are in)
+3. Browse to that folder's URL in your web browser
 4. Fill in the fields as needed
 5. Choose the `Dry run` button to do a dry run without searching/replacing
 
