@@ -997,18 +997,13 @@ class icit_srdb {
 
 				$report[ 'tables' ]++;
 
-				// get primary key and columns
-				list( $primary_key, $columns ) = $this->get_columns( $table );
+				// get primary keys and columns
+				list( $primary_keys, $columns ) = $this->get_columns( $table );
 
-				if ( $primary_key === null ) {
+				if ( $primary_keys === null ) {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
-				else if ( is_array($primary_key) ) {
-					$this->add_error( "The table \"{$table}\" has multiple primary keys (not supported). Changes will have to be made manually.", 'results' );
-					continue;
-				}
-
 				// create new table report instance
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
@@ -1043,7 +1038,6 @@ class icit_srdb {
 						$update = false;
 
 						foreach( $columns as $column ) {
-
 							$edited_data = $data_to_fix = $row[ $column ];
 
                             // handle streams as strings
@@ -1056,9 +1050,8 @@ class icit_srdb {
                                 }
                             }
 
-							if ( $primary_key == $column ) {
+							if ( in_array($column, $primary_keys) ) {
 								$where_sql[] = "{$column} = " . $this->db_escape( $data_to_fix );
-								continue;
 							}
 
 							// exclude cols
@@ -1141,7 +1134,7 @@ class icit_srdb {
 
 	public function get_columns( $table ) {
 
-		$primary_key = null;
+		$primary_keys = array( );
 		$columns = array( );
 		// Get a list of columns in this table
         $columns_query = $this->get_sql_query('get_columns');
@@ -1150,22 +1143,14 @@ class icit_srdb {
 			$this->add_error( $this->db_error( ), 'db' );
 		} else {
 			while( $column = $this->db_fetch( $fields ) ) {
-				$columns[] = $column[ 'Field' ];
+				$columns[] = $column;
 				if ( $column[ 'Key' ] == 'PRI' ) {
-                    if (isset($primary_key)) {
-                        if (!is_array($primary_key)) {
-                            $primary_key = array($primary_key);
-                        }
-                        $primary_key[] = $column[ 'Field' ];
-                    }
-                    else {
-					    $primary_key = $column[ 'Field' ];
-                    }
+                    $primary_keys[] = $column[ 'Field' ];
                 }
 			}
 		}
 
-		return array( $primary_key, $columns );
+		return array( $primary_keys, $columns );
 	}
 
 
