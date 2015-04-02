@@ -405,7 +405,9 @@ class icit_srdb {
 			'pagesize' 			=> 50000,
 			'alter_engine' 		=> false,
 			'alter_collation' 	=> false,
-			'verbose'			=> false
+            'log_queries'       => '',
+            'sql_log_fh'        => NULL,
+			'verbose'			=> false,
 		), $args );
 
 		// handle exceptions
@@ -445,20 +447,34 @@ class icit_srdb {
 
 		if ( $this->db_valid() ) {
 
-			// update engines
-			if ( $this->alter_engine ) {
-				$report = $this->update_engine( $this->alter_engine, $this->tables );
-			}
+            if ($this->log_queries) {
+                $this->set('sql_log_fh', fopen($this->log_queries, 'w'));
+            }
 
-			// update collation
-			elseif ( $this->alter_collation ) {
-				$report = $this->update_collation( $this->alter_collation, $this->tables );
-			}
+            if (!$this->log_queries || $this->sql_log_fh) {
+                // update engines
+                if ( $this->alter_engine ) {
+                    $report = $this->update_engine( $this->alter_engine, $this->tables );
+                }
 
-			// default search/replace action
-			else {
-				$report = $this->replacer( $this->search, $this->replace, $this->tables );
-			}
+                // update collation
+                elseif ( $this->alter_collation ) {
+                    $report = $this->update_collation( $this->alter_collation, $this->tables );
+                }
+
+                // default search/replace action
+                else {
+                    $report = $this->replacer( $this->search, $this->replace, $this->tables );
+                }
+
+                if ($this->sql_log_fh) {
+                    fclose($this->sql_log_fh);
+                }
+
+            }
+            else {
+                $report = "ERROR: Failed to create SQL log file (" . $this->log_queries . ")!\n";
+            }
 
 		} else {
 
@@ -741,6 +757,9 @@ class icit_srdb {
 
 
 	public function db_query( $query , $bindings = null) {
+        if ($this->sql_log_fh) {
+             fwrite($this->sql_log_fh, "QUERY: $query\nPARAMS: " . print_r($bindings, TRUE));
+        }
 		if ( $this->use_pdo() )
             if ($bindings) {
                 $sth = $this->db->prepare( $query );
@@ -758,6 +777,9 @@ class icit_srdb {
 	}
 
 	public function db_update( $query ) {
+        if ($this->sql_log_fh) {
+             fwrite($this->sql_log_fh, "QUERY: $query\n");
+        }
 		if ( $this->use_pdo() )
 			return $this->db->exec( $query );
 		else
@@ -1095,23 +1117,25 @@ class icit_srdb {
 
 						}
 
-						if ( $dry_run ) {
-							// nothing for this state
-						} elseif ( $update && ! empty( $where_sql ) ) {
+                        if ( $update && ! empty( $where_sql ) ) {
+                            $sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
+                            if ( $dry_run ) {
+                                // nothing for this state, just log query
+                                if ($this->sql_log_fh) {
+                                    fwrite($this->sql_log_fh, "QUERY: $sql\n");
+                                }
+                            } else {
+                                $result = $this->db_update( $sql );
 
-							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
-							$result = $this->db_update( $sql );
+                                if ( ! is_int( $result ) && ! $result ) {
 
-							if ( ! is_int( $result ) && ! $result ) {
+                                    $this->add_error( $this->db_error( ), 'results' );
+                                } else {
 
-								$this->add_error( $this->db_error( ), 'results' );
-
-							} else {
-
-								$report[ 'updates' ]++;
-								$new_table_report[ 'updates' ]++;
-							}
-
+                                    $report[ 'updates' ]++;
+                                    $new_table_report[ 'updates' ]++;
+                                }
+                            }
 						}
 
 					}
