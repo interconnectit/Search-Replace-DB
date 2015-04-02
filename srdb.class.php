@@ -1042,8 +1042,8 @@ class icit_srdb {
 						$where_sql = array( );
 						$update = false;
 
-						foreach( $columns as $column ) {
-
+						foreach( $columns as $column_data ) {
+                            $column = $column_data[ 'Field' ];
 							$edited_data = $data_to_fix = $row[ $column ];
 
                             // handle streams as strings
@@ -1054,6 +1054,17 @@ class icit_srdb {
                                 else {
                                     $this->add_error( 'unsupported resource type: ' . get_resource_type($data_to_fix), 'results' );
                                 }
+                            }
+
+                            // handle bytea (PostgreSQL binary strings) as strings
+                            if ('bytea' == $column_data[ 'Type' ]) {
+                              $edited_data = '';
+                              // start from 1 since we skip starting 'x' character
+                              for ($i=1; $i<strlen($data_to_fix); $i+=2) {
+                                  $edited_data .= chr(hexdec(substr($data_to_fix, $i, 2)));
+                              }
+                              // update reference data (decoded)  
+                              $data_to_fix = $edited_data;
                             }
 
 							if ( $primary_key == $column ) {
@@ -1088,7 +1099,18 @@ class icit_srdb {
 									);
 								}
 
-								$update_sql[] = "{$column} = " . $this->db_escape( $edited_data );
+                                // handle bytea case
+                                if ('bytea' == $column_data[ 'Type' ]) {
+                                    $bytea_data = '\x';
+                                    for ($i=0; $i<strlen($edited_data); ++$i) {
+                                        $bytea_data .= sprintf('%02x', ord(substr($edited_data, $i, 1)));
+                                    }
+
+                                    $update_sql[] = "{$column} = " . $this->db_escape( $bytea_data );
+                                }
+                                else{
+                                    $update_sql[] = "{$column} = " . $this->db_escape( $edited_data );
+                                }
 								$update = true;
 
 							}
