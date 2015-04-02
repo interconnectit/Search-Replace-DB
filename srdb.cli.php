@@ -30,6 +30,7 @@ $opts = array(
 	'z' => 'dry-run',
 	'e:' => 'alter-engine:',
 	'a:' => 'alter-collation:',
+	'q:' => 'log-queries:',
 	'v::' => 'verbose::',
 	'help'
 );
@@ -117,6 +118,8 @@ ARGS
     Changes the database table to the specified collation
     eg. utf8_unicode_ci. If specified search/replace arguments
     are ignored. They will not be run simultaneously.
+  -q, --log-queries
+    Output executed SQL queries in the given file name.
   -v, --verbose [true|false]
     Defaults to true, can be set to false to run script silently.
   --help
