@@ -1,6 +1,6 @@
 # Search Replace DB
 
-This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
+This script was made to aid the process of migrating PHP and MySQL/PostgreSQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
 
 If you find a problem let us know in the issues area and if you can improve the code then please fork the repository and send us a pull request :)
 
@@ -31,6 +31,9 @@ ARGS
 		Required. Database user.
 	-p, --pass
 		Required. Database user's password.
+    -d, --pdo-driver
+        Select the appropriate PHP Data Objects driver to use (you must have PDO
+        installed with the driver you selected).
 	-s, --search
 		String to search for or `preg_replace()` style regular
 		expression.

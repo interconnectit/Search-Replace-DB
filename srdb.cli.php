@@ -18,6 +18,7 @@ $opts = array(
 	'n:' => 'name:',
 	'u:' => 'user:',
 	'p:' => 'pass:',
+	'd:' => 'pdo-driver:',
 	'c:' => 'char:',
 	's:' => 'search:',
 	'r:' => 'replace:',
@@ -29,6 +30,7 @@ $opts = array(
 	'z' => 'dry-run',
 	'e:' => 'alter-engine:',
 	'a:' => 'alter-collation:',
+	'q:' => 'log-queries:',
 	'v::' => 'verbose::',
 	'help'
 );
@@ -82,6 +84,9 @@ ARGS
     Required. Database user.
   -p, --pass
     Required. Database user's password.
+  -d, --pdo-driver
+    Select the appropriate PHP Data Objects driver to use (you must have PDO
+    installed with the driver you selected).
   -s, --search
     String to search for or `preg_replace()` style
     regular expression.
@@ -113,6 +118,8 @@ ARGS
     Changes the database table to the specified collation
     eg. utf8_unicode_ci. If specified search/replace arguments
     are ignored. They will not be run simultaneously.
+  -q, --log-queries
+    Output executed SQL queries in the given file name.
   -v, --verbose [true|false]
     Defaults to true, can be set to false to run script silently.
   --help
