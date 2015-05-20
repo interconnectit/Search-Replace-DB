@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v3.0.0
+ * Safe Search and Replace on Database with Serialized Data v3.1.0
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -36,6 +36,13 @@
  * License: GPL v3
  * License URL: http://www.gnu.org/copyleft/gpl.html
  *
+ *
+ * Version 3.1.0:
+ *		* Added port number option to both web and CLI interfaces.
+ *		* More reliable fallback on non-PDO systems.
+ *		* Confirmation on 'Delete me'
+ *		* Comprehensive check to prevent accidental deletion of web projects
+ *		* Removed mysql functions and replaced with mysqli
  *
  * Version 3.0.0:
  * 		* Major overhaul
@@ -1108,7 +1115,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			<h1 class="branding">interconnect/it</h1>
 
-			<h2>Safe Search and Replace on Database with Serialized Data v3.0.0</h2>
+			<h2>Safe Search and Replace on Database with Serialized Data v3.1.0</h2>
 
 			<p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised PHP Arrays and Objects.</p>
 
