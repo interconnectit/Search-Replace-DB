@@ -2164,6 +2164,11 @@ class icit_srdb_ui extends icit_srdb {
 							$button.addClass( 'active' );
 
 							if ( submit == 'submit[delete]' && ! t.running ) {
+								if ( ! confirm( 'Do you really want to delete the Search/Replace script directory and -all its contents-?' ) ) {
+									t.complete();
+									return false;
+								}
+
 								window.onbeforeunload = null;
 								$( '[type="submit"]' ).not( $button ).attr( 'disabled', 'disabled' );
 								return true;
