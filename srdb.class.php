@@ -604,7 +604,7 @@ class icit_srdb {
 	}
 
 	public function db_escape( $string ) {
-		if ( $this->use_pdo() )
+		if ( $this->use_pdo() && method_exists($this->db, 'quote'))
 			return $this->db->quote( $string );
 		else
 			return "'" . mysql_real_escape_string( $string ) . "'";
