@@ -165,7 +165,11 @@ class icit_srdb {
 	public $host = '127.0.0.1';
 	public $charset = 'utf8';
 	public $collate = '';
-
+	
+	public $current_table = '';
+	public $current_pk = '';
+	public $current_id = '';
+	public $current_column = '';
 
 	/**
 	 * @var array Stores a list of exceptions
@@ -697,7 +701,18 @@ class icit_srdb {
 			}
 
 			// Submitted by Tina Matter
-			elseif ( is_object( $data ) ) {
+			elseif ( is_object( $data ) || gettype( $data ) == 'object' ) {
+				if (!is_object( $data ) && gettype( $data ) == 'object') {
+					$curr_col = "table.pk.id.column = {$this->current_table}.{$this->current_pk}.{$this->current_id}.{$this->current_column}";
+					
+					$invalid_class_props = get_object_vars( $data );
+					$invalid_object_class = $invalid_class_props['__PHP_Incomplete_Class_Name'];
+					if (!empty($invalid_object_class)) {
+						throw new Exception("$curr_col :: Class Undefined: '{$invalid_object_class}'. Could not parse.");
+					} else {
+						throw new Exception("$curr_col :: Class Undefined. Could not parse.");
+					}
+				}
 				// $data_class = get_class( $data );
 				$_tmp = $data; // new $data_class( );
 				$props = get_object_vars( $data );
@@ -716,16 +731,17 @@ class icit_srdb {
 				}
 			}
 
-			if ( $serialised )
-				return serialize( $data );
-
 		} catch( Exception $error ) {
 
 			$this->add_error( $error->getMessage(), 'results' );
 
 		}
 
-		return $data;
+		if ( $serialised ) {
+			return serialize( $data );
+		} else {
+			return $data;
+		}
 	}
 
 
@@ -799,7 +815,8 @@ class icit_srdb {
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
 			foreach( $tables as $table ) {
-
+				$this->current_table = $table;
+				
 				$encoding = $this->get_table_character_set( $table );
 				switch( $encoding ) {
 
@@ -826,7 +843,8 @@ class icit_srdb {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
-
+				$this->current_pk = $primary_key;
+				
 				// create new table report instance
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
@@ -852,7 +870,8 @@ class icit_srdb {
 						$this->add_error( $this->db_error( ), 'results' );
 
 					while ( $row = $this->db_fetch( $data ) ) {
-
+						$this->current_id = $row[ $primary_key ];
+						
 						$report[ 'rows' ]++; // Increment the row counter
 						$new_table_report[ 'rows' ]++;
 
@@ -861,7 +880,8 @@ class icit_srdb {
 						$update = false;
 
 						foreach( $columns as $column ) {
-
+							$this->current_column = $column;
+							
 							$edited_data = $data_to_fix = $row[ $column ];
 
 							if ( $primary_key == $column ) {
