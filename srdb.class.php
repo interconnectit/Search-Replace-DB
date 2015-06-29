@@ -163,6 +163,7 @@ class icit_srdb {
 	public $user = '';
 	public $pass = '';
 	public $host = '127.0.0.1';
+	public $port = 0;
 	public $charset = 'utf8';
 	public $collate = '';
 
@@ -227,6 +228,7 @@ class icit_srdb {
 	 * @param string $user    database username
 	 * @param string $pass    database password
 	 * @param string $host    database hostname
+	 * @param string $port    database connection port
 	 * @param string $search  search string / regex
 	 * @param string $replace replacement string
 	 * @param array $tables  tables to run replcements against
@@ -242,6 +244,7 @@ class icit_srdb {
 			'user' 				=> '',
 			'pass' 				=> '',
 			'host' 				=> '',
+			'port'              => 3306,
 			'search' 			=> '',
 			'replace' 			=> '',
 			'tables'			=> array(),
@@ -265,6 +268,19 @@ class icit_srdb {
 		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
+		}
+		
+		// verify that the port number is logical		
+		// work around PHPs inability to stringify a zero without making it an empty string
+		// AND without casting away trailing characters if they are present.
+		$port_as_string = (string)$args['port'] ? (string)$args['port'] : "0";		
+		if ( (string)abs( (int)$args['port'] ) !== $port_as_string ) {
+			$port_error = 'Port number must be a positive integer if specified.';
+			$this->add_error( $port_error, 'db' );
+			if ( defined( 'STDIN' ) ) {
+				echo 'Error: ' . $port_error;	
+			}
+			return;
 		}
 
 		// set class vars
@@ -375,12 +391,38 @@ class icit_srdb {
 
 	/**
 	 * Setup connection, populate tables array
+	 * Also responsible for selecting the type of connection to use.
 	 *
 	 * @return void
 	 */
 	public function db_setup() {
+		$mysqli_available = class_exists( 'mysqli' );
+		$pdo_available    = class_exists( 'PDO'    );
 
-		$connection_type = class_exists( 'PDO' ) ? 'pdo' : 'mysql';
+		$connection_type = '';
+
+		// Default to mysqli type.
+		// Only advance to PDO if all conditions are met.
+		if ( $mysqli_available )
+		{
+			$connection_type = 'mysqli';
+		}
+
+		if ( $pdo_available ) {
+			// PDO is the interface, but it may not have the 'mysql' module.
+			$mysql_driver_present = in_array( 'mysql', pdo_drivers() );
+
+			if ( $mysql_driver_present ) {
+				$connection_type = 'pdo';
+			}
+		}
+
+		// Abort if mysqli and PDO are both broken.
+		if ( '' === $connection_type )
+		{
+			$this->add_error( 'Could not find any MySQL database drivers. (MySQLi or PDO required.)', 'db' );
+			return false;
+		}
 
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
@@ -402,27 +444,21 @@ class icit_srdb {
 
 
 	/**
-	 * Creates the database connection using old mysql functions
+	 * Creates the database connection using newer mysqli functions
 	 *
 	 * @return resource|bool
 	 */
-	public function connect_mysql() {
+	public function connect_mysqli() {
 
 		// switch off PDO
 		$this->set( 'use_pdo', false );
 
-		$connection = @mysql_connect( $this->host, $this->user, $this->pass );
+		$connection = @mysqli_connect( $this->host, $this->user, $this->pass, $this->name, $this->port );
 
 		// unset if not available
 		if ( ! $connection ) {
+			$this->add_error( mysqli_connect_error( ), 'db' );
 			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
-		}
-
-		// select the database for non PDO
-		if ( $connection && ! mysql_select_db( $this->name, $connection ) ) {
-			$connection = false;
-			$this->add_error( mysql_error(), 'db' );
 		}
 
 		return $connection;
@@ -435,9 +471,9 @@ class icit_srdb {
 	 * @return PDO|bool
 	 */
 	public function connect_pdo() {
-
+	
 		try {
-			$connection = new PDO( "mysql:host={$this->host};dbname={$this->name}", $this->user, $this->pass );
+			$connection = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->name}", $this->user, $this->pass );
 		} catch( PDOException $e ) {
 			$this->add_error( $e->getMessage(), 'db' );
 			$connection = false;
@@ -577,14 +613,14 @@ class icit_srdb {
 		if ( $this->use_pdo() )
 			return $this->db->query( $query );
 		else
-			return mysql_query( $query, $this->db );
+			return mysqli_query( $this->db, $query );
 	}
 
 	public function db_update( $query ) {
 		if ( $this->use_pdo() )
 			return $this->db->exec( $query );
 		else
-			return mysql_query( $query, $this->db );
+			return mysqli_query( $this->db, $query );
 	}
 
 	public function db_error() {
@@ -593,34 +629,34 @@ class icit_srdb {
 			return !empty( $error_info ) && is_array( $error_info ) ? array_pop( $error_info ) : 'Unknown error';
 		}
 		else
-			return mysql_error();
+			return mysqli_error( $this->db );
 	}
 
 	public function db_fetch( $data ) {
 		if ( $this->use_pdo() )
 			return $data->fetch();
 		else
-			return mysql_fetch_array( $data );
+			return mysqli_fetch_array( $data );
 	}
 
 	public function db_escape( $string ) {
 		if ( $this->use_pdo() )
 			return $this->db->quote( $string );
 		else
-			return "'" . mysql_real_escape_string( $string ) . "'";
+			return "'" . mysqli_real_escape_string( $this->db, $string ) . "'";
 	}
 
 	public function db_free_result( $data ) {
 		if ( $this->use_pdo() )
 			return $data->closeCursor();
 		else
-			return mysql_free_result( $data );
+			return mysqli_free_result( $data );
 	}
 
 	public function db_set_charset( $charset = '' ) {
 		if ( ! empty( $charset ) ) {
-			if ( ! $this->use_pdo() && function_exists( 'mysql_set_charset' ) )
-				mysql_set_charset( $charset, $this->db );
+			if ( ! $this->use_pdo() && function_exists( 'mysqli_set_charset' ) )
+				mysqli_set_charset( $this->db, $charset );
 			else
 				$this->db_query( 'SET NAMES ' . $charset );
 		}
@@ -630,7 +666,7 @@ class icit_srdb {
 		if ( $this->use_pdo() )
 			unset( $this->db );
 		else
-			mysql_close( $this->db );
+			mysqli_close( $this->db );
 	}
 
 	public function db_valid() {

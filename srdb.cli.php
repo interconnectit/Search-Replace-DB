@@ -30,6 +30,7 @@ $opts = array(
 	'e:' => 'alter-engine:',
 	'a:' => 'alter-collation:',
 	'v::' => 'verbose::',
+	'port:',
 	'help'
 );
 
@@ -82,6 +83,9 @@ ARGS
     Required. Database user.
   -p, --pass
     Required. Database user's password.
+  --port
+    Optional. Port on database server to connect to.
+    The default is 3306. (MySQL default port).
   -s, --search
     String to search for or `preg_replace()` style
     regular expression.
