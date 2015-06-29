@@ -118,8 +118,8 @@ ARGS
     Changes the database table to the specified collation
     eg. utf8_unicode_ci. If specified search/replace arguments
     are ignored. They will not be run simultaneously.
-  -q, --log-queries
-    Output executed SQL queries in the given file name.
+  -q, --log-queries [<file>]
+    Output executed SQL queries to the given file.
   -v, --verbose [true|false]
     Defaults to true, can be set to false to run script silently.
   --help
@@ -181,6 +181,7 @@ class icit_srdb_cli extends icit_srdb {
 
 	public function log( $type = '' ) {
 
+
 		$args = array_slice( func_get_args(), 1 );
 
 		$output = "";
@@ -223,6 +224,7 @@ It took {$time} seconds";
 			echo $output . "\n";
 
 	}
+
 
 }
 
