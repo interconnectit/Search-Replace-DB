@@ -9,12 +9,12 @@ If you find a problem let us know in the issues area and if you can improve the 
 1. Three character UTF8 seems to break in certain cases.
 2. We can't test every possible case, though we do our best. Backups and verifications are important.
 3. The license for this script is GPL v3 and no longer WTFPL. Please bear this in mind if contributing or branching.
-4. You use this script at your own risk and we have no responsibility for any problems it may cause. Do backups.
-5. DO BACKUPS.
+4. You use this script at your own risk and we have no responsibility for any problems it may cause.
+5. *Do backups.*
 
 ## Usage
 
-1. DO BACKUPS.
+1. *Do backups.*
 2. Migrate all your website files.
 3. Upload the script folder to your web root or higher.	
 4. Browse to the script folder URL in your web browser.
