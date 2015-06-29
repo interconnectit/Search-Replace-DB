@@ -2661,12 +2661,29 @@ class icit_srdb_ui extends icit_srdb {
 											match_search = text.match( regex_search );
 											$.each( match_search, function( i, match ) {
 												match_replace = match.replace( regex_search, replace );
-												$change.html( $change.html().replace( new RegExp( match, 'g' ), '<span class="highlight">' + match + '</span>' ) );
-												$change.html( $change.html().replace( new RegExp( match_replace, 'g' ), '<span class="highlight">' + match_replace + '</span>' ) );
+                                                
+                                                from_div = $change.find('.from');
+                                                
+                                                from_div.html( from_div.html().replace( new RegExp( match, 'g' ), '<span class="highlight">' + match + '</span>' ) );
+                                                
+                                                if (replace)
+                                                {
+                                                to_div = $change.find('.to');
+                                                
+                                                to_div.html( to_div.html().replace( new RegExp( match_replace, 'g' ), '<span class="highlight">' + match_replace + '</span>' ) );
+                                                }
 											} );
 										} else {
-											$change.html( $change.html().replace( new RegExp( search, 'g' ), '<span class="highlight">' + search + '</span>' ) );
-											$change.html( $change.html().replace( new RegExp( replace, 'g' ), '<span class="highlight">' + replace + '</span>' ) );
+                                            from_div = $change.find('.from');
+                                            
+                                            from_div.html( from_div.html().replace( new RegExp( search, 'g' ), '<span class="highlight">' + search + '</span>' ) );
+                                            
+                                            if (replace)
+                                            {
+                                            to_div = $change.find('.to');
+                                            
+                                            to_div.html( to_div.html().replace( new RegExp( replace, 'g' ), '<span class="highlight">' + replace + '</span>' ) );
+                                            }
 										}
 										return true;
 									} );
