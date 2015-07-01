@@ -2675,14 +2675,17 @@ class icit_srdb_ui extends icit_srdb {
 											} );
 										} else {
                                             from_div = $change.find('.from');
-                                            
-                                            from_div.html( from_div.html().replace( new RegExp( search, 'g' ), '<span class="highlight">' + search + '</span>' ) );
+											
+											// do a multiple straight up search replace on search with the highlight string we want to put in.
+											var original_chunks = from_div.html().split(search);
+											
+                                            from_div.html( original_chunks.join('<span class="highlight">' + search + '</span>') );
                                             
                                             if (replace)
                                             {
                                             to_div = $change.find('.to');
                                             
-                                            to_div.html( to_div.html().replace( new RegExp( replace, 'g' ), '<span class="highlight">' + replace + '</span>' ) );
+                                            to_div.html( original_chunks.join('<span class="highlight">' + replace + '</span>') );
                                             }
 										}
 										return true;
