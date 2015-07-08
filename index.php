@@ -2662,63 +2662,64 @@ class icit_srdb_ui extends icit_srdb {
 												.find( '.from' ).text( item.from ).end()
 												.find( '.to' ).text( item.to ).end()
 												.appendTo( $changes );
-										if ( regex ) {
-                                            from_div = $change.find('.from');
-                                            to_div   = $change.find('.to');
 											
-											text = from_div.html();
-											
-											var result_of_regex;
-											
-											var copied_char_from_source = 0;
-											
-											var output_search_panel  = '';
-											var output_replace_panel = '';
-											
-											while ( result_of_regex = regex_search_iter.exec( text ) ) {
-												var search_match_start = result_of_regex.index;
-												var search_match_end   = regex_search_iter.lastIndex;
+										var from_div = $change.find('.from');
+										var to_div   = $change.find('.to');
 												
-												output_search_panel  = output_search_panel  + text.slice(copied_char_from_source, search_match_start);
-												output_replace_panel = output_replace_panel + text.slice(copied_char_from_source, search_match_start);
+										var original_text = from_div.html();
+											
+										// Only display highlights if this isn't a serialised object.
+										// We CANNOT show highlights properly without writing a FULL COMPLETE
+										// php compatible serialize unserialize pair.
+										// Any attempt to work around the above restriction will not work,
+										// if you try it, you will find you are -writing such functions yourself-!
+										if ( !containsSerialisedString( original_text ) )
+										{
+											if ( regex ) {
+												var result_of_regex;
 												
-												output_search_panel  = output_search_panel  + '<span class="highlight">';
-												output_search_panel  = output_search_panel  + text.slice(search_match_start, search_match_end);
-												output_search_panel  = output_search_panel  + '</span>';
-												output_replace_panel = output_replace_panel + '<span class="highlight">';
-												output_replace_panel = output_replace_panel + text.slice(search_match_start, search_match_end).replace( regex_search, replace );
-												output_replace_panel = output_replace_panel + '</span>';
+												var copied_char_from_source = 0;
 												
-												copied_char_from_source = search_match_end;
-											}
-											
-											output_search_panel  = output_search_panel  + text.slice(copied_char_from_source);
-											output_replace_panel = output_replace_panel + text.slice(copied_char_from_source);
-																						
-											from_div.html( output_search_panel );
-											// only display highlights if this isn't a serialised object																						
-											if ( !containsSerialisedString( text ) )
-											{
-												to_div.html( output_replace_panel );
-											}
-										} else {
-                                            from_div = $change.find('.from');
-											
-											// do a multiple straight up search replace on search with the highlight string we want to put in.
-											var original_chunks = from_div.html().split(search);
-											
-                                            from_div.html( original_chunks.join('<span class="highlight">' + search + '</span>') );
-                                            
-                                            if (replace)
-                                            {
-												to_div = $change.find('.to');
-
-												// only display highlights if this isn't a serialised object
-												if ( !containsSerialisedString( to_div.html() ) ) 
-												{
-													to_div.html( original_chunks.join('<span class="highlight">' + replace + '</span>') );
+												var output_search_panel  = '';
+												var output_replace_panel = '';
+												
+												while ( result_of_regex = regex_search_iter.exec( original_text ) ) {
+													var search_match_start = result_of_regex.index;
+													var search_match_end   = regex_search_iter.lastIndex;
+													
+													output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source, search_match_start);
+													output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source, search_match_start);
+													
+													output_search_panel  = output_search_panel  + '<span class="highlight">';
+													output_search_panel  = output_search_panel  + original_text.slice(search_match_start, search_match_end);
+													output_search_panel  = output_search_panel  + '</span>';
+													output_replace_panel = output_replace_panel + '<span class="highlight">';
+													output_replace_panel = output_replace_panel + original_text.slice(search_match_start, search_match_end).replace( regex_search, replace );
+													output_replace_panel = output_replace_panel + '</span>';
+													
+													copied_char_from_source = search_match_end;
 												}
-                                            }
+												
+												output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source);
+												output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source);
+																						
+												from_div.html( output_search_panel );
+												to_div.html( output_replace_panel );
+											} else {												
+												// Do a multiple straight up search replace on search with the highlight string we want to put in.
+												var original_chunks = original_text.split(search);
+												
+												from_div.html( original_chunks.join('<span class="highlight">' + search + '</span>') );
+												
+												if (replace)
+												{
+													// only display highlights if this isn't a serialised object
+													if ( !containsSerialisedString( to_div.html() ) ) 
+													{
+														to_div.html( original_chunks.join('<span class="highlight">' + replace + '</span>') );
+													}
+												}
+											}
 										}
 										return true;
 									} );
