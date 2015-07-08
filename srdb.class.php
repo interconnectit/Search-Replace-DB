@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v3.1.0
+ * Safe Search and Replace on Database with Serialized Data v3.0.0
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -36,13 +36,6 @@
  * License: GPL v3
  * License URL: http://www.gnu.org/copyleft/gpl.html
  *
- *
- * Version 3.1.0:
- *		* Added port number option to both web and CLI interfaces.
- *		* More reliable fallback on non-PDO systems.
- *		* Confirmation on 'Delete me'
- *		* Comprehensive check to prevent accidental deletion of web projects
- *		* Removed mysql functions and replaced with mysqli
  *
  * Version 3.0:
  * 		* Major overhaul
@@ -93,10 +86,6 @@
  *  	- typos corrected, button text tweak - David Coveney / Robert O'Rourke
  *  Version 1.0.1
  *  	- styling and form added by James R Whitehead.
- *
- *  Credits:  moz667 at gmail dot com for his recursive_array_replace posted at
- *            uk.php.net which saved me a little time - a perfect sample for me
- *            and seems to work in all cases.
  *
  */
 
@@ -680,59 +669,33 @@ class icit_srdb {
 		return (bool)$this->db;
 	}
 
-
-	/**
-	 * Walk an array replacing one element for another. ( NOT USED ANY MORE )
-	 *
-	 * @param string $find    The string we want to replace.
-	 * @param string $replace What we'll be replacing it with.
-	 * @param array $data    Used to pass any subordinate arrays back to the
-	 * function for searching.
-	 *
-	 * @return array    The original array with the replacements made.
-	 */
-	public function recursive_array_replace( $find, $replace, $data ) {
-		if ( is_array( $data ) ) {
-			foreach ( $data as $key => $value ) {
-				if ( is_array( $value ) ) {
-					$this->recursive_array_replace( $find, $replace, $data[ $key ] );
-				} else {
-					// have to check if it's string to ensure no switching to string for booleans/numbers/nulls - don't need any nasty conversions
-					if ( is_string( $value ) )
-						$data[ $key ] = $this->str_replace( $find, $replace, $value );
-				}
-			}
-		} else {
-			if ( is_string( $data ) )
-				$data = $this->str_replace( $find, $replace, $data );
-		}
-	}
-
-
 	/**
 	 * Take a serialised array and unserialise it replacing elements as needed and
 	 * unserialising any subordinate arrays and performing the replace on those too.
 	 *
-	 * @param string $from       String we're looking to replace.
-	 * @param string $to         What we want it to be replaced with
-	 * @param array  $data       Used to pass any subordinate arrays back to in.
-	 * @param bool   $serialised Does the array passed via $data need serialising.
+	 * @param string $from        String we're looking to replace.
+	 * @param string $to          What we want it to be replaced with
+	 * @param array  $data        Used to pass any subordinate arrays back to in.
+	 * @param bool   $serialised  Does the array passed via $data need serialising.
+	 * @param bool   $markerflags If true, append \x02 \x03 markers around matches. 
+	 *                            These are ASCII "start/end of text" control chars,
+	 *                            which is pretty convenient. :)
 	 *
 	 * @return array	The original array with all elements replaced as needed.
 	 */
-	public function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false ) {
+	public function recursive_unserialize_replace( $from = '', $to = '', $data = '', $serialised = false, $markerflags = false ) {
 
 		// some unserialised data cannot be re-serialised eg. SimpleXMLElements
 		try {
 
 			if ( is_string( $data ) && ( $unserialized = @unserialize( $data ) ) !== false ) {
-				$data = $this->recursive_unserialize_replace( $from, $to, $unserialized, true );
+				$data = $this->recursive_unserialize_replace( $from, $to, $unserialized, true, $markerflags );
 			}
 
 			elseif ( is_array( $data ) ) {
 				$_tmp = array( );
 				foreach ( $data as $key => $value ) {
-					$_tmp[ $key ] = $this->recursive_unserialize_replace( $from, $to, $value, false );
+					$_tmp[ $key ] = $this->recursive_unserialize_replace( $from, $to, $value, false, $markerflags );
 				}
 
 				$data = $_tmp;
@@ -745,7 +708,7 @@ class icit_srdb {
 				$_tmp = $data; // new $data_class( );
 				$props = get_object_vars( $data );
 				foreach ( $props as $key => $value ) {
-					$_tmp->$key = $this->recursive_unserialize_replace( $from, $to, $value, false );
+					$_tmp->$key = $this->recursive_unserialize_replace( $from, $to, $value, false, $markerflags );
 				}
 
 				$data = $_tmp;
@@ -754,8 +717,11 @@ class icit_srdb {
 
 			else {
 				if ( is_string( $data ) ) {
+					if ( $markerflags )	{
+						$to = "\x02\x02" . $to . "\x03\x03";
+					}
+		
 					$data = $this->str_replace( $from, $to, $data );
-
 				}
 			}
 
@@ -771,28 +737,12 @@ class icit_srdb {
 		return $data;
 	}
 
-
-	/**
-	 * Regular expression callback to fix serialised string lengths
-	 *
-	 * @param array $matches matches from the regular expression
-	 *
-	 * @return string
-	 */
-	public function preg_fix_serialised_count( $matches ) {
-		$length = mb_strlen( $matches[ 2 ] );
-		if ( $length !== intval( $matches[ 1 ] ) )
-			return "s:{$length}:\"{$matches[2]}\";";
-		return $matches[ 0 ];
-	}
-
-
 	/**
 	 * The main loop triggered in step 5. Up here to keep it out of the way of the
 	 * HTML. This walks every table in the db that was selected in step 3 and then
-	 * walks every row and column replacing all occurences of a string with another.
+	 * walks every row and column replacing all occurrences of a string with another.
 	 * We split large tables into 50,000 row blocks when dealing with them to save
-	 * on memmory consumption.
+	 * on memory consumption.
 	 *
 	 * @param string $search     What we want to replace
 	 * @param string $replace    What we want to replace it with.
@@ -921,13 +871,16 @@ class icit_srdb {
 								continue;
 
 							// Run a search replace on the data that'll respect the serialisation.
-							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
+							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix, false, false );
 
 							// Something was changed
 							if ( $edited_data != $data_to_fix ) {
 
 								$report[ 'change' ]++;
 								$new_table_report[ 'change' ]++;
+								
+								// Run a SECOND search replace that will include markers around matches.
+								$edited_data_w_markers = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix, false, true );
 
 								// log first x changes
 								if ( $new_table_report[ 'change' ] <= $this->get( 'report_change_num' ) ) {
@@ -935,7 +888,8 @@ class icit_srdb {
 										'row' => $new_table_report[ 'rows' ],
 										'column' => $column,
 										'from' => utf8_encode( $data_to_fix ),
-										'to' => utf8_encode( $edited_data )
+										'to' => utf8_encode( $edited_data ),
+										'to_markers' => utf8_encode( $edited_data_w_markers )
 									);
 								}
 
@@ -1166,12 +1120,13 @@ class icit_srdb {
 	 * @param string $replace
 	 * @param string $string
 	 * @param int $count
+	 * @param bool $markerflags If true, surround matches with \x02 \x03 characters.
 	 *
 	 * @return string
 	 */
-	public function str_replace( $search, $replace, $string, &$count = 0 ) {
+	public function str_replace( $search, $replace, $string, &$count = 0 ) {			
 		if ( $this->get( 'regex' ) ) {
-			return preg_replace( $search, $replace, $string, -1, $count );
+			return preg_replace( $search, $replace, $string, -1, $count );			
 		} elseif( function_exists( 'mb_split' ) ) {
 			return self::mb_str_replace( $search, $replace, $string, $count );
 		} else {
