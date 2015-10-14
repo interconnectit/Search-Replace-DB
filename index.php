@@ -376,6 +376,21 @@ class icit_srdb_ui extends icit_srdb {
 
 				break;
 
+			case 'utf8mb4':
+
+				// call search replace class to alter engine
+				$parent = parent::__construct( array(
+					'name' => $this->get( 'name' ),
+					'user' => $this->get( 'user' ),
+					'pass' => $this->get( 'pass' ),
+					'host' => $this->get( 'host' ),
+					'port' => $this->get( 'port' ),
+					'tables' => $this->get( 'tables' ),
+					'alter_collation' => 'utf8mb4_unicode_ci',
+				) );
+
+				break;
+
 			case 'update':
 			default:
 
@@ -409,12 +424,12 @@ class icit_srdb_ui extends icit_srdb {
 
 			// return json version of results
 			header( 'Content-Type: application/json' );
-
+			
 			echo json_encode( array(
 				'errors' => $this->get( 'errors' ),
 				'report' => $this->get( 'report' ),
 				'info' 	 => $info
-			) );
+			), JSON_UNESCAPED_UNICODE );
 
 			exit;
 
@@ -1086,6 +1101,8 @@ class icit_srdb_ui extends icit_srdb {
 
 						<input type="submit" name="submit[utf8]" value="convert to utf8 unicode" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
 
+						<input type="submit" name="submit[utf8mb4]" value="convert to utf8mb4 unicode" <?php if ( ! $this->db_valid() ) echo 'disabled="disabled"'; ?> class="db-required secondary field-advanced" />
+
 					</span>
 
 				</div>
@@ -1258,6 +1275,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			<title>interconnect/it : search replace db</title>
 
+			<?php $this->meta(); ?>
 			<?php $this->css(); ?>
 			<?php $this->js(); ?>
 
@@ -1272,7 +1290,13 @@ class icit_srdb_ui extends icit_srdb {
 	<?php
 	}
 
-
+	public function meta() {
+		?>
+		
+		<meta charset="utf-8" /> 
+		
+		<?php
+	}
 
 	public function css() {
 		?>
@@ -2191,7 +2215,7 @@ class icit_srdb_ui extends icit_srdb {
 								return false;
 							}
 
-							if ( ( submit == 'submit[innodb]' || submit == 'submit[utf8]' ) && ! window.confirm( t.confirm_strings.modify ) ) {
+							if ( ( submit == 'submit[innodb]' || submit == 'submit[utf8]' || submit == 'submit[utf8mb4]' ) && ! window.confirm( t.confirm_strings.modify ) ) {
 								t.complete();
 								return false;
 							}
@@ -2223,7 +2247,7 @@ class icit_srdb_ui extends icit_srdb {
 							}, data );
 
 							// count down & stop button
-							if ( submit.match( /dryrun|liverun|innodb|utf8/ ) ) {
+							if ( submit.match( /dryrun|liverun|innodb|utf8|utf8mb4/ ) ) {
 
 								// insert stop button
 								$( '<input type="submit" name="submit[stop]" value="stop" class="stop-button" />' )
@@ -2236,7 +2260,7 @@ class icit_srdb_ui extends icit_srdb {
 									} )
 									.insertAfter( $button );
 
-								if ( submit.match( /liverun|innodb|utf8/ ) ) {
+								if ( submit.match( /liverun|innodb|utf8|utf8mb4/ ) ) {
 
 									$button.val( button_text + ' in ... ' + seconds );
 

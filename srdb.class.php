@@ -934,8 +934,8 @@ class icit_srdb {
 									$new_table_report[ 'changes' ][] = array(
 										'row' => $new_table_report[ 'rows' ],
 										'column' => $column,
-										'from' => utf8_encode( $data_to_fix ),
-										'to' => utf8_encode( $edited_data )
+										'from' => ( $data_to_fix ),
+										'to' => ( $edited_data )
 									);
 								}
 
