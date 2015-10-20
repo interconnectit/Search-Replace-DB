@@ -271,6 +271,13 @@ class icit_srdb {
 		// handle errors
 		set_error_handler( array( $this, 'errors' ), E_ERROR | E_WARNING );
 
+		// Setting this so that mb_split works correctly.
+		// BEAR IN MIND that this affects the handling of strings INTERNALLY rather than
+		// at the html output interface, the console interface, json interface, or the database interface.
+		// This means that if the DB has a different charset (utf16?), we need to make sure that it's
+		// normalised to utf-8 internally and output in the appropriate charset.
+		mb_regex_encoding( 'UTF-8' );
+
 		// allow a string for columns
 		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
