@@ -429,7 +429,7 @@ class icit_srdb_ui extends icit_srdb {
 				'errors' => $this->get( 'errors' ),
 				'report' => $this->get( 'report' ),
 				'info' 	 => $info
-			), JSON_UNESCAPED_UNICODE );
+			) );
 
 			exit;
 
