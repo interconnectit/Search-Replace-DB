@@ -81,12 +81,12 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	-s, --search
 	
 		String to search for or `preg_replace()` style regular
-		expression.
+		expression. Alternatively an array in JSON format to perform multi-search/replace.
 		
 	-r, --replace
 	
 		None empty string to replace search with or
-		`preg_replace()` style replacement.
+		`preg_replace()` style replacement. Alternatively an array in JSON format (-s|--search must be an array as well) to perform multi-search/replace.
 		
 	-t, --tables
 	

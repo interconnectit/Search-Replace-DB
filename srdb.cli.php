@@ -157,6 +157,11 @@ foreach( $options as $key => $value ) {
 	if ( ( $is_short = array_search( $key, $short_opts_normal ) ) !== false )
 		$key = $long_opts_normal[ $is_short ];
 
+	if (in_array($key, ['search', 'replace']) && is_array($jsonVal = json_decode($value, true))) {
+		$args[ $key ] = $jsonVal;
+		continue;
+	}
+
 	// true/false string mapping
 	if ( is_string( $value ) && in_array( $value, array( 'false', 'no', '0' ) ) )
 		$value = false;
@@ -189,6 +194,12 @@ class icit_srdb_cli extends icit_srdb {
 				break;
 			case 'search_replace_table_start':
 				list( $table, $search, $replace ) = $args;
+				if (is_array($search)) {
+					$search = implode(' or ', $search);
+				}
+				if (is_array($replace)) {
+					$replace = implode(' or ', $replace);
+				}
 				$output .= "{$table}: replacing {$search} with {$replace}";
 				break;
 			case 'search_replace_table_end':
@@ -198,6 +209,12 @@ class icit_srdb_cli extends icit_srdb {
 				break;
 			case 'search_replace_end':
 				list( $search, $replace, $report ) = $args;
+				if (is_array($search)) {
+					$search = implode(' or ', $search);
+				}
+				if (is_array($replace)) {
+					$replace = implode(' or ', $replace);
+				}
 				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
 				$dry_run_string = $this->dry_run ? "would have been" : "were";
 				$output .= "
