@@ -113,6 +113,11 @@ class icit_srdb {
 	public $tables = array();
 
 	/**
+	 * @var array Tables to exclude
+	 */
+	public $exclude_tables = array();
+
+	/**
 	 * @var string Search term
 	 */
 	public $search = false;
@@ -255,6 +260,7 @@ class icit_srdb {
 			'search' 			=> '',
 			'replace' 			=> '',
 			'tables'			=> array(),
+			'exclude_tables'		=> array(),
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
@@ -279,7 +285,7 @@ class icit_srdb {
 		mb_regex_encoding( 'UTF-8' );
 
 		// allow a string for columns
-		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
+		foreach( array( 'exclude_cols', 'include_cols', 'tables', 'exclude_tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
 		}
@@ -334,7 +340,7 @@ class icit_srdb {
 
 			// default search/replace action
 			else {
-				$report = $this->replacer( $this->search, $this->replace, $this->tables );
+				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
 			}
 
 		} else {
@@ -807,7 +813,7 @@ class icit_srdb {
 	 *
 	 * @return array    Collection of information gathered during the run.
 	 */
-	public function replacer( $search = '', $replace = '', $tables = array( ) ) {
+	public function replacer( $search = '', $replace = '', $tables = array( ), $exclude_tables = array( ) ) {
 
 		// check we have a search string, bail if not
 		if ( empty( $search ) ) {
@@ -849,6 +855,11 @@ class icit_srdb {
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
 			foreach( $tables as $table ) {
+
+				if (in_array($table, $exclude_tables)) {
+					$this->add_error('Ignoring table : ' . $table);
+					continue;
+				}
 
 				$encoding = $this->get_table_character_set( $table );
 				switch( $encoding ) {

@@ -245,6 +245,8 @@ class icit_srdb_ui extends icit_srdb {
 		if ( isset( $_POST[ 'use_tables' ] ) && $_POST[ 'use_tables' ] == 'all' )
 			$tables = array();
 
+		$exclude_tables = isset( $_POST[ 'exclude_tables' ] ) && is_array( $_POST[ 'exclude_tables' ] ) ? $_POST[ 'exclude_tables' ] : array( );
+
 		// exclude / include columns
 		$exclude_cols = isset( $_POST[ 'exclude_cols' ] ) ? $_POST[ 'exclude_cols' ] : array();
 		$include_cols = isset( $_POST[ 'include_cols' ] ) ? $_POST[ 'include_cols' ] : array();
@@ -257,7 +259,7 @@ class icit_srdb_ui extends icit_srdb {
 		// update class vars
 		$vars = array(
 			'name', 'user', 'pass', 'host', 'port',
-			'charset', 'collate', 'tables',
+			'charset', 'collate', 'tables', 'exclude_tables',
 			'search', 'replace',
 			'exclude_cols', 'include_cols',
 			'regex', 'regex_i', 'regex_m', 'regex_s', 'regex_x'
@@ -338,6 +340,7 @@ class icit_srdb_ui extends icit_srdb {
 					'search' => $this->get( 'search' ),
 					'replace' => $this->get( 'replace' ),
 					'tables' => $this->get( 'tables' ),
+					'exclude_tables' => $this->get( 'exclude_tables' ),
 					'dry_run' => $this->get( 'dry_run' ),
 					'regex' => $this->get( 'regex' ),
 					'exclude_cols' => $this->get( 'exclude_cols' ),
@@ -919,12 +922,12 @@ class icit_srdb_ui extends icit_srdb {
 	}
 
 
-	public function table_select( $echo = true ) {
+	public function table_select( $echo = true, $name = "tables" ) {
 
 		$table_select = '';
 
 		if ( ! empty( $this->all_tables ) ) {
-			$table_select .= '<select name="tables[]" multiple="multiple">';
+			$table_select .= '<select name="'.$name.'[]" multiple="multiple">';
 			foreach( $this->all_tables as $table ) {
 				$size = $table[ 'Data_length' ] / 1000;
 				$size_unit = 'kb';
@@ -1056,7 +1059,7 @@ class icit_srdb_ui extends icit_srdb {
 						</label>
 					</div>
 
-					<div class="field table-select hide-if-js"><?php $this->table_select(); ?></div>
+					<div class="field table-select hide-if-js table-select-include"><?php $this->table_select(); ?></div>
 
 				</div>
 
@@ -2067,6 +2070,8 @@ class icit_srdb_ui extends icit_srdb {
 								dom.on( 'click', '[name="use_tables"]', t.toggle_tables );
 								dom.find( '[name="use_tables"][checked]' ).click();
 
+								dom.on( 'click', '[name="use_exclude_tables"]', t.toggle_exclude_tables );
+
 								// toggle regex mode
 								dom.on( 'click', '[name="regex"]', t.toggle_regex );
 								dom.find( '[name="regex"][checked]' ).click();
@@ -2134,10 +2139,14 @@ class icit_srdb_ui extends icit_srdb {
 
 						toggle_tables: function() {
 							if ( this.id == 'all_tables' ) {
-								dom.find( '.table-select' ).slideUp( 400 );
+								dom.find( '.table-select-include' ).slideUp( 400 );
 							} else {
-								dom.find( '.table-select' ).slideDown( 400 );
+								dom.find( '.table-select-include' ).slideDown( 400 );
 							}
+						},
+
+						toggle_exclude_tables: function() {
+							dom.find( '.table-select-exclude' ).slideToggle( 400 );
 						},
 
 						toggle_regex: function() {
@@ -2240,6 +2249,14 @@ class icit_srdb_ui extends icit_srdb {
 							if ( ! $.isArray( data[ 'tables[]' ] ) )
 								data[ 'tables[]' ] = [ data[ 'tables[]' ] ];
 
+							// check we don't just have one table selected as we get a string not array
+							if (! data[ 'exclude_tables[]' ] || ! data[ 'exclude_tables[]' ].length) {
+								data[ 'exclude_tables[]' ] = [];
+							} 
+							else if ( ! $.isArray( data[ 'exclude_tables[]' ] ) ) {
+								data[ 'exclude_tables[]' ] = [ data[ 'exclude_tables[]' ] ];
+							}
+
 							// add in ajax and submit params
 							data = $.extend( {
 								ajax: true,
@@ -2335,6 +2352,12 @@ class icit_srdb_ui extends icit_srdb {
 								return false;
 							}
 
+							if ($.inArray(data[ 'tables[]' ][ i ], data[ 'exclude_tables[]' ] ) !== -1) {
+								console.log('on ignore la table : ' + data[ 'tables[]' ][ i ]);
+								t.recursive_fetch_json( data, ++i );
+								return false;
+							}
+				
 							// clone data
 							var post_data = $.extend( true, {}, data ),
 								dry_run = data.submit != 'submit[liverun]',
