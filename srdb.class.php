@@ -808,9 +808,9 @@ class icit_srdb {
 	 * @return array    Collection of information gathered during the run.
 	 */
 	public function replacer( $search = '', $replace = '', $tables = array( ) ) {
-
+		$search = (string)$search;
 		// check we have a search string, bail if not
-		if ( empty( $search ) ) {
+		if ( '' === $search ) {
 			$this->add_error( 'Search string is empty', 'search' );
 			return false;
 		}
@@ -871,12 +871,12 @@ class icit_srdb {
 
 				// get primary key and columns
 				list( $primary_key, $columns ) = $this->get_columns( $table );
-
-				if ( $primary_key === null ) {
+				
+				if ( $primary_key === null || empty( $primary_key ) ) {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
-
+				
 				// create new table report instance
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
@@ -914,7 +914,7 @@ class icit_srdb {
 
 							$edited_data = $data_to_fix = $row[ $column ];
 
-							if ( $primary_key == $column ) {
+							if ( in_array( $column, $primary_key ) ) {
 								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
 								continue;
 							}
@@ -926,7 +926,7 @@ class icit_srdb {
 							// include cols
 							if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
 								continue;
-
+							
 							// Run a search replace on the data that'll respect the serialisation.
 							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
 
@@ -958,6 +958,7 @@ class icit_srdb {
 						} elseif ( $update && ! empty( $where_sql ) ) {
 
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
+							
 							$result = $this->db_update( $sql );
 
 							if ( ! is_int( $result ) && ! $result ) {
@@ -998,8 +999,7 @@ class icit_srdb {
 
 
 	public function get_columns( $table ) {
-
-		$primary_key = null;
+		$primary_key = array();
 		$columns = array( );
 
 		// Get a list of columns in this table
@@ -1010,7 +1010,7 @@ class icit_srdb {
 			while( $column = $this->db_fetch( $fields ) ) {
 				$columns[] = $column[ 'Field' ];
 				if ( $column[ 'Key' ] == 'PRI' )
-					$primary_key = $column[ 'Field' ];
+					$primary_key[] = $column[ 'Field' ];
 			}
 		}
 
