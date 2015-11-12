@@ -1042,8 +1042,9 @@ class icit_srdb {
 
 			$report = array( 'engine' => $engine, 'converted' => array() );
 
+			$all_tables = $this->get_tables();
+			
 			if ( empty( $tables ) ) {
-				$all_tables = $this->get_tables();
 				$tables = array_keys( $all_tables );
 			}
 
@@ -1092,8 +1093,9 @@ class icit_srdb {
 
 			$report = array( 'collation' => $collation, 'converted' => array() );
 
+			$all_tables = $this->get_tables();
+				
 			if ( empty( $tables ) ) {
-				$all_tables = $this->get_tables();
 				$tables = array_keys( $all_tables );
 			}
 
