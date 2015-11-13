@@ -204,14 +204,19 @@ class icit_srdb {
                   WHEN TRUE THEN 'NO'
                   WHEN FALSE THEN 'YES'
               END AS \"Null\",
-              CASE(pg_attribute.attnum = any(pg_index.indkey))
-                  WHEN TRUE THEN 'PRI'
-                  WHEN FALSE THEN ''
-              END AS \"Key\",
+              (SELECT
+                  CASE(pg_attribute.attnum = any(pg_index.indkey))
+                      WHEN TRUE THEN 'PRI'
+                      WHEN FALSE THEN ''
+                  END
+                FROM pg_index
+                WHERE
+                  pg_class.oid = pg_index.indrelid
+                  AND pg_index.indisprimary
+              ) AS \"Key\",
               pg_attrdef.adsrc AS \"Default\"
             FROM
               pg_class
-                JOIN pg_index ON (pg_class.oid = pg_index.indrelid)
                 JOIN pg_namespace ON (pg_class.relnamespace = pg_namespace.oid)
                 JOIN pg_attribute ON (pg_class.oid = pg_attribute.attrelid)
                 LEFT JOIN pg_attrdef ON (pg_attribute.attrelid = pg_attrdef.adrelid AND pg_attribute.attnum = pg_attrdef.adnum)
@@ -219,7 +224,6 @@ class icit_srdb {
               pg_class.oid = :table::regclass
               AND pg_namespace.nspname = 'public'
               AND pg_attribute.attnum > 0
-              AND pg_index.indisprimary
             ORDER BY pg_attribute.attnum ASC
             ;",
 /*
@@ -1082,75 +1086,69 @@ class icit_srdb {
 
 							$edited_data = $data_to_fix = $row[ $column ];
 
-                            // handle streams as strings
-                            if ( is_resource($data_to_fix) ) {
-                                if ( 'stream' == get_resource_type($data_to_fix) ) {
-                                    $edited_data = $data_to_fix = stream_get_contents($data_to_fix);
-                                }
-                                else {
-                                    $this->add_error( 'unsupported resource type: ' . get_resource_type($data_to_fix), 'results' );
-                                }
-                            }
-                            
-                            //+val
-                            // handle bytea (binary strings) as strings
-                            if ('bytea' == $column_data[ 'Type' ]) {
-                              $edited_data = '';
-                              // start from 1 since we skip starting 'x' character
-                              for ($i=1; $i<strlen($data_to_fix); $i+=2) {
-                                  $edited_data .= chr(hexdec(substr($data_to_fix, $i, 2)));
-                              }
-                              // update reference data (decoded)  
-                              $data_to_fix = $edited_data;
-                            }
-
-							//+multi if ( $primary_keys == $column ) {
-							if ( in_array($column, $primary_keys) ) {
-								$where_sql[] = "{$column} = " . $this->db_escape( $data_to_fix );
-//+val								continue;
-							}
-
-							// exclude cols
-							if ( in_array( $column, $this->exclude_cols ) )
-								continue;
-
-							// include cols
-							if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
-								continue;                            
-                            
-							// Run a search replace on the data that'll respect the serialisation.
-							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
-
-							// Something was changed
-							if ( $edited_data != $data_to_fix ) {
-
-								$report[ 'change' ]++;
-								$new_table_report[ 'change' ]++;
-
-								// log first x changes
-								if ( $new_table_report[ 'change' ] <= $this->get( 'report_change_num' ) ) {
-									$new_table_report[ 'changes' ][] = array(
-										'row' => $new_table_report[ 'rows' ],
-										'column' => $column,
-										'from' => utf8_encode( is_string($data_to_fix)? $data_to_fix : '"' . gettype($data_to_fix) . '"'),
-										'to' => utf8_encode( $edited_data )
-									);
-								}
-
-                                if ('bytea' == $column_data[ 'Type' ]) {
-                                    $bytea_data = '\x';
-                                    for ($i=0; $i<strlen($edited_data); ++$i) {
-                                        $bytea_data .= sprintf('%02x', ord(substr($edited_data, $i, 1)));
+                            if (!empty($edited_data)) {
+                                // handle streams as strings
+                                if ( is_resource($data_to_fix) ) {
+                                    if ( 'stream' == get_resource_type($data_to_fix) ) {
+                                        $edited_data = $data_to_fix = stream_get_contents($data_to_fix);
                                     }
-
-                                    $update_sql[] = "{$column} = " . $this->db_escape( $bytea_data );
+                                    else {
+                                        $this->add_error( 'unsupported resource type: ' . get_resource_type($data_to_fix), 'results' );
+                                    }
                                 }
-                                else{
-                                    $update_sql[] = "{$column} = " . $this->db_escape( $edited_data );
+                                
+                                //+val
+                                // handle bytea (binary strings) as strings
+                                if (!empty($data_to_fix)
+                                    && ('bytea' == $column_data[ 'Type' ])) {
+                                  // update reference data (decoded)
+                                  $data_to_fix = $edited_data = pg_unescape_bytea($data_to_fix);
                                 }
-								$update = true;
+                                
+							    //+multi if ( $primary_keys == $column ) {
+							    if ( in_array($column, $primary_keys) ) {
+							    	$where_sql[] = "{$column} = " . $this->db_escape( $data_to_fix );
+							    }
+                                
+							    // exclude cols
+							    if ( in_array( $column, $this->exclude_cols ) )
+							    	continue;
+                                
+							    // include cols
+							    if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
+							    	continue;                            
+                                
+							    // Run a search replace on the data that'll respect the serialisation.
+							    $edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
+                                
+							    // Something was changed
+							    if ( $edited_data != $data_to_fix ) {
+                                
+							    	$report[ 'change' ]++;
+							    	$new_table_report[ 'change' ]++;
+                                
+							    	// log first x changes
+							    	if ( $new_table_report[ 'change' ] <= $this->get( 'report_change_num' ) ) {
+							    		$new_table_report[ 'changes' ][] = array(
+							    			'row' => $new_table_report[ 'rows' ],
+							    			'column' => $column,
+							    			'from' => utf8_encode( is_string($data_to_fix)? $data_to_fix : '"' . gettype($data_to_fix) . '"'),
+							    			'to' => utf8_encode( $edited_data )
+							    		);
+							    	}
+                                
+                                    if ('bytea' == $column_data[ 'Type' ]) {
+                                        $bytea_data =  pg_escape_bytea($edited_data);
+                                        $update_sql[] = "{$column} = " . $this->db_escape( $bytea_data );
+                                    }
+                                    else{
+                                        $update_sql[] = "{$column} = " . $this->db_escape( $edited_data );
+                                    }
+							    	$update = true;
+                                
+							    }
 
-							}
+                            }
 
 						}
 
