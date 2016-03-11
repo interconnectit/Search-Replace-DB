@@ -738,7 +738,7 @@ class icit_srdb_ui extends icit_srdb {
 		putenv('MYSQL_PORT_3306_TCP_PORT=3306');
 		putenv('MYSQL_PORT_3306_TCP_ADDR=172.17.0.67');
 
-		if ( 1 === 1 || file_exists( '/.dockerenv' ) && file_exists( '/.dockerinit' ) ) {
+		if ( file_exists( '/.dockerenv' ) && file_exists( '/.dockerinit' ) ) {
 
 			if ( getenv( 'MYSQL_ENV_MYSQL_VERSION' ) ) {
 
