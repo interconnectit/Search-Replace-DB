@@ -124,6 +124,7 @@ class icit_srdb_ui extends icit_srdb {
 
 	public $is_wordpress = false;
 	public $is_drupal = false;
+	public $is_docker = false;
 
 	public function __construct() {
 
@@ -189,6 +190,17 @@ class icit_srdb_ui extends icit_srdb {
 				$port = (string)abs( (int)$port );
 			}
 
+			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+
+		} elseif( $bootstrap && $this->is_docker() ) {
+			$name 		= '';
+			$user 		= 'root';
+			$pass 		= DB_PASSWORD;
+			$host 		= DB_HOST;
+			$port 		= DB_PORT;
+			$charset 	= 'utf8';
+			$collate 	= '';
+			
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
 		} else {
@@ -711,6 +723,39 @@ class icit_srdb_ui extends icit_srdb {
 
 		}
 
+		return false;
+	}
+
+	/**
+	 * Attempts to detect a Docker container and bootstraps the environment with it
+	 *
+	 * @return bool    Whether it is a Wordpress container and we have database linked
+	 */
+	public function is_docker() {
+		
+		putenv('MYSQL_ENV_MYSQL_VERSION=5.6.22');
+		putenv('MYSQL_ENV_MYSQL_ROOT_PASSWORD=root');
+		putenv('MYSQL_PORT_3306_TCP_PORT=3306');
+		putenv('MYSQL_PORT_3306_TCP_ADDR=172.17.0.67');
+
+		if ( 1 === 1 || file_exists( '/.dockerenv' ) && file_exists( '/.dockerinit' ) ) {
+
+			if ( getenv( 'MYSQL_ENV_MYSQL_VERSION' ) ) {
+
+				define( 'DB_PASSWORD', getenv( 'MYSQL_ENV_MYSQL_ROOT_PASSWORD' ) );
+				define( 'DB_HOST', getenv( 'MYSQL_PORT_3306_TCP_ADDR' ) );
+				define( 'DB_PORT', getenv( 'MYSQL_PORT_3306_TCP_PORT' ) );
+
+			} else {
+
+				$this->add_error( 'Docker environment detected but could not find a linked MySQL container.', 'db' );
+			
+			}
+
+			return true;
+
+		}
+		
 		return false;
 	}
 
