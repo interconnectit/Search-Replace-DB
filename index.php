@@ -729,7 +729,7 @@ class icit_srdb_ui extends icit_srdb {
 	/**
 	 * Attempts to detect a Docker container and bootstraps the environment with it
 	 *
-	 * @return bool    Whether it is a Wordpress container and we have database linked
+	 * @return bool    Whether it is a Docker container and we have a linked database
 	 */
 	public function is_docker() {
 		
