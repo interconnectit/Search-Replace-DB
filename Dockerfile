@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER Fer Uria <fauria@gmail.com>
 LABEL Description="Search Replace DB tool Docker image" \
 	License="GPL v3" \
-	Usage="docker run -i -t --rm -p 8080:80 fauria/srdb" \
+	Usage="docker run -i -t --rm -p 8080:80 --link mysql-container:mysql fauria/srdb" \
 	Version="1.0"
 
 RUN apt-get update
