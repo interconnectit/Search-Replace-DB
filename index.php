@@ -153,7 +153,10 @@ class icit_srdb_ui extends icit_srdb {
 			$pass 		= DB_PASSWORD;
 
 			// Port and host need to be split apart.
-			if ( strstr( DB_HOST, ':' ) !== false ) {
+			if ( substr(DB_HOST, 0, 10) === 'localhost:' ) {
+				$host = DB_HOST;
+				$port = 0;
+			} elseif ( strstr( DB_HOST, ':' ) !== false ) {
 				$parts = explode( ':', DB_HOST );
 				$host = $parts[0];
 				$port_input = $parts[1];
