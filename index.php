@@ -122,6 +122,7 @@ class icit_srdb_ui extends icit_srdb {
 	 */
 	public $path;
 
+	public $is_typo = false;
 	public $is_wordpress = false;
 	public $is_drupal = false;
 
@@ -190,6 +191,26 @@ class icit_srdb_ui extends icit_srdb {
 			}
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+
+		} elseif ($this->is_typo()) {
+
+			// populate db details
+			$name = DB_NAME;
+			$user = DB_USER;
+			$pass = DB_PASSWORD;
+			$port = DB_PORT;
+			$host = DB_HOST;
+			$charset = 'utf8';
+			$collate = '';
+
+			$portAsString = (string)$port ? (string)$port : "0";
+			if ((string)abs((int)$port) !== $portAsString) {
+				$port = 3306;
+			} else {
+				$port = (string)abs((int)$port);
+			}
+
+			$this->response($name, $user, $pass, $host, $port, $charset, $collate);
 
 		} else {
 
@@ -577,6 +598,43 @@ class icit_srdb_ui extends icit_srdb {
 		}
 
 		return self::DELETE_SCRIPT_SUCCESS;
+	}
+
+	/**
+	 * Attempts to detect a Typo3 installation
+	 *
+	 * @return bool Whether it is a Typo3 installation and we have database credentials
+	 */
+	public function is_typo()
+	{
+		$pathMod = '';
+		$depth = 0;
+		$maxDepth = 4;
+		$configFile = 'typo3conf/LocalConfiguration.php';
+		$currentDir = getcwd();
+
+		while (!file_exists($currentDir . "{$pathMod}/{$configFile}")) {
+			$pathMod .= '/..';
+			if ($depth++ >= $maxDepth) {
+				break;
+			}
+		}
+
+		if (file_exists($currentDir . "{$pathMod}/{$configFile}")) {
+			$configPath = $currentDir . "{$pathMod}/{$configFile}";
+
+			$config = require $configPath;
+
+			define('DB_NAME', $config['DB']['database']);
+			define('DB_USER', $config['DB']['username']);
+			define('DB_PASSWORD', $config['DB']['password']);
+			define('DB_HOST', $config['DB']['host']);
+			define('DB_PORT', $config['DB']['port']);
+
+			return true;
+		}
+		
+		return false;
 	}
 
 
