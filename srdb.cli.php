@@ -177,7 +177,15 @@ foreach( $options as $key => $value ) {
 // modify the log output
 class icit_srdb_cli extends icit_srdb {
 
-	public function log( $type = '' ) {
+    public function __construct($args) {
+        //add slashes to all args before they're removed in parent constructor
+        foreach ($args as $key => $value) {
+            $args[$key] = addslashes($value);
+        }
+        parent::__construct($args);
+    }
+
+    public function log( $type = '' ) {
 
 		$args = array_slice( func_get_args(), 1 );
 
