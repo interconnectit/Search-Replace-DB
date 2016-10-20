@@ -1,5 +1,5 @@
 <?php
-
+require_once 'simple-authenticate/auth.php';
 /**
  *
  * Safe Search and Replace on Database with Serialized Data v3.1.0
