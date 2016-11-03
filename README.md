@@ -139,9 +139,9 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 
 ### Example cli commmands: 
 
-* php srdb.cli.php -h dbhost -n dbname -u root -p "" -s 'http://www.yourdomain.com' -r 'http://newdomain.com'
+* php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com" -r "http://newdomain.com"
 
-* php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s 'http://www.yourdomain.com' -r 'http://newdomain.com'
+* php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
 
 
 ## Troubleshooting
