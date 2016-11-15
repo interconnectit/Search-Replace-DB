@@ -202,6 +202,17 @@ class icit_srdb_ui extends icit_srdb {
 
 	public function response( $name = '', $user = '', $pass = '', $host = '127.0.0.1', $port = 3306, $charset = 'utf8', $collate = '' ) {
 
+        if (version_compare(PHP_VERSION, '5.2') < 0){
+            $this->add_error("The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again", "compatibility");
+        }
+
+
+        if (extension_loaded("mbstring"))
+        {
+            $this->add_error(        "This script requires mbstring. Please install mbstring and try again", "compatibility");
+
+        }
+        
 		// always override with post data
 		if ( isset( $_POST[ 'name' ] ) ) {
 			$name = $_POST[ 'name' ]; // your database
@@ -998,9 +1009,11 @@ class icit_srdb_ui extends icit_srdb {
 
 				<?php $this->get_errors( 'environment' ); ?>
 
-				<?php $this->get_errors( 'recoverable_db' ); ?>
+				<?php $this->errors( 'recoverable_db' ); ?>
 
 				<?php $this->get_errors( 'db' ); ?>
+                
+                <?php $this->get_errors( 'compatibility' ); ?>
 
 				<div class="fields fields-small">
 

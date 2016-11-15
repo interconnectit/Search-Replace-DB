@@ -128,6 +128,17 @@ ARGS
 // missing field flag, show all missing instead of 1 at a time
 $missing_arg = false;
 
+if (version_compare(PHP_VERSION, '5.2') < 0){
+    fwrite( STDERR, "The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again. \n" );
+    exit(1);
+}
+
+if (!extension_loaded("mbstring"))
+{
+    fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
+    exit (1);
+}
+    
 // check required args are passed
 foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
