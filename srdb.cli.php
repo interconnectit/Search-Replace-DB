@@ -41,6 +41,19 @@ $required = array(
 	'p:'
 );
 
+function isSecure() {
+    return
+        !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+}
+
+if (!isSecure())
+{
+    echo "\nWarning: the network connection you are using is transmitting your password unencrypted. \nConsider using an https:// connection, or change your database password after using the script \n\n";
+}
+
+
+
+
 function strip_colons( $string ) {
 	return str_replace( ':', '', $string );
 }
@@ -138,7 +151,7 @@ if (!extension_loaded("mbstring"))
     fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
     exit (1);
 }
-    
+
 // check required args are passed
 foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
@@ -187,8 +200,7 @@ foreach( $options as $key => $value ) {
 
 // modify the log output
 class icit_srdb_cli extends icit_srdb {
-
-	public function log( $type = '' ) {
+    public function log( $type = '' ) {
 
 		$args = array_slice( func_get_args(), 1 );
 

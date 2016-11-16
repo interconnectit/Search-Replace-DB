@@ -198,8 +198,7 @@ class icit_srdb_ui extends icit_srdb {
 		}
 
 	}
-
-
+    
 	public function response( $name = '', $user = '', $pass = '', $host = '127.0.0.1', $port = 3306, $charset = 'utf8', $collate = '' ) {
 
         if (version_compare(PHP_VERSION, '5.2') < 0){
@@ -207,9 +206,9 @@ class icit_srdb_ui extends icit_srdb {
         }
 
 
-        if (extension_loaded("mbstring"))
+        if (!extension_loaded("mbstring"))
         {
-            $this->add_error(        "This script requires mbstring. Please install mbstring and try again", "compatibility");
+            $this->add_error("This script requires mbstring. Please install mbstring and try again", "compatibility");
 
         }
         
@@ -409,7 +408,6 @@ class icit_srdb_ui extends icit_srdb {
 				$this->db_setup();
 
 				if ( $this->db_valid() ) {
-
 					// get engines
 					$this->set( 'engines', $this->get_engines() );
 
@@ -964,8 +962,21 @@ class icit_srdb_ui extends icit_srdb {
 		return $table_select;
 	}
 
+    public function isSecure() {
+        return
+            !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+
+    }
 
 	public function ui() {
+		if ( !$this->isSecure() ) {
+			?>
+			<div class="special-errors">
+				<h4>Warning</h4>
+                <?php echo printf( '<p>The network connection you are using is transmitting your password unencrypted. <br/> Consider using an https:// connection, or change your database password after using the script </p>'  ); ?>
+			</div>
+		<?php
+		}
 
 		// Warn if we're running in safe mode as we'll probably time out.
 		if ( ini_get( 'safe_mode' ) ) {
@@ -976,7 +987,7 @@ class icit_srdb_ui extends icit_srdb {
 			</div>
 		<?php
 		}
-
+        
 		?>
 		<form action="" method="post">
 
@@ -1014,6 +1025,7 @@ class icit_srdb_ui extends icit_srdb {
 				<?php $this->get_errors( 'db' ); ?>
                 
                 <?php $this->get_errors( 'compatibility' ); ?>
+                <?php $this->get_errors( 'connection' ); ?>
 
 				<div class="fields fields-small">
 

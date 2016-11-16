@@ -182,7 +182,8 @@ class icit_srdb {
 						'search' => array(),
 						'db' => array(),
 						'tables' => array(),
-						'results' => array()
+						'results' => array(),
+                        'compatibility' => array()
 					);
 
 	public $error_type = 'search';
@@ -437,6 +438,7 @@ class icit_srdb {
 			$this->add_error( 'Could not find any MySQL database drivers. (MySQLi or PDO required.)', 'db' );
 			return false;
 		}
+
 
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
