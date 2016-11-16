@@ -539,7 +539,8 @@ class icit_srdb {
 		FROM information_schema.`TABLES` t
 			LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
 				ON ( t.`TABLE_COLLATION` = c.`COLLATION_NAME` )
-		  WHERE t.`TABLE_SCHEMA` = '{$this->name}';
+		  WHERE t.`TABLE_SCHEMA` = '{$this->name}'
+		  ORDER BY t.`TABLE_NAME`;
 		";
 
 		$all_tables_mysql = $this->db_query( $show_table_status );
