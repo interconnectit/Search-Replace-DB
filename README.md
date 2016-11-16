@@ -137,6 +137,13 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	
 		Displays this help message ;)
 
+### Example cli commmands: 
+
+* php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
+* php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
+
 ## Troubleshooting
 
 ### I get a popup saying there was an AJAX error
