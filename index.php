@@ -124,6 +124,7 @@ class icit_srdb_ui extends icit_srdb {
 
 	public $is_wordpress = false;
 	public $is_drupal = false;
+	public $is_joomla = false;
 
 	public function __construct() {
 
@@ -133,7 +134,7 @@ class icit_srdb_ui extends icit_srdb {
 		// prevent fatals from hiding the UI
 		register_shutdown_function( array( $this, 'fatal_handler' ) );
 
-		// flag to bootstrap WP or Drupal
+		// flag to bootstrap WP, Drupal or Joomla
 		$bootstrap = true; // isset( $_GET[ 'bootstrap' ] );
 
 		// discover environment
@@ -188,6 +189,31 @@ class icit_srdb_ui extends icit_srdb {
 			} else {
 				$port = (string)abs( (int)$port );
 			}
+
+			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+
+		} elseif( $bootstrap && $this->is_joomla() ) {
+			// Create a JConfig object
+			$jconfig = new JConfig();
+			
+			// populate db details
+			$name 		= $jconfig->db;
+			$user 		= $jconfig->user;
+			$pass 		= $jconfig->password;
+
+			// Port and host need to be split apart.
+			if ( strstr( $jconfig->host, ':' ) !== false ) {
+				$parts = explode( ':', $jconfig->host );
+				$host = $parts[0];
+				$port_input = $parts[1];
+
+				$port = abs( (int)$port_input );
+			} else {
+				$host = $jconfig->host;
+				$port = 3306;
+			}
+			$charset 	= 'utf8';
+			$collate 	= '';
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
@@ -716,6 +742,44 @@ class icit_srdb_ui extends icit_srdb {
 				// We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
 				// This is a consequence of the 'complete' method in JavaScript
 				$this->add_error( 'Drupal detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db' );
+			}
+
+		}
+
+		return false;
+	}
+
+	public function is_joomla() {
+
+		$path_mod = '';
+		$depth = 0;
+		$max_depth = 4;
+		$bootstrap_file = 'configuration.php';
+
+		while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+			$path_mod .= '/..';
+			if ( $depth++ >= $max_depth )
+				break;
+		}
+
+		if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+
+			try {
+				// require the bootstrap include
+				require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
+
+				// Create a JConfig object
+				$jconfig = new JConfig();
+				
+				// confirm environment
+				$this->set( 'is_joomla', true );
+
+				return true;
+
+			} catch( Exception $error ) {
+				// We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
+				// This is a consequence of the 'complete' method in JavaScript
+				$this->add_error( 'Joomla detected but could not retrieve configuration. This could be a PHP error, possibly caused by a false positive', 'recoverable_db' );
 			}
 
 		}
