@@ -818,7 +818,6 @@ class icit_srdb_ui extends icit_srdb {
 		return false;
 	}
 
-<<<<<<< HEAD
 	public function is_joomla() {
 
 		$path_mod = '';
@@ -851,16 +850,16 @@ class icit_srdb_ui extends icit_srdb {
 				// This is a consequence of the 'complete' method in JavaScript
 				$this->add_error( 'Joomla detected but could not retrieve configuration. This could be a PHP error, possibly caused by a false positive', 'recoverable_db' );
 			}
-
+            
 		}
+    }
 
-=======
 	/**
 	 * Attempts to detect a Docker container and bootstraps the environment with it
 	 *
 	 * @return bool    Whether it is a Docker container and we have a linked database
 	 */
-	public function is_docker() {
+    public function is_docker() {
 		
 		putenv('MYSQL_ENV_MYSQL_VERSION=5.6.22');
 		putenv('MYSQL_ENV_MYSQL_ROOT_PASSWORD=root');
@@ -885,7 +884,6 @@ class icit_srdb_ui extends icit_srdb {
 
 		}
 		
->>>>>>> 3ab3d7d52be868e17c3aa4a284c056c3d7ebd954
 		return false;
 	}
 
