@@ -193,7 +193,6 @@ class icit_srdb_ui extends icit_srdb {
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
-<<<<<<< HEAD
 		} elseif( $bootstrap && $this->is_joomla() ) {
 			// Create a JConfig object
 			$jconfig = new JConfig();
@@ -218,7 +217,6 @@ class icit_srdb_ui extends icit_srdb {
 			$collate 	= '';
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
-=======
 		} elseif ($this->is_typo()) {
 
 			// populate db details
@@ -238,7 +236,6 @@ class icit_srdb_ui extends icit_srdb {
 			}
 
 			$this->response($name, $user, $pass, $host, $port, $charset, $collate);
->>>>>>> 4b72f736d61aac3a7b1679ba837e873623a7adb0
 
 		} else {
 
