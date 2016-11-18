@@ -1184,7 +1184,7 @@ class icit_srdb_ui extends icit_srdb {
 
 				<?php $this->get_errors( 'environment' ); ?>
 
-				<?php $this->errors( 'recoverable_db' ); ?>
+				<?php $this->get_errors( 'recoverable_db' ); ?>
 
 				<?php $this->get_errors( 'db' ); ?>
                 
