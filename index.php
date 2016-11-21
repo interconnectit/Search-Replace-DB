@@ -1021,8 +1021,8 @@ class icit_srdb_ui extends icit_srdb {
 		$time = array_sum( explode( ' ', $report[ 'end' ] ) ) - array_sum( explode( ' ', $report[ 'start' ] ) );
 
 		$srch_rplc_input_phrase = $dry_run ?
-			'searching for <strong>"' . $search . '"</strong> (to be replaced by <strong>"' . $replace . '"</strong>)' :
-			'replacing <strong>"' . $search . '"</strong> with <strong>"' . $replace . '"</strong>';
+			'searching for <strong>"' . $this->esc_html_attr($search) . '"</strong> (to be replaced by <strong>"' . $this->esc_html_attr($replace) . '"</strong>)' :
+			'replacing <strong>"' . $this->esc_html_attr($search) . '"</strong> with <strong>"' . $this->esc_html_attr($replace) . '"</strong>';
 
 		echo '
 		<div class="report">';
