@@ -25,8 +25,8 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 	public $testdb = array(
 		'host' => '127.0.0.1',
 		'name' => 'srdbtest',
-		'user' => 'root',
-		'pass' => '123',
+		'user' => 'travis',
+		'pass' => '',
 		'table'=> 'posts'
 		);
 
