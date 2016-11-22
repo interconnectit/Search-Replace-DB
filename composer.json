@@ -15,7 +15,7 @@
     },
     "scripts": {
         "test": [
-            "vendor/bin/phpunit --colors tests"
+            "phpunit"
         ]
     }
 }
