@@ -173,6 +173,7 @@ class icit_srdb {
 	public $port = 0;
 	public $charset = 'utf8';
 	public $collate = '';
+	public $socket = '/tmp/mysql.sock';
 
 
 	/**
@@ -284,7 +285,12 @@ class icit_srdb {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
 		}
-		
+
+		// handle localhost:/tmp/mysql.sock as host
+		if ( substr((string)$args['host'], 0, 10) === 'localhost:' ) {
+                        (string)$args['socket'] = substr((string)$args['host'], 10);
+                       (string)$args['port'] = "0";
+               }
 		// verify that the port number is logical		
 		// work around PHPs inability to stringify a zero without making it an empty string
 		// AND without casting away trailing characters if they are present.
@@ -468,9 +474,13 @@ class icit_srdb {
 
 		// switch off PDO
 		$this->set( 'use_pdo', false );
-
-		$connection = @mysqli_connect( $this->host, $this->user, $this->pass, $this->name, $this->port );
-
+		// If host starts with "localhost:" use the part after it as path to mysql-socket
+		if ( substr($this->host, 0, 10) === 'localhost:' ) {
+                       $this->socket = substr($this->host, 10);
+                       $connection = @mysqli_connect( '', $this->user, $this->pass, $this->name, '', $this->socket );
+		} else {
+                       $connection = @mysqli_connect( $this->host, $this->user, $this->pass, $this->name, $this->port );
+               }
 		// unset if not available
 		if ( ! $connection ) {
 			$this->add_error( mysqli_connect_error( ), 'db' );
@@ -489,7 +499,13 @@ class icit_srdb {
 	public function connect_pdo() {
 	
 		try {
-			$connection = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->name}", $this->user, $this->pass );
+			// If host starts with "localhost:" use the part after it as path to mysql-socket
+			if ( substr($this->host, 0, 10) === 'localhost:' ) {
+				$this->socket = substr($this->host, 10);
+				$connection = new PDO( "mysql:unix_socket={$this->socket};dbname={$this->name}", $this->user, $this->pass );
+			} else {
+				$connection = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->name}", $this->user, $this->pass );
+			}
 		} catch( PDOException $e ) {
 			$this->add_error( $e->getMessage(), 'db' );
 			$connection = false;
