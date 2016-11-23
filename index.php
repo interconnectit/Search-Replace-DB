@@ -1590,7 +1590,7 @@ class icit_srdb_ui extends icit_srdb {
 			.branding {
 				width: 260px;
 				background:
-                url(images/branding.png);
+                url(assets/img/branding.png);
 				no-repeat
 				0 0;
 				height: 40px;
@@ -1866,7 +1866,7 @@ class icit_srdb_ui extends icit_srdb {
 				color: #fff;
 				background:
 				#900
-                url(images/rotate.png)
+                url(assets/img/rotate.png)
 				no-repeat
 				8px
 				center;
