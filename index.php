@@ -108,10 +108,6 @@
  */
 
 // always good here
-header( 'HTTP/1.1 200 OK' );
-header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
-header('Pragma: no-cache'); // HTTP 1.0.
-header('Expires: 0'); // Proxies.
 
 require_once( 'srdb.class.php' );
 
@@ -483,8 +479,10 @@ class icit_srdb_ui extends icit_srdb {
 		);
 
 		// set header again before output in case WP does it's thing
-		header( 'HTTP/1.1 200 OK' );
-
+        header( 'HTTP/1.1 200 OK' );
+        header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+        header('Pragma: no-cache'); // HTTP 1.0.
+        header('Expires: 0'); // Proxies.
 		if ( ! $ajax ) {
 			$this->html( $html );
 		} else {
@@ -1453,14 +1451,6 @@ class icit_srdb_ui extends icit_srdb {
 
 	public function html( $body ) {
         include('templates/html.php');
-	}
-
-
-
-	public function js() {
-		?>
-
-	<?php
 	}
 
 }
