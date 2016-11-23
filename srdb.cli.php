@@ -11,7 +11,7 @@
 date_default_timezone_set( 'Europe/London' );
 
 // include the srdb class
-require_once( realpath( dirname( __FILE__ ) ) . '/srdb.class.php' );
+require_once(realpath(dirname(__FILE__)) . '/srdb.class.php');
 
 $opts = array(
 	'h:' => 'host:',
@@ -184,7 +184,7 @@ foreach( $options as $key => $value ) {
 	// boolean options as is, eg. a no value arg should be set true
 	if ( in_array( $key, $long_opts ) )
 		$value = true;
-	
+
 	switch ( $key ) {
 		// boolean options.
 		case 'verbose':

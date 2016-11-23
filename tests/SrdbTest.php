@@ -34,7 +34,7 @@ class SrdbTest extends PHPUnit_Extensions_Database_TestCase {
 		parent::setUp();
 
 		// get class to test
-		require_once( dirname( __FILE__ ) . '/../srdb.class.php' );
+		require_once(dirname(__FILE__) . '/../src/srdb.class.php');
 	}
 
 	public function tearDown() {
