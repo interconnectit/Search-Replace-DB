@@ -3,7 +3,9 @@
 $classes = array('no-js');
 $classes[] = $this->regex ? 'regex-on' : 'regex-off';
 
-?><!DOCTYPE html>
+?>
+
+<!DOCTYPE html>
 <html class="<?php echo implode(' ', $classes); ?>">
 <head>
     <script>var h = document.getElementsByTagName('html')[0];
