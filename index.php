@@ -197,7 +197,7 @@ class icit_srdb_ui extends icit_srdb {
 		} elseif( $bootstrap && $this->is_joomla() ) {
 			// Create a JConfig object
 			$jconfig = new JConfig();
-			
+
 			// populate db details
 			$name 		= $jconfig->db;
 			$user 		= $jconfig->user;
@@ -246,7 +246,7 @@ class icit_srdb_ui extends icit_srdb {
 			$port 		= DB_PORT;
 			$charset 	= 'utf8';
 			$collate 	= '';
-			
+
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
 		} else {
@@ -256,7 +256,7 @@ class icit_srdb_ui extends icit_srdb {
 		}
 
 	}
-    
+
 	public function response( $name = '', $user = '', $pass = '', $host = '127.0.0.1', $port = 3306, $charset = 'utf8', $collate = '' ) {
 
         if (version_compare(PHP_VERSION, '5.2') < 0){
@@ -269,7 +269,7 @@ class icit_srdb_ui extends icit_srdb {
             $this->add_error("This script requires mbstring. Please install mbstring and try again", "compatibility");
 
         }
-        
+
 		// always override with post data
 		if ( isset( $_POST[ 'name' ] ) ) {
 			$name = $_POST[ 'name' ]; // your database
@@ -285,9 +285,9 @@ class icit_srdb_ui extends icit_srdb {
 			if ( (string)abs( (int)$port_input ) !== $port_as_string ) {
 				// Mangled port number: non numeric.
 				$this->add_error('Port number must be a positive integer. If you are unsure, try the default port 3306.', 'db');
-				
+
 				// Force a bad run by supplying nonsense.
-				$port = "nonsense";				
+				$port = "nonsense";
 			} else {
 				$port = abs( (int)$port_input );
 			}
@@ -491,7 +491,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			// return json version of results
 			header( 'Content-Type: application/json' );
-			
+
 			echo json_encode( array(
 				'errors' => $this->get( 'errors' ),
 				'report' => $this->get( 'report' ),
@@ -679,7 +679,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -839,7 +839,7 @@ class icit_srdb_ui extends icit_srdb {
 
 				// Create a JConfig object
 				$jconfig = new JConfig();
-				
+
 				// confirm environment
 				$this->set( 'is_joomla', true );
 
@@ -850,7 +850,7 @@ class icit_srdb_ui extends icit_srdb {
 				// This is a consequence of the 'complete' method in JavaScript
 				$this->add_error( 'Joomla detected but could not retrieve configuration. This could be a PHP error, possibly caused by a false positive', 'recoverable_db' );
 			}
-            
+
 		}
     }
 
@@ -860,7 +860,7 @@ class icit_srdb_ui extends icit_srdb {
 	 * @return bool    Whether it is a Docker container and we have a linked database
 	 */
     public function is_docker() {
-		
+
 		putenv('MYSQL_ENV_MYSQL_VERSION=5.6.22');
 		putenv('MYSQL_ENV_MYSQL_ROOT_PASSWORD=root');
 		putenv('MYSQL_PORT_3306_TCP_PORT=3306');
@@ -877,13 +877,13 @@ class icit_srdb_ui extends icit_srdb {
 			} else {
 
 				$this->add_error( 'Docker environment detected but could not find a linked MySQL container.', 'db' );
-			
+
 			}
 
 			return true;
 
 		}
-		
+
 		return false;
 	}
 
@@ -1151,7 +1151,7 @@ class icit_srdb_ui extends icit_srdb {
 			</div>
 		<?php
 		}
-        
+
 		?>
 		<form action="" method="post">
 
@@ -1187,7 +1187,7 @@ class icit_srdb_ui extends icit_srdb {
 				<?php $this->get_errors( 'recoverable_db' ); ?>
 
 				<?php $this->get_errors( 'db' ); ?>
-                
+
                 <?php $this->get_errors( 'compatibility' ); ?>
                 <?php $this->get_errors( 'connection' ); ?>
 
@@ -1481,9 +1481,9 @@ class icit_srdb_ui extends icit_srdb {
 
 	public function meta() {
 		?>
-		
-		<meta charset="utf-8" /> 
-		
+
+		<meta charset="utf-8" />
+
 		<?php
 	}
 
@@ -1866,7 +1866,7 @@ class icit_srdb_ui extends icit_srdb {
 				color: #fff;
 				background:
 				#900
-                url(images/rotate.png);
+                url(images/rotate.png)
 				no-repeat
 				8px
 				center;
@@ -2875,12 +2875,12 @@ class icit_srdb_ui extends icit_srdb {
 												.find( '.from' ).text( item.from ).end()
 												.find( '.to' ).text( item.to ).end()
 												.appendTo( $changes );
-											
+
 										var from_div = $change.find('.from');
 										var to_div   = $change.find('.to');
-												
+
 										var original_text = from_div.html();
-											
+
 										// Only display highlights if this isn't a serialised object.
 										// We CANNOT show highlights properly without writing a FULL COMPLETE
 										// php compatible serialize unserialize pair.
@@ -2890,44 +2890,44 @@ class icit_srdb_ui extends icit_srdb {
 										{
 											if ( regex ) {
 												var result_of_regex;
-												
+
 												var copied_char_from_source = 0;
-												
+
 												var output_search_panel  = '';
 												var output_replace_panel = '';
-												
+
 												while ( result_of_regex = regex_search_iter.exec( original_text ) ) {
 													var search_match_start = result_of_regex.index;
 													var search_match_end   = regex_search_iter.lastIndex;
-													
+
 													output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source, search_match_start);
 													output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source, search_match_start);
-													
+
 													output_search_panel  = output_search_panel  + '<span class="highlight">';
 													output_search_panel  = output_search_panel  + original_text.slice(search_match_start, search_match_end);
 													output_search_panel  = output_search_panel  + '</span>';
 													output_replace_panel = output_replace_panel + '<span class="highlight">';
 													output_replace_panel = output_replace_panel + original_text.slice(search_match_start, search_match_end).replace( regex_search, replace );
 													output_replace_panel = output_replace_panel + '</span>';
-													
+
 													copied_char_from_source = search_match_end;
 												}
-												
+
 												output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source);
 												output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source);
-																						
+
 												from_div.html( output_search_panel );
 												to_div.html( output_replace_panel );
-											} else {												
+											} else {
 												// Do a multiple straight up search replace on search with the highlight string we want to put in.
 												var original_chunks = original_text.split(search);
-												
+
 												from_div.html( original_chunks.join('<span class="highlight">' + search + '</span>') );
-												
+
 												if (replace)
 												{
 													// only display highlights if this isn't a serialised object
-													if ( !containsSerialisedString( to_div.html() ) ) 
+													if ( !containsSerialisedString( to_div.html() ) )
 													{
 														to_div.html( original_chunks.join('<span class="highlight">' + replace + '</span>') );
 													}
