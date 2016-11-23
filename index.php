@@ -107,7 +107,7 @@
  *
  */
 
-require_once( 'srdb.class.php' );
+require_once('src/srdb.class.php');
 require_once( 'src/ui.php' );
 
 // initialise
