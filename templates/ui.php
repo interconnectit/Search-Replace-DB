@@ -70,7 +70,7 @@
 
             <div class="field field-short">
                 <label for="pass">pass</label>
-                <input id="pass" name="pass" type="text"
+                <input id="pass" name="pass" type="password"
                        value="<?php $this->esc_html_attr($this->pass, true); ?>"/>
             </div>
 
