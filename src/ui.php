@@ -1064,6 +1064,7 @@ class icit_srdb_ui extends icit_srdb
         ?>
 
         <?php
+
         include('templates/ui.php');
 
     }
@@ -1075,6 +1076,8 @@ class icit_srdb_ui extends icit_srdb
 
     public function html($body)
     {
+        $classes = array('no-js');
+        $classes[] = $this->regex ? 'regex-on' : 'regex-off';
         include('templates/html.php');
     }
 
