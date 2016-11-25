@@ -284,16 +284,16 @@ class icit_srdb {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
 		}
-		
-		// verify that the port number is logical		
+
+		// verify that the port number is logical
 		// work around PHPs inability to stringify a zero without making it an empty string
 		// AND without casting away trailing characters if they are present.
-		$port_as_string = (string)$args['port'] ? (string)$args['port'] : "0";		
+		$port_as_string = (string)$args['port'] ? (string)$args['port'] : "0";
 		if ( (string)abs( (int)$args['port'] ) !== $port_as_string ) {
 			$port_error = 'Port number must be a positive integer if specified.';
 			$this->add_error( $port_error, 'db' );
 			if ( defined( 'STDIN' ) ) {
-				echo 'Error: ' . $port_error;	
+				echo 'Error: ' . $port_error;
 			}
 			return;
 		}
@@ -334,9 +334,15 @@ class icit_srdb {
 			}
 
 			// default search/replace action
-			else {
-				$report = $this->replacer( $this->search, $this->replace, $this->tables );
-			}
+            elseif ( is_array($this-> search)) {
+#                $report = $this->replacer( $this->search, $this->replace, $this->tables );
+                $report = $this->replacer( "search1", "replace1", $this->tables );
+                $report = $report . $this->replacer( "search2", "replace2", $this->tables );
+            }
+
+            else {
+                $report = $this->replacer( $this->search, $this->replace, $this->tables );
+            }
 
 		} else {
 
@@ -487,7 +493,7 @@ class icit_srdb {
 	 * @return PDO|bool
 	 */
 	public function connect_pdo() {
-	
+
 		try {
 			$connection = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->name}", $this->user, $this->pass );
 		} catch( PDOException $e ) {
@@ -874,12 +880,12 @@ class icit_srdb {
 
 				// get primary key and columns
 				list( $primary_key, $columns ) = $this->get_columns( $table );
-				
+
 				if ( $primary_key === null || empty( $primary_key ) ) {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
-				
+
 				// create new table report instance
 				$new_table_report = $table_report;
 				$new_table_report[ 'start' ] = microtime();
@@ -929,7 +935,7 @@ class icit_srdb {
 							// include cols
 							if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
 								continue;
-							
+
 							// Run a search replace on the data that'll respect the serialisation.
 							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
 
@@ -961,7 +967,7 @@ class icit_srdb {
 						} elseif ( $update && ! empty( $where_sql ) ) {
 
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
-							
+
 							$result = $this->db_update( $sql );
 
 							if ( ! is_int( $result ) && ! $result ) {
@@ -1046,7 +1052,7 @@ class icit_srdb {
 			$report = array( 'engine' => $engine, 'converted' => array() );
 
 			$all_tables = $this->get_tables();
-			
+
 			if ( empty( $tables ) ) {
 				$tables = array_keys( $all_tables );
 			}
@@ -1097,7 +1103,7 @@ class icit_srdb {
 			$report = array( 'collation' => $collation, 'converted' => array() );
 
 			$all_tables = $this->get_tables();
-				
+
 			if ( empty( $tables ) ) {
 				$tables = array_keys( $all_tables );
 			}

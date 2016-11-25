@@ -266,6 +266,7 @@ It took {$time} seconds";
 
 }
 
+
 $report = new icit_srdb_cli($args);
 
 // Only print a separating newline if verbose mode is on to separate verbose output from result
