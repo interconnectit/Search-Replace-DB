@@ -26,16 +26,16 @@
         <div class="fields field-advanced hide-if-regex-off">
             <label for="regex_i" class="field field-advanced"><input type="checkbox" name="regex_i" id="regex_i"
                                                                      value="1" <?php $this->checked(true, $this->regex_i); ?> />
-                <abbr title="case insensitive">i</abbr></abbr></label>
+                <abbr title="case insensitive">Case insensitive</abbr></abbr></label>
             <label for="regex_m" class="field field-advanced"><input type="checkbox" name="regex_m" id="regex_m"
                                                                      value="1" <?php $this->checked(true, $this->regex_m); ?> />
-                <abbr title="multiline">m</abbr></label>
-            <label for="regex_s" class="field field-advanced"><input type="checkbox" name="regex_s" id="regex_s"
-                                                                     value="1" <?php $this->checked(true, $this->regex_s); ?> />
-                <abbr title="dot also matches newlines">s</abbr></label>
+                <abbr title="multiline">Multiline</abbr></label>
             <label for="regex_x" class="field field-advanced"><input type="checkbox" name="regex_x" id="regex_x"
                                                                      value="1" <?php $this->checked(true, $this->regex_x); ?> />
-                <abbr title="extended mode">x</abbr></label>
+                <abbr title="extended mode">Extended mode</abbr></label>
+            <label for="regex_s" class="field field-advanced"><input type="checkbox" name="regex_s" id="regex_s"
+                                                                     value="1" <?php $this->checked(true, $this->regex_s); ?> />
+                <abbr title="dot also matches newlines">Dot also matches newlines</abbr></label>
         </div>
 
     </fieldset>
