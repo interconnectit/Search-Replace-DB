@@ -22,6 +22,7 @@ $opts = array(
     's:' => 'search:',
     'r:' => 'replace:',
     't:' => 'tables:',
+    'w:' => 'exclude-tables:',
     'i:' => 'include-cols:',
     'x:' => 'exclude-cols:',
     'g' => 'regex',
