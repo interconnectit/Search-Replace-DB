@@ -107,8 +107,8 @@
  *
  */
 
-require_once('src/srdb.class.php');
-require_once('src/ui.php');
+require_once 'src/srdb.class.php';
+require_once 'src/ui.php';
 
 // initialise
 new icit_srdb_ui();
