@@ -8,71 +8,70 @@
  */
 
 // php 5.3 date timezone requirement, shouldn't affect anything
-date_default_timezone_set( 'Europe/London' );
+date_default_timezone_set('Europe/London');
 
 // include the srdb class
-require_once(realpath(dirname(__FILE__)) . '/srdb.class.php');
+require_once(realpath(dirname(__FILE__)) . '/src/srdb.class.php');
 
 $opts = array(
-	'h:' => 'host:',
-	'n:' => 'name:',
-	'u:' => 'user:',
-	'p:' => 'pass:',
-	'c:' => 'char:',
-	's:' => 'search:',
-	'r:' => 'replace:',
-	't:' => 'tables:',
-	'i:' => 'include-cols:',
-	'x:' => 'exclude-cols:',
-	'g' => 'regex',
-	'l:' => 'pagesize:',
-	'z' => 'dry-run',
-	'e:' => 'alter-engine:',
-	'a:' => 'alter-collation:',
-	'v:' => 'verbose:',
-	'port:',
-	'help'
+    'h:' => 'host:',
+    'n:' => 'name:',
+    'u:' => 'user:',
+    'p:' => 'pass:',
+    'c:' => 'char:',
+    's:' => 'search:',
+    'r:' => 'replace:',
+    't:' => 'tables:',
+    'i:' => 'include-cols:',
+    'x:' => 'exclude-cols:',
+    'g' => 'regex',
+    'l:' => 'pagesize:',
+    'z' => 'dry-run',
+    'e:' => 'alter-engine:',
+    'a:' => 'alter-collation:',
+    'v:' => 'verbose:',
+    'port:',
+    'help'
 );
 
 $required = array(
-	'h:',
-	'n:',
-	'u:',
-	'p:'
+    'h:',
+    'n:',
+    'u:',
+    'p:'
 );
 
-function isSecure() {
+function isSecure()
+{
     return
         !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 }
 
-if (!isSecure())
-{
+if (!isSecure()) {
     echo "\nWarning: the network connection you are using is transmitting your password unencrypted. \nConsider using an https:// connection, or change your database password after using the script \n\n";
 }
 
 
-
-
-function strip_colons( $string ) {
-	return str_replace( ':', '', $string );
+function strip_colons($string)
+{
+    return str_replace(':', '', $string);
 }
 
 // store arg values
-$arg_count 	= $_SERVER[ 'argc' ];
-$args_array = $_SERVER[ 'argv' ];
+$arg_count = $_SERVER['argc'];
+$args_array = $_SERVER['argv'];
 
-$short_opts = array_keys( $opts );
-$short_opts_normal = array_map( 'strip_colons', $short_opts );
+$short_opts = array_keys($opts);
+$short_opts_normal = array_map('strip_colons', $short_opts);
 
-$long_opts = array_values( $opts );
-$long_opts_normal = array_map( 'strip_colons', $long_opts );
+$long_opts = array_values($opts);
+$long_opts_normal = array_map('strip_colons', $long_opts);
 
 // store array of options and values
-$options = getopt( implode( '', $short_opts ), $long_opts );
+$options = getopt(implode('', $short_opts), $long_opts);
 
-if ( isset( $options[ 'help' ] ) ) {
-	echo "
+if (isset($options['help'])) {
+    echo "
 #####################################################################
 
 interconnect/it Safe Search & Replace tool
@@ -135,127 +134,147 @@ ARGS
   --help
     Displays this help message ;)
 ";
-	exit;
+    exit;
 }
 
 // missing field flag, show all missing instead of 1 at a time
 $missing_arg = false;
 
-if (version_compare(PHP_VERSION, '5.2') < 0){
-    fwrite( STDERR, "The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again. \n" );
+if (version_compare(PHP_VERSION, '5.2') < 0) {
+    fwrite(STDERR, "The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again. \n");
     exit(1);
 }
 
-if (!extension_loaded("mbstring"))
-{
-    fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
+if (!extension_loaded("mbstring")) {
+    fwrite(STDERR, "This script requires mbstring. Please install mbstring and try again.\n");
     exit (1);
 }
 
 // check required args are passed
-foreach( $required as $key ) {
-	$short_opt = strip_colons( $key );
-	$long_opt = strip_colons( $opts[ $key ] );
-	if ( ! isset( $options[ $short_opt ] ) && ! isset( $options[ $long_opt ] ) ) {
-		fwrite( STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n" );
-		$missing_arg = true;
-	}
+foreach ($required as $key) {
+    $short_opt = strip_colons($key);
+    $long_opt = strip_colons($opts[$key]);
+    if (!isset($options[$short_opt]) && !isset($options[$long_opt])) {
+        fwrite(STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n");
+        $missing_arg = true;
+    }
 }
 
 // bail if requirements not met
-if ( $missing_arg ) {
-	fwrite( STDERR, "Please enter the missing arguments.\n" );
-	exit( 1 );
+if ($missing_arg) {
+    fwrite(STDERR, "Please enter the missing arguments.\n");
+    exit(1);
 }
 
 // new args array
 $args = array(
-	'verbose' => true,
-	'dry_run' => false
+    'verbose' => true,
+    'dry_run' => false
 );
 
 // create $args array
-foreach( $options as $key => $value ) {
+foreach ($options as $key => $value) {
 
-	// transpose keys
-	if ( ( $is_short = array_search( $key, $short_opts_normal ) ) !== false )
-		$key = $long_opts_normal[ $is_short ];
+    // transpose keys
+    if (($is_short = array_search($key, $short_opts_normal)) !== false)
+        $key = $long_opts_normal[$is_short];
 
-	// boolean options as is, eg. a no value arg should be set true
-	if ( in_array( $key, $long_opts ) )
-		$value = true;
+    if (in_array($key, ['search', 'replace']) && is_array($jsonVal = json_decode($value, true))) {
+        $args[$key] = $jsonVal;
+        continue;
+    }
 
-	switch ( $key ) {
-		// boolean options.
-		case 'verbose':
-			$value = (boolean)filter_var( $value, FILTER_VALIDATE_BOOLEAN );
-		break;
-	}
+    // boolean options as is, eg. a no value arg should be set true
+    if (in_array($key, $long_opts))
+        $value = true;
 
-	// change to underscores
-	$key = str_replace( '-', '_', $key );
+    switch ($key) {
+        // boolean options.
+        case 'verbose':
+            $value = (boolean)filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            break;
+    }
 
-	$args[ $key ] = $value;
+    // change to underscores
+    $key = str_replace('-', '_', $key);
+
+    $args[$key] = $value;
 }
 
 // modify the log output
-class icit_srdb_cli extends icit_srdb {
-    public function log( $type = '' ) {
+class icit_srdb_cli extends icit_srdb
+{
+    public function log($type = '')
+    {
 
-		$args = array_slice( func_get_args(), 1 );
+        $args = array_slice(func_get_args(), 1);
 
-		$output = "";
+        $output = "";
 
-		switch( $type ) {
-			case 'error':
-				list( $error_type, $error ) = $args;
-				$output .= "$error_type: $error";
-				break;
-			case 'search_replace_table_start':
-				list( $table, $search, $replace ) = $args;
-				$output .= "{$table}: replacing {$search} with {$replace}";
-				break;
-			case 'search_replace_table_end':
-				list( $table, $report ) = $args;
-				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
-				$output .= "{$table}: {$report['rows']} rows, {$report['change']} changes found, {$report['updates']} updates made in {$time} seconds";
-				break;
-			case 'search_replace_end':
-				list( $search, $replace, $report ) = $args;
-				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
-				$dry_run_string = $this->dry_run ? "would have been" : "were";
-				$output .= "
+        switch ($type) {
+            case 'error':
+                list($error_type, $error) = $args;
+                $output .= "$error_type: $error";
+                break;
+            case 'search_replace_table_start':
+                list($table, $search, $replace) = $args;
+
+                if (is_array($search)) {
+                    $search = implode(' or ', $search);
+                }
+                if (is_array($replace)) {
+                    $replace = implode(' or ', $replace);
+                }
+                $output .= "{$table}: replacing {$search} with {$replace}";
+
+                break;
+            case 'search_replace_table_end':
+                list($table, $report) = $args;
+                $time = number_format($report['end'] - $report['start'], 8);
+                $output .= "{$table}: {$report['rows']} rows, {$report['change']} changes found, {$report['updates']} updates made in {$time} seconds";
+                break;
+            case 'search_replace_end':
+                list($search, $replace, $report) = $args;
+                if (is_array($search)) {
+                    $search = implode(' or ', $search);
+                }
+                if (is_array($replace)) {
+                    $replace = implode(' or ', $replace);
+                }
+                $time = number_format($report['end'] - $report['start'], 8);
+                $dry_run_string = $this->dry_run ? "would have been" : "were";
+                $output .= "
 Replacing {$search} with {$replace} on {$report['tables']} tables with {$report['rows']} rows
 {$report['change']} changes {$dry_run_string} made
 {$report['updates']} updates were actually made
 It took {$time} seconds";
-				break;
-			case 'update_engine':
-				list( $table, $report, $engine ) = $args;
-				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $engine;
-				break;
-			case 'update_collation':
-				list( $table, $report, $collation ) = $args;
-				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $collation;
-				break;
-		}
+                break;
+            case 'update_engine':
+                list($table, $report, $engine) = $args;
+                $output .= $table . ($report['converted'][$table] ? ' has been' : 'has not been') . ' converted to ' . $engine;
+                break;
+            case 'update_collation':
+                list($table, $report, $collation) = $args;
+                $output .= $table . ($report['converted'][$table] ? ' has been' : 'has not been') . ' converted to ' . $collation;
+                break;
+        }
 
-		if ( $this->verbose )
-			echo $output . "\n";
+        if ($this->verbose)
+            echo $output . "\n";
 
-	}
+    }
 
 }
 
-$report = new icit_srdb_cli( $args );
+$report = new icit_srdb_cli($args);
 
 // Only print a separating newline if verbose mode is on to separate verbose output from result
-if ($args[ 'verbose' ]) {
-	echo "\n";
+if ($args['verbose']) {
+    echo "\n";
 }
 
-if ( $report && ( ( isset( $args[ 'dry_run' ] ) && $args[ 'dry_run' ] ) || empty( $report->errors[ 'results' ] ) ) ) {
-	echo "And we're done!\n";
+if ($report && ((isset($args['dry_run']) && $args['dry_run']) || empty($report->errors['results']))) {
+    echo "And we're done!\n";
 } else {
-	echo "Check the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n";
+    echo "Check the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n";
 }
