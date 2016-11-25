@@ -427,7 +427,7 @@ class icit_srdb_ui extends icit_srdb {
 		$bootstrap_file = 'wp-blog-header.php';
 
 		while( ! file_exists( "{$wp_path}/{$bootstrap_file}" ) && $depth++ <= $max_depth ) {
-			$path = dirname( $wp_path );
+			$wp_path = dirname( $wp_path );
 		}
 
 		if ( file_exists( "{$wp_path}/{$bootstrap_file}" ) ) {
