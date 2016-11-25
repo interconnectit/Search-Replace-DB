@@ -174,15 +174,9 @@ $args = array(
 
 // create $args array
 foreach ($options as $key => $value) {
-
     // transpose keys
     if (($is_short = array_search($key, $short_opts_normal)) !== false)
         $key = $long_opts_normal[$is_short];
-
-    if (in_array($key, ['search', 'replace']) && is_array($jsonVal = json_decode($value, true))) {
-        $args[$key] = $jsonVal;
-        continue;
-    }
 
     // boolean options as is, eg. a no value arg should be set true
     if (in_array($key, $long_opts))
