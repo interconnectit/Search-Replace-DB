@@ -926,7 +926,9 @@ class icit_srdb_ui extends icit_srdb
 
 // Calc the time taken.
         $time = array_sum(explode(' ', $report['end'])) - array_sum(explode(' ', $report['start']));
-
+        if ($time < 0){
+            $time = $time * -1;
+        }
         $srch_rplc_input_phrase = $dry_run ?
             'searching for <strong>"' . $this->esc_html_attr($search) . '"</strong> (to be replaced by <strong>"' . $this->esc_html_attr($replace) . '"</strong>)' :
             'replacing <strong>"' . $this->esc_html_attr($search) . '"</strong> with <strong>"' . $this->esc_html_attr($replace) . '"</strong>';
