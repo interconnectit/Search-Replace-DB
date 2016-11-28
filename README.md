@@ -107,6 +107,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	
 		Treats value for -s or --search as a regular expression and
 		-r or --replace as a regular expression replacement.
+		The value in -s needs to be surrounded by a delimiter such as "/" or "#" which needs to go before or after the string.
 		
 	-l, --pagesize
 	
@@ -136,6 +137,13 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	--help
 	
 		Displays this help message ;)
+
+### Example cli commmands: 
+
+* php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
+* php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
 
 ## Troubleshooting
 
