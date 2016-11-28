@@ -11,7 +11,7 @@
 date_default_timezone_set( 'Europe/London' );
 
 // include the srdb class
-require_once( realpath( dirname( __FILE__ ) ) . '/srdb.class.php' );
+require_once(realpath(dirname(__FILE__)) . '/srdb.class.php');
 
 $opts = array(
 	'h:' => 'host:',
@@ -40,6 +40,19 @@ $required = array(
 	'u:',
 	'p:'
 );
+
+function isSecure() {
+    return
+        !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+}
+
+if (!isSecure())
+{
+    echo "\nWarning: the network connection you are using is transmitting your password unencrypted. \nConsider using an https:// connection, or change your database password after using the script \n\n";
+}
+
+
+
 
 function strip_colons( $string ) {
 	return str_replace( ':', '', $string );
@@ -128,6 +141,17 @@ ARGS
 // missing field flag, show all missing instead of 1 at a time
 $missing_arg = false;
 
+if (version_compare(PHP_VERSION, '5.2') < 0){
+    fwrite( STDERR, "The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again. \n" );
+    exit(1);
+}
+
+if (!extension_loaded("mbstring"))
+{
+    fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
+    exit (1);
+}
+
 // check required args are passed
 foreach( $required as $key ) {
 	$short_opt = strip_colons( $key );
@@ -160,7 +184,7 @@ foreach( $options as $key => $value ) {
 	// boolean options as is, eg. a no value arg should be set true
 	if ( in_array( $key, $long_opts ) )
 		$value = true;
-	
+
 	switch ( $key ) {
 		// boolean options.
 		case 'verbose':
@@ -176,8 +200,7 @@ foreach( $options as $key => $value ) {
 
 // modify the log output
 class icit_srdb_cli extends icit_srdb {
-
-	public function log( $type = '' ) {
+    public function log( $type = '' ) {
 
 		$args = array_slice( func_get_args(), 1 );
 
