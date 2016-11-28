@@ -338,6 +338,12 @@ class icit_srdb {
 			}
 
 			// default search/replace action
+            elseif (is_array($this->search)){
+                $report = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
+                for ($i = 1; $i < count($this->search); $i++){
+                    $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
+                }
+            }
 			else {
 				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
 			}
