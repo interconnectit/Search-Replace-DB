@@ -80,19 +80,23 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 		
 	-s, --search
 	
-		String to search for or `preg_replace()` style regular
-		expression.
+		String to search for, `preg_replace()` style regular
+		expression, or a JSON array of values to replace. 
 		
 	-r, --replace
 	
-		None empty string to replace search with or
-		`preg_replace()` style replacement.
+		None empty string to replace search with,
+		`preg_replace()` style replacement, or a JSON array of values to replace.
 		
 	-t, --tables
 	
 		If set only runs the script on the specified table, comma
 		separate for multiple values.
 		
+	-w, --exclude tables
+	    If set runs the script on all tables except for the specified ones, 
+	    comma seperate for multiple values
+	
 	-i, --include-cols
 	
 		If set only runs the script on the specified columns, comma
@@ -144,6 +148,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 
 * php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
 
+* php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s '["search1", "search"]' -r '["replace1", "replace2"]'
 
 ## Troubleshooting
 
