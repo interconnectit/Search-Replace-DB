@@ -690,21 +690,18 @@ class icit_srdb_ui extends icit_srdb
     public function is_wordpress()
     {
 
-        $path_mod = '';
+        $wp_path = dirname( __FILE__ );
         $depth = 0;
         $max_depth = 4;
         $bootstrap_file = 'wp-blog-header.php';
-
-        while (!file_exists(dirname(__FILE__) . "{$path_mod}/{$bootstrap_file}")) {
-            $path_mod .= '/..';
-            if ($depth++ >= $max_depth)
-                break;
+        while( ! file_exists( "{$wp_path}/{$bootstrap_file}" ) && $depth++ <= $max_depth ) {
+            $wp_path = dirname($wp_path);
         }
 
-        if (file_exists(dirname(__FILE__) . "{$path_mod}/{$bootstrap_file}")) {
 
+        if ( file_exists( "{$wp_path}/{$bootstrap_file}" ) ) {
 // store WP path
-            $this->path = dirname(__FILE__) . $path_mod;
+            $this->path = $wp_path;
 
 // just in case we're white screening
             try {
