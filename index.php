@@ -37,6 +37,17 @@
  * License URL: http://www.gnu.org/copyleft/gpl.html
  *
  *
+ * Version 4.0:
+ * 		* Support for continuous integration through Travis CI
+ *      * Aility to do multiple search-replaces through the command line
+ *      * Ability to exclude tables
+ *      * Support for autodetection of Joomla, Docker, and Typo3 configurations
+ *      * Script now checks whether the correct version of PHP is used
+ *      * Script checks if necessary modules are installed
+ *      * Script checks if the connection is secure and gives a warning otherwise
+ *      * Bug fixes
+ *      * UI Tweaks
+ *
  * Version 3.1.0:
  *		* Added port number option to both web and CLI interfaces.
  *		* More reliable fallback on non-PDO systems.
