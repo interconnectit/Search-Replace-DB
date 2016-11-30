@@ -364,7 +364,6 @@ class icit_srdb {
 //            }
             elseif (is_array($this->search)){
                 $report = array();
-                $report[2] = $this->search;
                 $report[0] = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
                 $report[1]= $this->replacer($this->search[1], $this->replace[1], $this->tables, $this->exclude_tables);
 

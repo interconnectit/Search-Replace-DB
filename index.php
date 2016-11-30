@@ -1029,14 +1029,12 @@ class icit_srdb_ui extends icit_srdb
     {
 
         $report = $this->get('report');
-
         if (empty($report))
             return;
-
+        $report = $report[0];
         $dry_run = $this->get('dry_run');
         $search = $this->get('search');
         $replace = $this->get('replace');
-
 // Calc the time taken.
         $time = array_sum(explode(' ', $report['end'])) - array_sum(explode(' ', $report['start']));
         if ($time < 0){
@@ -1071,7 +1069,7 @@ class icit_srdb_ui extends icit_srdb
     </p>';
 
         echo '
-    <table class="table-reports">
+    <table class="table-reports-0">
         <thead>
         <tr>
             <th>Table</th>
@@ -1136,7 +1134,7 @@ class icit_srdb_ui extends icit_srdb
     </p>';
 
         echo '
-    <table class="table-reports">
+    <table class="table-reports-1">
         <thead>
         <tr>
             <th>Table</th>
@@ -2760,45 +2758,46 @@ window.console = window.console || {
 
                         // track info
                         $.extend(true, t.info, info);
-
                         // append reports
                         if (report.length>1){
-                            for (i = 0; i< report.length; i++)
-                            {
-                                report = report[i];
-                                var $row = $('.row-results'),
-                                    $report = $row.find('.report'),
-                                    $table_reports = $row.find('.table-reports');
 
-                                if (!$report.length)
-                                    $report = $('<div class="report"></div>').appendTo($row);
+                            var $row = $('.row-results'),
+                                $report = $row.find('.report'),
+                                $table_reports = [];
 
-                                end = Date.now() / 1000;
+                            for (i = 0;  i < report.length; i ++ ){
+                                $table_reports[i] = $row.find('.table-reports-' + i +'');
+                            }
 
-                                t.tables += report.tables;
-                                t.rows += report.rows;
-                                t.changes += report.change;
-                                t.updates += report.updates;
-                                t.time += t.get_time(start, end);
 
-                                if (!$report.find('.main-report').length) {
-                                    $(t.report_tpl)
-                                        .find('[data-report="search_replace"]').html(strings.search_replace).end()
-                                        .find('[data-report="search"]').text(data.search).end()
-                                        .find('[data-report="replace"]').text(data.replace).end()
-                                        .find('[data-report="dry_run"]').html(strings.updates).end()
-                                        .prependTo($report);
-                                }
+                            if (!$report.length)
+                                for (i = 0; i < report.length; i++){
+                                    end = Date.now() / 1000;
 
-                                $('.main-report')
-                                    .find('[data-report="tables"]').html(t.tables).end()
-                                    .find('[data-report="rows"]').html(t.rows).end()
-                                    .find('[data-report="changes"]').html(t.changes).end()
-                                    .find('[data-report="updates"]').html(t.updates).end()
-                                    .find('[data-report="time"]').html(t.time.toFixed(7)).end();
+                                    t.tables += report[i].tables;
+                                    t.rows += report[i].rows;
+                                    t.changes += report[i].change;
+                                    t.updates += report[i].updates;
+                                    t.time += t.get_time(start, end);
 
-                                if (!$table_reports.length)
-                                    $table_reports = $('\
+                                    $report[i] = $('<div class="report report-' + i + '"></div>').appendTo($row);
+                                    if (!$report[i].find('.main-report').length) {
+                                        $(t.report_tpl)
+                                            .find('[data-report="search_replace"]').html(strings.search_replace).end()
+                                            .find('[data-report="search"]').text(data.search).end()
+                                            .find('[data-report="replace"]').text(data.replace).end()
+                                            .find('[data-report="dry_run"]').html(strings.updates).end()
+                                            .prependTo($report[i]);
+                                    }
+                                    $('.main-report')
+                                        .find('[data-report="tables"]').html(t.tables).end()
+                                        .find('[data-report="rows"]').html(t.rows).end()
+                                        .find('[data-report="changes"]').html(t.changes).end()
+                                        .find('[data-report="updates"]').html(t.updates).end()
+                                        .find('[data-report="time"]').html(t.time.toFixed(7)).end();
+
+                                    if (!$table_reports[i].length)
+                                        $table_reports[i] = $('\
 									<table class="table-reports">\
 										<thead>\
 											<tr>\
@@ -2810,38 +2809,40 @@ window.console = window.console || {
 											</tr>\
 										</thead>\
 										<tbody></tbody>\
-									</table>').appendTo($report);
+									</table>').appendTo($report[i]);
 
-                                $.each(report.table_reports, function (table, table_report) {
+                                    $.each(report[i].table_reports, function (table, table_report) {
 
-                                    var $view_changes = '',
-                                        changes_length = table_report.changes.length;
+                                        var $view_changes = '',
+                                            changes_length = table_report.changes.length;
 
-                                    if (changes_length) {
-                                        $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
-                                            .data('report', table_report)
-                                            .data('table', table)
-                                            .click(t.changes_overlay);
-                                    }
+                                        if (changes_length) {
+                                            $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
+                                                .data('report', table_report)
+                                                .data('table', table)
+                                                .click(t.changes_overlay);
+                                        }
+                                        $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
+                                            .hide()
+                                            .find('[data-report="table"]').html(table).end()
+                                            .find('[data-report="rows"]').html(table_report.rows).end()
+                                            .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
+                                            .find('[data-report="updates"]').html(table_report.updates).end()
+                                            .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
+                                            .appendTo($table_reports[i].find('tbody'))
+                                            .fadeIn(150);
 
-                                    $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
-                                        .hide()
-                                        .find('[data-report="table"]').html(table).end()
-                                        .find('[data-report="rows"]').html(table_report.rows).end()
-                                        .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
-                                        .find('[data-report="updates"]').html(table_report.updates).end()
-                                        .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
-                                        .appendTo($table_reports.find('tbody'))
-                                        .fadeIn(150);
+                                    });
 
-                                });
+                                    $.extend(true, t.report, report[i]);
 
-                                $.extend(true, t.report, report);
+                                    // fetch next table
+                                    t.recursive_fetch_json(data, ++i);
 
-                                // fetch next table
-                                t.recursive_fetch_json(data, ++i);
-                            }
+                                }
+
                         }
+
                         else if (report.tables) {
 
                             var $row = $('.row-results'),
