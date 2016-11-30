@@ -880,8 +880,8 @@ class icit_srdb {
 						 );
 
 		$dry_run = $this->get( 'dry_run' );
-
-		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
+        $errors = $this->get('errors');
+		if ( $this->get( 'dry_run' ) and !(in_array('The dry-run option was selected. No replacements will be made.', $errors['results']))) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
 		// if no tables selected assume all

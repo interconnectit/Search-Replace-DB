@@ -1015,12 +1015,16 @@ class icit_srdb_ui extends icit_srdb
             return;
 
         echo '<div class="errors">';
+        $dup_errors = array();
         foreach ($this->errors[$type] as $error) {
-            if ($error instanceof Exception)
-                echo '<p class="exception">' . $error->getMessage() . '</p>';
-            elseif (is_string($error))
-                echo $error;
-        }
+            if (!in_array ($error, $dup_errors)){
+               if ($error instanceof Exception)
+                    echo '<p class="exception">' . $error->getMessage() . '</p>';
+                elseif (is_string($error))
+                    echo $error;
+                }
+                array_push($dup_errors, $error);
+            }
         echo '</div>';
     }
 
@@ -1033,6 +1037,7 @@ class icit_srdb_ui extends icit_srdb
             return;
         $report = $report[0];
         $dry_run = $this->get('dry_run');
+
         $search = $this->get('search');
         $replace = $this->get('replace');
 // Calc the time taken.
@@ -1108,72 +1113,6 @@ class icit_srdb_ui extends icit_srdb
 
         echo '
 </div>';
-
-        echo '
-<div class="report">';
-
-        echo '
-    <h2>Report2</h2>';
-
-        echo '
-    <p>';
-        printf(
-            'In the process of %s we scanned <strong>%d</strong> tables with a total of
-        <strong>%d</strong> rows, <strong>%d</strong> cells %s changed.
-        <strong>%d</strong> db updates were actually performed.
-        It all took <strong>%f</strong> seconds.',
-            $srch_rplc_input_phrase,
-            $report['tables'],
-            $report['rows'],
-            $report['change'],
-            $dry_run ? 'would have been' : 'were',
-            $report['updates'],
-            $time
-        );
-        echo '
-    </p>';
-
-        echo '
-    <table class="table-reports-1">
-        <thead>
-        <tr>
-            <th>Table</th>
-            <th>Rows</th>
-            <th>Cells changed</th>
-            <th>Updates</th>
-            <th>Seconds</th>
-        </tr>
-        </thead>
-        <tbody>';
-        foreach ($report['table_reports'] as $table => $t_report) {
-
-            $t_time = array_sum(explode(' ', $t_report['end'])) - array_sum(explode(' ', $t_report['start']));
-
-            echo '
-        <tr>';
-            printf('
-            <th>%s:</th>
-            <td>%d</td>
-            <td>%d</td>
-            <td>%d</td>
-            <td>%f</td>',
-                $table,
-                $t_report['rows'],
-                $t_report['change'],
-                $t_report['updates'],
-                $t_time
-            );
-            echo '
-        </tr>';
-
-        }
-        echo '
-        </tbody>
-    </table>';
-
-        echo '
-</div>';
-
     }
 
 
@@ -2691,7 +2630,7 @@ window.console = window.console || {
                     return false;
                 }
 
-                // clone data
+                // clone
                 var post_data = $.extend(true, {}, data),
                     dry_run = data.submit != 'submit[liverun]',
                     strings = dry_run ? t.strings_dry : t.strings_live,
@@ -2765,29 +2704,29 @@ window.console = window.console || {
                                 $report = $row.find('.report'),
                                 $table_reports = [];
 
-                            for (i = 0;  i < report.length; i ++ ){
-                                $table_reports[i] = $row.find('.table-reports-' + i +'');
+                            for (c = 0;  c < report.length; c ++ ){
+                                $table_reports[c] = $row.find('.table-reports-' + c +'');
                             }
 
 
                             if (!$report.length)
-                                for (i = 0; i < report.length; i++){
+                                for (c = 0; c < report.length; c++){
                                     end = Date.now() / 1000;
 
-                                    t.tables += report[i].tables;
-                                    t.rows += report[i].rows;
-                                    t.changes += report[i].change;
-                                    t.updates += report[i].updates;
+                                    t.tables += report[c].tables;
+                                    t.rows += report[c].rows;
+                                    t.changes += report[c].change;
+                                    t.updates += report[c].updates;
                                     t.time += t.get_time(start, end);
 
-                                    $report[i] = $('<div class="report report-' + i + '"></div>').appendTo($row);
-                                    if (!$report[i].find('.main-report').length) {
+                                    $report[c] = $('<div class="report report-' + c + '"></div>').appendTo($row);
+                                    if (!$report[c].find('.main-report').length) {
                                         $(t.report_tpl)
                                             .find('[data-report="search_replace"]').html(strings.search_replace).end()
                                             .find('[data-report="search"]').text(data.search).end()
                                             .find('[data-report="replace"]').text(data.replace).end()
                                             .find('[data-report="dry_run"]').html(strings.updates).end()
-                                            .prependTo($report[i]);
+                                            .prependTo($report[c]);
                                     }
                                     $('.main-report')
                                         .find('[data-report="tables"]').html(t.tables).end()
@@ -2796,8 +2735,8 @@ window.console = window.console || {
                                         .find('[data-report="updates"]').html(t.updates).end()
                                         .find('[data-report="time"]').html(t.time.toFixed(7)).end();
 
-                                    if (!$table_reports[i].length)
-                                        $table_reports[i] = $('\
+                                    if (!$table_reports[c].length)
+                                        $table_reports[c] = $('\
 									<table class="table-reports">\
 										<thead>\
 											<tr>\
@@ -2809,9 +2748,9 @@ window.console = window.console || {
 											</tr>\
 										</thead>\
 										<tbody></tbody>\
-									</table>').appendTo($report[i]);
+									</table>').appendTo($report[c]);
 
-                                    $.each(report[i].table_reports, function (table, table_report) {
+                                    $.each(report[c].table_reports, function (table, table_report) {
 
                                         var $view_changes = '',
                                             changes_length = table_report.changes.length;
@@ -2829,12 +2768,12 @@ window.console = window.console || {
                                             .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
                                             .find('[data-report="updates"]').html(table_report.updates).end()
                                             .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
-                                            .appendTo($table_reports[i].find('tbody'))
+                                            .appendTo($table_reports[c].find('tbody'))
                                             .fadeIn(150);
 
                                     });
 
-                                    $.extend(true, t.report, report[i]);
+                                    $.extend(true, t.report, report[c]);
 
                                     // fetch next table
                                     t.recursive_fetch_json(data, ++i);
