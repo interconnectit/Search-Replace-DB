@@ -175,6 +175,7 @@ class icit_srdb {
 	 */
 	public $dry_run = true;
 
+    public $multisearch = false;
 	/**
 	 * @var string Database connection details
 	 */
@@ -274,6 +275,7 @@ class icit_srdb {
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
+            'multisearch'       => true,
 			'regex' 			=> false,
 			'pagesize' 			=> 50000,
 			'alter_engine' 		=> false,
@@ -336,8 +338,13 @@ class icit_srdb {
 		// set up db connection
 		$this->db_setup();
 
-        $this->replace= array (0=>"James", 1=>"Bill");
-        $this->search = array (0 =>"Bob", 1 => "Lin");
+        if ($this->multisearch==true and !is_array($this->search)){
+            $this->search = "[" . $this->search . "]";
+            $this->replace= "[" . $this->replace . "]";
+            $this->search = json_decode($this->search);
+            $this->replace = json_decode($this->replace);
+        }
+
 		if ( $this->db_valid() ) {
 
 			// update engines
@@ -351,11 +358,17 @@ class icit_srdb {
 			}
 
 			// default search/replace action
+//            elseif ($this->multisearch == true)
+//            {
+
+//            }
             elseif (is_array($this->search)){
-                $report = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
-                $new_report = $this->replacer($this->search[1], $this->replace[1], $this->tables, $this->exclude_tables);
-                $report = array_merge($report, $new_report);
-//                for ($i = 1; $i < count($this->search); $i++){
+                $report = array();
+                $report[2] = $this->search;
+                $report[0] = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
+                $report[1]= $this->replacer($this->search[1], $this->replace[1], $this->tables, $this->exclude_tables);
+
+                //$report = array_merge($report, $new_report);
 //                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
 //                    $new_report = $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables);
 //                    $report['table_reports'] = array_merge($report['table_reports'], $new_report['table_reports']);
