@@ -2572,11 +2572,9 @@ window.console = window.console || {
                         return $(el).attr('value');
                     });
 
-                data['num-search'] = 3;
-
                 data['search'] = [];
                 data['replace'] = [];
-                for ( i = 0; i < data['num-search']; i++){
+                for ( i = 0; i < t.searches; i++){
                     s_key = 'search-'+i;
                     r_key = 'replace-'+i;
                     data['search'].push(data[s_key]);
