@@ -2775,10 +2775,11 @@ window.console = window.console || {
 
                                     $.extend(true, t.report, report[c]);
 
-                                    // fetch next table
-                                    t.recursive_fetch_json(data, ++i);
-
                                 }
+                            // fetch next table
+                            console.log(i, report[0].table_reports);
+                            t.recursive_fetch_json(data, ++i);
+
 
                         }
 
