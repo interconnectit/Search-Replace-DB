@@ -175,7 +175,6 @@ class icit_srdb {
 	 */
 	public $dry_run = true;
 
-    public $multisearch = false;
 	/**
 	 * @var string Database connection details
 	 */
@@ -275,7 +274,6 @@ class icit_srdb {
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
-            'multisearch'       => true,
 			'regex' 			=> false,
 			'pagesize' 			=> 50000,
 			'alter_engine' 		=> false,
@@ -338,7 +336,7 @@ class icit_srdb {
 		// set up db connection
 		$this->db_setup();
 
-        if ($this->multisearch==true and !is_array($this->search)){
+        if (!is_array($this->search)){
             $this->search = "[" . $this->search . "]";
             $this->replace= "[" . $this->replace . "]";
             $this->search = json_decode($this->search);
