@@ -39,7 +39,7 @@
  *
  * Version 4.0:
  * 		* Support for continuous integration through Travis CI
- *      * Aility to do multiple search-replaces through the command line
+ *      * Aility to do multiple search-replaces
  *      * Ability to exclude tables
  *      * Support for autodetection of Joomla, Docker, and Typo3 configurations
  *      * Script now checks whether the correct version of PHP is used
