@@ -2708,20 +2708,22 @@ window.console = window.console || {
                                 $table_reports[c] = $row.find('.table-reports-' + c +'');
                             }
 
+                            for (c = 0; c < report.length; c++) {
+                                if (!$report.length)
+                                    $report[c] = $('<div class="report" report-' + c + '"></div>').appendTo($row);
 
-                            if (!$report.length)
-                                for (c = 0; c < report.length; c++){
-                                    end = Date.now() / 1000;
+                                end = Date.now() / 1000;
 
-                                    t.tables += report[c].tables;
-                                    t.rows += report[c].rows;
-                                    t.changes += report[c].change;
-                                    t.updates += report[c].updates;
-                                    t.time += t.get_time(start, end);
+                                t.tables += report[c].tables;
+                                t.rows += report[c].rows;
+                                t.changes += report[c].change;
+                                t.updates += report[c].updates;
+                                t.time += t.get_time(start, end);
+                                console.log($report[c]);
+                                if (i == 0) {
 
-                                    $report[c] = $('<div class="report report-' + c + '"></div>').appendTo($row);
-                                    if (!$report[c].find('.main-report').length) {
-                                        $(t.report_tpl)
+//                                if (!$report[c].find('.main-report').length) {
+                                    $(t.report_tpl)
                                             .find('[data-report="search_replace"]').html(strings.search_replace).end()
                                             .find('[data-report="search"]').text(data.search).end()
                                             .find('[data-report="replace"]').text(data.replace).end()
