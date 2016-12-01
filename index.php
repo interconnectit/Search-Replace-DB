@@ -2710,7 +2710,7 @@ window.console = window.console || {
 
                             for (c = 0; c < report.length; c++) {
                                 if (!$report.length)
-                                    $report[c] = $('<div class="report" report-' + c + '"></div>').appendTo($row);
+                                    $report[c] = $('<div class="report report-"' + c + '"></div>').appendTo($row);
 
                                 end = Date.now() / 1000;
 
@@ -2739,7 +2739,7 @@ window.console = window.console || {
 
                                     if (!$table_reports[c].length)
                                         $table_reports[c] = $('\
-									<table class="table-reports">\
+									<table class="table-reports-' + c + '" >\
 										<thead>\
 											<tr>\
 												<th>Table</th>\
