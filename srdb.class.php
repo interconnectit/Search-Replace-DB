@@ -258,6 +258,7 @@ class icit_srdb {
 	 *
 	 * @return void
 	 */
+
 	public function __construct( $args ) {
 
 		$args = array_merge( array(
@@ -347,12 +348,18 @@ class icit_srdb {
 				$report = $this->update_collation( $this->alter_collation, $this->tables );
 			}
 
-			// default search/replace action
             elseif (is_array($this->search)){
-                $report = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
-                for ($i = 1; $i < count($this->search); $i++){
-                    $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
+                $report = array();
+                for ($i = 0; $i < count($this->search); $i++){
+                    $report[$i] = $this->replacer($this->search[$i], $this->replace[$i], $this->tables, $this->exclude_tables);
                 }
+
+                //$report = array_merge($report, $new_report);
+//                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
+//                    $new_report = $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables);
+//                    $report['table_reports'] = array_merge($report['table_reports'], $new_report['table_reports']);
+//                }
+
             }
 			else {
 				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
@@ -368,6 +375,7 @@ class icit_srdb {
 		$this->set( 'report', $report );
 		return $report;
 	}
+
 
 
 	/**
@@ -859,8 +867,8 @@ class icit_srdb {
 						 );
 
 		$dry_run = $this->get( 'dry_run' );
-
-		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
+        $errors = $this->get('errors');
+		if ( $this->get( 'dry_run' ) and !(in_array('The dry-run option was selected. No replacements will be made.', $errors['results']))) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
 		// if no tables selected assume all

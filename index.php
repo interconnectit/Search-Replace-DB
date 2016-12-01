@@ -774,9 +774,7 @@ class icit_srdb_ui extends icit_srdb
 
                 if ($db_details)
                     return true;
-
             }
-
         }
 
         return false;
@@ -820,9 +818,7 @@ class icit_srdb_ui extends icit_srdb
 // This is a consequence of the 'complete' method in JavaScript
                 $this->add_error('Drupal detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db');
             }
-
         }
-
         return false;
     }
 
@@ -1012,12 +1008,16 @@ class icit_srdb_ui extends icit_srdb
             return;
 
         echo '<div class="errors">';
+        $dup_errors = array();
         foreach ($this->errors[$type] as $error) {
-            if ($error instanceof Exception)
-                echo '<p class="exception">' . $error->getMessage() . '</p>';
-            elseif (is_string($error))
-                echo $error;
-        }
+            if (!in_array ($error, $dup_errors)){
+               if ($error instanceof Exception)
+                    echo '<p class="exception">' . $error->getMessage() . '</p>';
+                elseif (is_string($error))
+                    echo $error;
+                }
+                array_push($dup_errors, $error);
+            }
         echo '</div>';
     }
 
@@ -1026,14 +1026,13 @@ class icit_srdb_ui extends icit_srdb
     {
 
         $report = $this->get('report');
-
         if (empty($report))
             return;
-
+        $report = $report[0];
         $dry_run = $this->get('dry_run');
+
         $search = $this->get('search');
         $replace = $this->get('replace');
-
 // Calc the time taken.
         $time = array_sum(explode(' ', $report['end'])) - array_sum(explode(' ', $report['start']));
         if ($time < 0){
@@ -1068,7 +1067,7 @@ class icit_srdb_ui extends icit_srdb
     </p>';
 
         echo '
-    <table class="table-reports">
+    <table class="table-reports-0">
         <thead>
         <tr>
             <th>Table</th>
@@ -1107,7 +1106,6 @@ class icit_srdb_ui extends icit_srdb
 
         echo '
 </div>';
-
     }
 
 
@@ -1189,20 +1187,27 @@ class icit_srdb_ui extends icit_srdb
         <?php $this->get_errors('search'); ?>
 
         <div class="fields fields-large">
-            <label for="search"><span class="label-text">replace</span> <span
-                    class="hide-if-regex-off regex-left">/</span><input id="search" type="text"
-                                                                        placeholder="search for&hellip;"
-                                                                        value="<?php $this->esc_html_attr($this->search, true); ?>"
-                                                                        name="search"/><span
-                    class="hide-if-regex-off regex-right">/</span></label>
-            <label for="replace"><span class="label-text">with</span> <input id="replace" type="text"
-                                                                             placeholder="replace with&hellip;"
-                                                                             value="<?php $this->esc_html_attr($this->replace, true); ?>"
-                                                                             name="replace"/></label>
+            <button class="add-search" type="modify-ui" onclick="add_search()">Add search</button>
+            <button class="remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">Remove search</button>
+
+            <div class="sr-boxes">
+            <div class="sr-box-0">
+                <label for="search-0"><span class="label-text">replace</span> <span
+                        class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
+                                                                            placeholder="search for&hellip;"
+                                                                            value="<?php $this->esc_html_attr($this->search, true); ?>"
+                                                                            name="search-0"/><span
+                        class="hide-if-regex-off regex-right">/</span></label>
+                <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
+                                                                                   placeholder="replace with&hellip;"
+                                                                                   value="<?php $this->esc_html_attr($this->replace, true); ?>"
+                                                                                   name="replace-0"/></label>
+        </div>
+        </div>
+
             <label for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
                                                              value="1" <?php $this->checked(true, $this->regex); ?> />
                 use regex</label>
-        </div>
 
         <div class="fields field-advanced hide-if-regex-off">
             <label for="regex_i" class="field field-advanced"><input type="checkbox" name="regex_i" id="regex_i"
@@ -1218,6 +1223,7 @@ class icit_srdb_ui extends icit_srdb
                                                                      value="1" <?php $this->checked(true, $this->regex_s); ?> />
                 <abbr title="dot also matches newlines">Dot also matches newlines</abbr></label>
         </div>
+
 
     </fieldset>
 
@@ -1524,6 +1530,7 @@ class icit_srdb_ui extends icit_srdb
     {
         $classes = array('no-js');
         $classes[] = $this->regex ? 'regex-on' : 'regex-off';
+        $classes[] = 'multisearch-off';
 // templates/html.php
 ?>
 <!DOCTYPE html>
@@ -1567,6 +1574,10 @@ class icit_srdb_ui extends icit_srdb
 }
 
 .regex-on .hide-if-regex-on {
+    display: none;
+}
+
+.multisearch-off .hide-if-multisearch-off {
     display: none;
 }
 
@@ -1892,7 +1903,7 @@ input[type="email"],
     border-left: 0;
     width: 1em;
 }
-
+[type="modify-ui"],
 [type="submit"] {
     padding: 5px 10px 8px;
     color: #fff;
@@ -1917,11 +1928,12 @@ input[type="email"],
     margin-right: 20px;
 }
 
+[type="modify-ui"]:focus,
+[type="modify-ui"]:active,
 [type="submit"]:focus,
 [type="submit"]:active {
     outline: 2px solid #ab1301;
 }
-
 [type="submit"][disabled],
 [type="submit"][disabled]:hover,
 [type="submit"][disabled]:active,
@@ -1932,6 +1944,19 @@ input[type="email"],
     cursor: default;
     outline: none;
     padding-left: 10px;
+}
+
+[type="modify-ui"].active,
+[type="modify-ui"].active:hover,
+[type="modify-ui"].active:active,
+[type="modify-ui"][disabled].active,
+[type="modify-ui"][disabled].active:hover,
+[type="modify-ui"][disabled].active:active,
+[type="modify-ui"][disabled].active:active:hover{
+    outline: none;
+    color: #fff;
+    padding-left: 30px;
+    background: #900;
 }
 
 [type="submit"].active,
@@ -1953,7 +1978,7 @@ url('data:image/png;base64,R0lGODlhEAAQAPQAAJkAAP///5sGBufGxsl6evv4+O7Y2KgoKLtWV
     display: block;
     margin: 0 0;
 }
-
+[type="modify-ui"],
 .field input[type="submit"] {
     margin-top: 2px;
 }
@@ -2331,11 +2356,12 @@ window.console = window.console || {
             rows: 0,
             changes: 0,
             updates: 0,
-            time: 0.0,
+            time: [0.0],
             button: false,
             running: false,
             countdown: null,
             escape: false,
+            searches: 1,
 
             // constructor
             init: function () {
@@ -2420,6 +2446,34 @@ window.console = window.console || {
                 }
             },
 
+            add_search: function () {
+                var $row= $('.sr-boxes');
+                $new_search = $('<div class="sr-box-' + t.searches + '"></div>').appendTo($row);
+                $('<label for="search-' + t.searches + '"><span class="label-text">replace</span> ' +
+                    '<span class="hide-if-regex-off regex-left">/</span>' +
+                    '<input id="search-' + t.searches + '" type="text" placeholder="search for&hellip;" ' +
+                    'value="<?php $this->esc_html_attr($this->search, true); ?>" name="search-' + t.searches + '"/> ' +
+                    '<span class="hide-if-regex-off regex-right">/</span></label> ' +
+                    '<label for="replace-' + t.searches + '"><span class="label-text">with</span>' +
+                    '<input id="replace-' + t.searches + '" type="text" placeholder="replace with&hellip;"' +
+                    'value="<?php $this->esc_html_attr($this->replace, true); ?>" name="replace-' + t.searches + '"/></label>').appendTo($new_search);
+
+                if (t.searches == 1)
+                    dom.removeClass('multisearch-off');
+
+                t.searches = t.searches+1;
+
+            },
+
+            remove_search: function () {
+                t.searches = t.searches-1;
+                key = '.sr-box-' + t.searches;
+                $rem_search = $(key);
+                $rem_search.remove();
+                if (t.searches == 1)
+                    dom.addClass('multisearch-off');
+            },
+
             toggle_regex: function () {
                 if ($(this).is(':checked'))
                     dom.removeClass('regex-off').addClass('regex-on');
@@ -2434,7 +2488,7 @@ window.console = window.console || {
                 t.rows = 0;
                 t.changes = 0;
                 t.updates = 0;
-                t.time = 0.0;
+                t.time = [0.0];
             },
 
             map_form_data: function ($form) {
@@ -2517,6 +2571,15 @@ window.console = window.console || {
                     data['tables[]'] = $.map($('select[name^="tables"] option'), function (el, i) {
                         return $(el).attr('value');
                     });
+
+                data['search'] = [];
+                data['replace'] = [];
+                for ( i = 0; i < t.searches; i++){
+                    s_key = 'search-'+i;
+                    r_key = 'replace-'+i;
+                    data['search'].push(data[s_key]);
+                    data['replace'].push(data[r_key])
+                }
 
                 // check we don't just have one table selected as we get a string not array
                 if (!$.isArray(data['tables[]']))
@@ -2617,7 +2680,7 @@ window.console = window.console || {
                     return false;
                 }
 
-                // clone data
+                // clone
                 var post_data = $.extend(true, {}, data),
                     dry_run = data.submit != 'submit[liverun]',
                     strings = dry_run ? t.strings_dry : t.strings_live,
@@ -2684,44 +2747,49 @@ window.console = window.console || {
 
                         // track info
                         $.extend(true, t.info, info);
-
                         // append reports
-                        if (report.tables) {
+                        if (report.length>0) {
 
                             var $row = $('.row-results'),
                                 $report = $row.find('.report'),
-                                $table_reports = $row.find('.table-reports');
+                                $table_reports = [];
 
-                            if (!$report.length)
-                                $report = $('<div class="report"></div>').appendTo($row);
+                            for (c = 0; c < report.length; c++) {
+                                $table_reports[c] = $row.find('.table-reports-' + c + '');
 
-                            end = Date.now() / 1000;
+                                if (!$report.length)
+                                    $report[c] = $('<div class="report report-"' + c + '"></div>').appendTo($row);
 
-                            t.tables += report.tables;
-                            t.rows += report.rows;
-                            t.changes += report.change;
-                            t.updates += report.updates;
-                            t.time += t.get_time(start, end);
+                                end = Date.now() / 1000;
+                                if (t.time.length != report.length){
+                                    t.time.push(0.0);
+                                }
+                                t.tables += report[c].tables;
+                                t.rows += report[c].rows;
+                                t.changes += report[c].change;
+                                t.updates += report[c].updates;
+                                t.time[c] += t.get_time(start, end);
+                                console.log($report[c]);
+                                if (i == 0) {
 
-                            if (!$report.find('.main-report').length) {
-                                $(t.report_tpl)
-                                    .find('[data-report="search_replace"]').html(strings.search_replace).end()
-                                    .find('[data-report="search"]').text(data.search).end()
-                                    .find('[data-report="replace"]').text(data.replace).end()
-                                    .find('[data-report="dry_run"]').html(strings.updates).end()
-                                    .prependTo($report);
-                            }
+//                                if (!$report[c].find('.main-report').length) {
+                                    $(t.report_tpl)
+                                        .find('[data-report="search_replace"]').html(strings.search_replace).end()
+                                        .find('[data-report="search"]').text(data.search[c]).end()
+                                        .find('[data-report="replace"]').text(data.replace[c]).end()
+                                        .find('[data-report="dry_run"]').html(strings.updates).end()
+                                        .prependTo($report[c]);
+                                }
+                                $('.main-report')
+                                    .find('[data-report="tables"]').html(t.tables).end()
+                                    .find('[data-report="rows"]').html(t.rows).end()
+                                    .find('[data-report="changes"]').html(t.changes).end()
+                                    .find('[data-report="updates"]').html(t.updates).end()
+                                    .find('[data-report="time"]').html(t.time[c].toFixed(7)).end();
 
-                            $('.main-report')
-                                .find('[data-report="tables"]').html(t.tables).end()
-                                .find('[data-report="rows"]').html(t.rows).end()
-                                .find('[data-report="changes"]').html(t.changes).end()
-                                .find('[data-report="updates"]').html(t.updates).end()
-                                .find('[data-report="time"]').html(t.time.toFixed(7)).end();
-
-                            if (!$table_reports.length)
-                                $table_reports = $('\
-									<table class="table-reports">\
+                                if (!$table_reports[c].length)
+                                    $table_reports[c] = $('\
+									<table class="table-reports-' + c + '" >\
 										<thead>\
 											<tr>\
 												<th>Table</th>\
@@ -2732,73 +2800,38 @@ window.console = window.console || {
 											</tr>\
 										</thead>\
 										<tbody></tbody>\
-									</table>').appendTo($report);
+									</table>').appendTo($report[c]);
 
-                            $.each(report.table_reports, function (table, table_report) {
+                                $.each(report[c].table_reports, function (table, table_report) {
 
-                                var $view_changes = '',
-                                    changes_length = table_report.changes.length;
+                                    var $view_changes = '',
+                                        changes_length = table_report.changes.length;
 
-                                if (changes_length) {
-                                    $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
-                                        .data('report', table_report)
-                                        .data('table', table)
-                                        .click(t.changes_overlay);
-                                }
+                                    if (changes_length) {
+                                        $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
+                                            .data('report', table_report)
+                                            .data('table', table)
+                                            .click(t.changes_overlay);
+                                    }
+                                    $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
+                                        .hide()
+                                        .find('[data-report="table"]').html(table).end()
+                                        .find('[data-report="rows"]').html(table_report.rows).end()
+                                        .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
+                                        .find('[data-report="updates"]').html(table_report.updates).end()
+                                        .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
+                                        .appendTo($table_reports[c].find('tbody'))
+                                        .fadeIn(150);
 
-                                $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
-                                    .hide()
-                                    .find('[data-report="table"]').html(table).end()
-                                    .find('[data-report="rows"]').html(table_report.rows).end()
-                                    .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
-                                    .find('[data-report="updates"]').html(table_report.updates).end()
-                                    .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
-                                    .appendTo($table_reports.find('tbody'))
-                                    .fadeIn(150);
-
-                            });
-
-                            $.extend(true, t.report, report);
-
-                            // fetch next table
-                            t.recursive_fetch_json(data, ++i);
-
-                        } else if (report.engine) {
-
-                            var $row = $('.row-results'),
-                                $report = $row.find('.report'),
-                                $table_reports = $row.find('.table-reports');
-
-                            if (!$report.length)
-                                $report = $('<div class="report"></div>').appendTo($row);
-
-                            if (!$table_reports.length)
-                                $table_reports = $('\
-									<table class="table-reports">\
-										<thead>\
-											<tr>\
-												<th>Table</th>\
-												<th>Engine</th>\
-											</tr>\
-										</thead>\
-										<tbody></tbody>\
-									</table>').appendTo($report);
-
-                            $.each(report.converted, function (table, converted) {
-
-                                $('<tr class="' + table + '"><td>' + table + '</td><td>' + report.engine + '</td></tr>')
-                                    .hide()
-                                    .prependTo($table_reports.find('tbody'))
-                                    .fadeIn(150);
-
-                                $('.table-select option[value="' + table + '"]').html(function () {
-                                    return $(this).html().replace(new RegExp(table + ': [^,]+'), table + ': ' + report.engine);
                                 });
 
-                            });
+                                $.extend(true, t.report, report[c]);
 
+                            }
                             // fetch next table
+                            console.log(i, report[0].table_reports);
                             t.recursive_fetch_json(data, ++i);
+
 
                         } else if (report.collation) {
 
