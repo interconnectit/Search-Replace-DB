@@ -336,13 +336,6 @@ class icit_srdb {
 		// set up db connection
 		$this->db_setup();
 
-        if (!is_array($this->search)){
-            $this->search = "[" . $this->search . "]";
-            $this->replace= "[" . $this->replace . "]";
-            $this->search = json_decode($this->search);
-            $this->replace = json_decode($this->replace);
-        }
-
 		if ( $this->db_valid() ) {
 
 			// update engines

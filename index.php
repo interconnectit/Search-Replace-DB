@@ -2356,7 +2356,7 @@ window.console = window.console || {
             rows: 0,
             changes: 0,
             updates: 0,
-            time: 0.0,
+            time: [0.0],
             button: false,
             running: false,
             countdown: null,
@@ -2488,7 +2488,7 @@ window.console = window.console || {
                 t.rows = 0;
                 t.changes = 0;
                 t.updates = 0;
-                t.time = 0.0;
+                t.time = [0.0];
             },
 
             map_form_data: function ($form) {
@@ -2756,27 +2756,27 @@ window.console = window.console || {
 
                             for (c = 0; c < report.length; c++) {
                                 $table_reports[c] = $row.find('.table-reports-' + c + '');
-                            }
 
-                            for (c = 0; c < report.length; c++) {
                                 if (!$report.length)
                                     $report[c] = $('<div class="report report-"' + c + '"></div>').appendTo($row);
 
                                 end = Date.now() / 1000;
-
+                                if (t.time.length != report.length){
+                                    t.time.push(0.0);
+                                }
                                 t.tables += report[c].tables;
                                 t.rows += report[c].rows;
                                 t.changes += report[c].change;
                                 t.updates += report[c].updates;
-                                t.time += t.get_time(start, end);
+                                t.time[c] += t.get_time(start, end);
                                 console.log($report[c]);
                                 if (i == 0) {
 
 //                                if (!$report[c].find('.main-report').length) {
                                     $(t.report_tpl)
                                         .find('[data-report="search_replace"]').html(strings.search_replace).end()
-                                        .find('[data-report="search"]').text(data.search).end()
-                                        .find('[data-report="replace"]').text(data.replace).end()
+                                        .find('[data-report="search"]').text(data.search[c]).end()
+                                        .find('[data-report="replace"]').text(data.replace[c]).end()
                                         .find('[data-report="dry_run"]').html(strings.updates).end()
                                         .prependTo($report[c]);
                                 }
@@ -2785,7 +2785,7 @@ window.console = window.console || {
                                     .find('[data-report="rows"]').html(t.rows).end()
                                     .find('[data-report="changes"]').html(t.changes).end()
                                     .find('[data-report="updates"]').html(t.updates).end()
-                                    .find('[data-report="time"]').html(t.time.toFixed(7)).end();
+                                    .find('[data-report="time"]').html(t.time[c].toFixed(7)).end();
 
                                 if (!$table_reports[c].length)
                                     $table_reports[c] = $('\
