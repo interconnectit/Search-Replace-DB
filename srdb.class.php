@@ -357,15 +357,11 @@ class icit_srdb {
 				$report = $this->update_collation( $this->alter_collation, $this->tables );
 			}
 
-			// default search/replace action
-//            elseif ($this->multisearch == true)
-//            {
-
-//            }
             elseif (is_array($this->search)){
                 $report = array();
-                $report[0] = $this->replacer($this->search[0], $this->replace[0], $this->tables, $this->exclude_tables);
-                $report[1]= $this->replacer($this->search[1], $this->replace[1], $this->tables, $this->exclude_tables);
+                for ($i = 0; $i < count($this->search); $i++){
+                    $report[$i] = $this->replacer($this->search[$i], $this->replace[$i], $this->tables, $this->exclude_tables);
+                }
 
                 //$report = array_merge($report, $new_report);
 //                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));

@@ -1192,20 +1192,21 @@ class icit_srdb_ui extends icit_srdb
         <h1>search<span>/</span>replace</h1>
 
         <?php $this->get_errors('search'); ?>
-
-
-
+        
         <div class="fields fields-large">
-            <label for="search"><span class="label-text">replace</span> <span
-                    class="hide-if-regex-off regex-left">/</span><input id="search" type="text"
+
+            <label for="search-0"><span class="label-text">replace</span> <span
+                    class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
                                                                         placeholder="search for&hellip;"
                                                                         value="<?php $this->esc_html_attr($this->search, true); ?>"
-                                                                        name="search"/><span
+                                                                        name="search-0"/><span
                     class="hide-if-regex-off regex-right">/</span></label>
-            <label for="replace"><span class="label-text">with</span> <input id="replace" type="text"
-                                                                             placeholder="replace with&hellip;"
-                                                                             value="<?php $this->esc_html_attr($this->replace, true); ?>"
-                                                                             name="replace"/></label>
+            <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
+                                                                               placeholder="replace with&hellip;"
+                                                                               value="<?php $this->esc_html_attr($this->replace, true); ?>"
+                                                                               name="replace-0"/></label>
+
+
 
             <label for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
                                                              value="1" <?php $this->checked(true, $this->regex); ?> />
@@ -2530,7 +2531,20 @@ window.console = window.console || {
                     data['tables[]'] = $.map($('select[name^="tables"] option'), function (el, i) {
                         return $(el).attr('value');
                     });
+
                 data['multisearch'] = true;
+
+                data['num-search'] = 3;
+
+                data['search'] = [];
+                data['replace'] = [];
+                for ( i = 0; i < data['num-search']; i++){
+                    s_key = 'search-'+i;
+                    r_key = 'replace-'+i;
+                    data['search'].push(data[s_key]);
+                    data['replace'].push(data[r_key])
+                }
+
                 // check we don't just have one table selected as we get a string not array
                 if (!$.isArray(data['tables[]']))
                     data['tables[]'] = [data['tables[]']];
@@ -2698,7 +2712,7 @@ window.console = window.console || {
                         // track info
                         $.extend(true, t.info, info);
                         // append reports
-                        if (report.length>1){
+                        if (report.length>0){
 
                             var $row = $('.row-results'),
                                 $report = $row.find('.report'),
