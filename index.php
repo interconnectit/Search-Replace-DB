@@ -317,7 +317,7 @@ class icit_srdb_ui extends icit_srdb {
 				$delete_script_success = $this->delete_script( $path );
 
 				if ( self::DELETE_SCRIPT_FAIL_UNSAFE === $delete_script_success) {
-					$this->add_error( 'Delete aborted! You seem to have placed Search/Replace into your WordPress or Drupal root. Please remove Search/Replace manually.', 'delete' );
+					$this->add_error( 'Delete aborted! You seem to have placed Search/Replace into your WordPress, Drupal or Magento root. Please remove Search/Replace manually.', 'delete' );
 				} else {
 					if ( ( self::DELETE_SCRIPT_SUCCESS === $delete_script_success ) && !( is_file( __FILE__ ) && file_exists( __FILE__ ) ) ) {
 						$this->add_error( 'Search/Replace has been successfully removed from your server', 'delete' );
@@ -1203,7 +1203,7 @@ class icit_srdb_ui extends icit_srdb {
 			<p><strong class="red">WARNINGS!</strong>
 				Ensure data is backed up.
 				We take no responsibility for any damage caused by this script or its misuse.
-				DB Connection Settings are auto-filled when WordPress or Drupal is detected but can be confused by commented out settings so CHECK!
+				DB Connection Settings are auto-filled when WordPress, Drupal or Magento is detected but can be confused by commented out settings so CHECK!
 				There is NO UNDO!
 				Be careful running this script on a production server.</p>
 
