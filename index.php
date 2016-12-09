@@ -693,25 +693,23 @@ class icit_srdb_ui extends icit_srdb {
 
     public function is_magento() {
 
-        $path_mod = '';
+        $path = dirname( __FILE__ );
         $depth = 0;
         $max_depth = 4;
         $bootstrap_file = 'app/Mage.php';
 
-        while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
-            $path_mod .= '/..';
-            if ( $depth++ >= $max_depth )
-                break;
+        while( ! file_exists( "{$path}/{$bootstrap_file}" ) && $depth++ <= $max_depth ) {
+            $path = dirname( $path );
         }
 
-        if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+        if ( file_exists( "{$path}/{$bootstrap_file}" ) ) {
 
             try {
                 //define Magento root
-                define('MAGENTO_ROOT', getcwd());
+                define('MAGENTO_ROOT', $path);
 
                 // require the bootstrap include
-                require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
+                require_once( "{$path}/{$bootstrap_file}" );
 
                 /* Store or website code */
                 $mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : '';
