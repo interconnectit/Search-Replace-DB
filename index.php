@@ -124,6 +124,7 @@ class icit_srdb_ui extends icit_srdb {
 
 	public $is_wordpress = false;
 	public $is_drupal = false;
+	public $is_magento = false;
 
 	public function __construct() {
 
@@ -190,6 +191,25 @@ class icit_srdb_ui extends icit_srdb {
 			}
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+
+        } elseif( $bootstrap && $this->is_magento() ) {
+            $connection = Mage::getConfig()->getNode('global/resources/default_setup/connection');
+
+            // populate db details
+            $name = $connection->dbname;
+            $user = $connection->username;
+            $pass = $connection->password;
+            $host = $connection->host;
+            $charset = 'utf8';
+            $collate = '';
+
+            if (strpos($host, ':')) {
+                list($host, $port) = explode(':', $host);
+            } else {
+                $port = 3306;
+            }
+
+            $this->response($name, $user, $pass, $host, $port, $charset, $collate);
 
 		} else {
 
@@ -671,6 +691,52 @@ class icit_srdb_ui extends icit_srdb {
 		return false;
 	}
 
+    public function is_magento() {
+
+        $path_mod = '';
+        $depth = 0;
+        $max_depth = 4;
+        $bootstrap_file = 'app/Mage.php';
+
+        while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+            $path_mod .= '/..';
+            if ( $depth++ >= $max_depth )
+                break;
+        }
+
+        if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+
+            try {
+                //define Magento root
+                define('MAGENTO_ROOT', getcwd());
+
+                // require the bootstrap include
+                require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" );
+
+                /* Store or website code */
+                $mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : '';
+
+                /* Run store or run website */
+                $mageRunType = isset($_SERVER['MAGE_RUN_TYPE']) ? $_SERVER['MAGE_RUN_TYPE'] : 'store';
+
+                // Init Magento api
+                Mage::app($mageRunCode, $mageRunType);
+
+                // confirm environment
+                $this->set( 'is_magento', true );
+
+                return true;
+
+            } catch( Exception $error ) {
+                // We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
+                // This is a consequence of the 'complete' method in JavaScript
+                $this->add_error( 'Magento detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db' );
+            }
+
+        }
+
+        return false;
+    }
 
 	public function is_drupal() {
 
