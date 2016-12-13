@@ -1,4 +1,6 @@
-# Search Replace DB
+# Search Replace DB (Marf Edit)
+
+>A little change to the index.php that the password textbox is hidden instead showing the password plain. Because the issue interconnectit/Search-Replace-DB#78 is not closed and noting has done to it since 18 april 2014.
 
 This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
 
