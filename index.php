@@ -1016,7 +1016,7 @@ class icit_srdb_ui extends icit_srdb {
 
 					<div class="field field-short">
 						<label for="pass">pass</label>
-						<input id="pass" name="pass" type="text" value="<?php $this->esc_html_attr( $this->pass, true ); ?>" />
+						<input id="pass" name="pass" type="password" value="<?php $this->esc_html_attr( $this->pass, true ); ?>" />
 					</div>
 
 					<div class="field field-short">
@@ -1552,8 +1552,11 @@ class icit_srdb_ui extends icit_srdb {
 				width: 100%;
 			}
 			.field-long input[type="text"],
+			.field-long input[type="password"],
 			.field-medium input[type="text"],
+			.field-medium input[type="password"],
 			.field-short input[type="text"],
+			.field-short input[type="password"],
 			.field-long input[type="email"],
 			.field-medium input[type="email"],
 			.field-short input[type="email"] {
@@ -1587,6 +1590,7 @@ class icit_srdb_ui extends icit_srdb {
 			}
 
 			input[type="text"],
+			input[type="password"],
 			input[type="email"],
 			.regex-left,
 			.regex-right {
