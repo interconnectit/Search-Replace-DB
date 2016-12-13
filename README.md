@@ -1,6 +1,6 @@
 # Search Replace DB (Marf Edit)
 
->A little change to the index.php that the password textbox is hidden instead showing the password plain. Because the issue interconnectit/Search-Replace-DB#78 is not closed and noting has done to it since 18 april 2014.
+>A little change to the index.php that the password textbox is hidden instead showing the password plain. Because [this issue][0] is not closed and noting has done to it since 18 april 2014.
 
 This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
 
@@ -148,3 +148,4 @@ This happens occasionally and could be for a couple of reasons:
  * When the script starts, it attempts to start your WordPress or Drupal installation to auto-detect your username and password settings. If this fails, you will see a message informing you that auto-detection failed. You will have to enter your details manually.
  * Script was unable to set the timeout so PHP closed the connection before the table could be processed, this can happen on some server configurations.
  * When using php-fpm (as you have with VVV) make sure that the socket is owned by the server user `chown www-data:www-data /var/run/php5-fpm.sock`.
+[0]: https://github.com/interconnectit/Search-Replace-DB/issues/78
