@@ -917,6 +917,8 @@ class icit_srdb {
 							{
 								$raw_data = serialize(unserialize($raw_data));
 							}
+							$edited_data = $data_to_fix = $raw_data;
+
 
 							if ( in_array( $column, $primary_key ) ) {
 								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
