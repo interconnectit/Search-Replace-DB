@@ -124,6 +124,7 @@ class icit_srdb_ui extends icit_srdb {
 
 	public $is_wordpress = false;
 	public $is_drupal = false;
+	public $is_magento2 = false;
 
 	public function __construct() {
 
@@ -133,7 +134,7 @@ class icit_srdb_ui extends icit_srdb {
 		// prevent fatals from hiding the UI
 		register_shutdown_function( array( $this, 'fatal_handler' ) );
 
-		// flag to bootstrap WP or Drupal
+		// flag to bootstrap WP, Drupal, or Magento.
 		$bootstrap = true; // isset( $_GET[ 'bootstrap' ] );
 
 		// discover environment
@@ -191,6 +192,20 @@ class icit_srdb_ui extends icit_srdb {
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
+		} elseif( $bootstrap && $this->is_magento2()) {
+			$config = MAGENTO2_CONFIG['db']['connection']['default'];
+
+			// populate db details
+			$name 		= $config[ 'dbname' ];
+			$user 		= $config[ 'username' ];
+			$pass 		= $config[ 'password' ];
+			$host 		= $config[ 'host' ];
+			$port		= 3306;
+			$charset 	= 'utf8';
+			$collate 	= '';
+
+			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+
 		} else {
 
 			$this->response();
@@ -217,9 +232,9 @@ class icit_srdb_ui extends icit_srdb {
 			if ( (string)abs( (int)$port_input ) !== $port_as_string ) {
 				// Mangled port number: non numeric.
 				$this->add_error('Port number must be a positive integer. If you are unsure, try the default port 3306.', 'db');
-				
+
 				// Force a bad run by supplying nonsense.
-				$port = "nonsense";				
+				$port = "nonsense";
 			} else {
 				$port = abs( (int)$port_input );
 			}
@@ -424,7 +439,7 @@ class icit_srdb_ui extends icit_srdb {
 
 			// return json version of results
 			header( 'Content-Type: application/json' );
-			
+
 			echo json_encode( array(
 				'errors' => $this->get( 'errors' ),
 				'report' => $this->get( 'report' ),
@@ -713,6 +728,42 @@ class icit_srdb_ui extends icit_srdb {
 
 		return false;
 	}
+
+
+    public function is_magento2() {
+
+        $path_mod = '';
+        $depth = 0;
+        $max_depth = 4;
+        $bootstrap_file = 'app/etc/env.php';
+
+        while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+            $path_mod .= '/..';
+            if ( $depth++ >= $max_depth )
+                break;
+        }
+
+        if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+
+            try {
+                // require the bootstrap include
+                define('MAGENTO2_CONFIG', require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ));
+
+                // confirm environment
+                $this->set( 'is_magento2', true );
+
+                return true;
+
+            } catch( Exception $error ) {
+                // We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
+                // This is a consequence of the 'complete' method in JavaScript
+                $this->add_error( 'Magento detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db' );
+            }
+
+        }
+
+        return false;
+    }
 
 
 	/**
@@ -1292,9 +1343,9 @@ class icit_srdb_ui extends icit_srdb {
 
 	public function meta() {
 		?>
-		
-		<meta charset="utf-8" /> 
-		
+
+		<meta charset="utf-8" />
+
 		<?php
 	}
 
@@ -2686,12 +2737,12 @@ class icit_srdb_ui extends icit_srdb {
 												.find( '.from' ).text( item.from ).end()
 												.find( '.to' ).text( item.to ).end()
 												.appendTo( $changes );
-											
+
 										var from_div = $change.find('.from');
 										var to_div   = $change.find('.to');
-												
+
 										var original_text = from_div.html();
-											
+
 										// Only display highlights if this isn't a serialised object.
 										// We CANNOT show highlights properly without writing a FULL COMPLETE
 										// php compatible serialize unserialize pair.
@@ -2701,44 +2752,44 @@ class icit_srdb_ui extends icit_srdb {
 										{
 											if ( regex ) {
 												var result_of_regex;
-												
+
 												var copied_char_from_source = 0;
-												
+
 												var output_search_panel  = '';
 												var output_replace_panel = '';
-												
+
 												while ( result_of_regex = regex_search_iter.exec( original_text ) ) {
 													var search_match_start = result_of_regex.index;
 													var search_match_end   = regex_search_iter.lastIndex;
-													
+
 													output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source, search_match_start);
 													output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source, search_match_start);
-													
+
 													output_search_panel  = output_search_panel  + '<span class="highlight">';
 													output_search_panel  = output_search_panel  + original_text.slice(search_match_start, search_match_end);
 													output_search_panel  = output_search_panel  + '</span>';
 													output_replace_panel = output_replace_panel + '<span class="highlight">';
 													output_replace_panel = output_replace_panel + original_text.slice(search_match_start, search_match_end).replace( regex_search, replace );
 													output_replace_panel = output_replace_panel + '</span>';
-													
+
 													copied_char_from_source = search_match_end;
 												}
-												
+
 												output_search_panel  = output_search_panel  + original_text.slice(copied_char_from_source);
 												output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source);
-																						
+
 												from_div.html( output_search_panel );
 												to_div.html( output_replace_panel );
-											} else {												
+											} else {
 												// Do a multiple straight up search replace on search with the highlight string we want to put in.
 												var original_chunks = original_text.split(search);
-												
+
 												from_div.html( original_chunks.join('<span class="highlight">' + search + '</span>') );
-												
+
 												if (replace)
 												{
 													// only display highlights if this isn't a serialised object
-													if ( !containsSerialisedString( to_div.html() ) ) 
+													if ( !containsSerialisedString( to_div.html() ) )
 													{
 														to_div.html( original_chunks.join('<span class="highlight">' + replace + '</span>') );
 													}
