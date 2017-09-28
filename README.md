@@ -53,7 +53,7 @@ You can copy Search Replace DB into the following location:
 
 ### CLI script
 
-To invoke the script, nagivate in your shell to the directory to where you installed Search Replace DB.
+To invoke the script, navigate in your shell to the directory to where you installed Search Replace DB.
 
 Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for usage information:
 
