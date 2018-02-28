@@ -27,13 +27,9 @@ If you would like Search Replace DB to detect your WordPress installation, you s
 
 For example, if you have
 	
-	/website.com/index.php
-   
-	/website.com/wp-config.php
-   
-	/website.com/wordpress/
-   
 	/website.com/wordpress/index.php
+   
+	/website.com/wordpress/wp-config.php
    
 	/website.com/wordpress/wp-settings.php
    
