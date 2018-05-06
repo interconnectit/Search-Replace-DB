@@ -2,7 +2,13 @@
 	"name": "guigaba/search-replace-db",
 	"description": "A PHP search replace tool for quickly modifying a string throughout a database. Useful for changing the base URL when migrating a WordPress site from development to production.",
 	"license": "GPL-3.0",
-	"homepage": "https://github.com/interconnectit/Search-Replace-DB",
+	"homepage": "https://github.com/guigaba/Search-Replace-DB",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/guigaba/Search-Replace-DB"
+		}
+	],
 	"require": {
 		"php": ">=7"
 	},
