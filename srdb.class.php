@@ -1132,6 +1132,31 @@ class icit_srdb {
 
 
 	/**
+	 * Replace all occurrences of the search string inside a [vc_raw_html] shortcode added by WPBakery.
+	 *
+	 *
+	 * @param mixed $search
+	 * @param mixed $replace
+	 * @param mixed $subject
+	 * @param int $count
+	 * @return mixed
+	 */
+	public function fixWPBakery($search, $replace, $subject, &$count = 0) {
+		$pattern = "/\[vc_raw_html.*?\](.*?)\[\/vc_raw_html\]/m";
+		preg_match_all($pattern, $subject, $matches);
+		if (count($matches) > 1) {
+			foreach ($matches[1] as $match_i => $match) {
+				$code = rawurldecode(base64_decode($match));
+				$code = $this->str_replace($search, $replace, $code, $count_inner);
+
+				$subject = str_replace($match, base64_encode(rawurlencode($code)), $subject, $count_inner_multiple);
+				$count+= ($count_inner * $count_inner_multiple);
+			}
+		}
+		return $subject;
+	}
+
+	/**
 	 * Replace all occurrences of the search string with the replacement string.
 	 *
 	 * @author Sean Murphy <sean@iamseanmurphy.com>
@@ -1145,7 +1170,7 @@ class icit_srdb {
 	 * @param int $count
 	 * @return mixed
 	 */
-	public static function mb_str_replace( $search, $replace, $subject, &$count = 0 ) {
+	public function mb_str_replace( $search, $replace, $subject, &$count = 0 ) {
 		if ( ! is_array( $subject ) ) {
 			// Normalize $search and $replace so they are both arrays of the same length
 			$searches = is_array( $search ) ? array_values( $search ) : array( $search );
@@ -1156,11 +1181,12 @@ class icit_srdb {
 				$parts = mb_split( preg_quote( $search ), $subject );
 				$count += count( $parts ) - 1;
 				$subject = implode( $replacements[ $key ], $parts );
+				$subject = $this->fixWPBakery($search, $replace, $subject, $count);
 			}
 		} else {
 			// Call mb_str_replace for each subject in array, recursively
 			foreach ( $subject as $key => $value ) {
-				$subject[ $key ] = self::mb_str_replace( $search, $replace, $value, $count );
+				$subject[ $key ] = $this->mb_str_replace( $search, $replace, $value, $count );
 			}
 		}
 
@@ -1180,11 +1206,13 @@ class icit_srdb {
 	 */
 	public function str_replace( $search, $replace, $string, &$count = 0 ) {
 		if ( $this->get( 'regex' ) ) {
-			return preg_replace( $search, $replace, $string, -1, $count );
+			$subject = preg_replace( $search, $replace, $string, -1, $count );
+			return $this->fixWPBakery($search, $replace, $subject, $count);
 		} elseif( function_exists( 'mb_split' ) ) {
-			return self::mb_str_replace( $search, $replace, $string, $count );
+			return $this->mb_str_replace( $search, $replace, $string, $count);
 		} else {
-			return str_replace( $search, $replace, $string, $count );
+			$subject = str_replace( $search, $replace, $string, $count);
+			return $this->fixWPBakery($search, $replace, $subject, $count);
 		}
 	}
 
