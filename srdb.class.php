@@ -747,7 +747,7 @@ class icit_srdb {
 			}
 
 			// Submitted by Tina Matter
-			elseif ( is_object( $data ) ) {
+			elseif ( is_object( $data ) && ! is_a( $data, '__PHP_Incomplete_Class' ) ) {
 				// $data_class = get_class( $data );
 				$_tmp = $data; // new $data_class( );
 				$props = get_object_vars( $data );
