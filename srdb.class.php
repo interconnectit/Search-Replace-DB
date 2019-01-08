@@ -858,7 +858,7 @@ class icit_srdb {
 					case 'utf32':
 						//$encoding = 'utf8';
 						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
-						continue;
+						continue 2;
 						break;
 
 					default:
