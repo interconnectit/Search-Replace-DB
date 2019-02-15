@@ -1,13 +1,17 @@
 {
-	"name": "interconnectit/search-replace-db",
+	"name": "Marfjeh/search-replace-db",
 	"description": "A PHP search replace tool for quickly modifying a string throughout a database. Useful for changing the base URL when migrating a WordPress site from development to production.",
 	"license": "GPL-3.0",
 	"homepage": "https://github.com/interconnectit/Search-Replace-DB",
 	"require": {
-		"php": ">=5.3.0"
+		"php": ">=7"
+	},
+	"require-dev": {
+		"squizlabs/php_codesniffer": ">=3.3.0",
+		"phpmd/phpmd": "@stable"
 	},
 	"support": {
-		"issues": "https://github.com/interconnectit/Search-Replace-DB/issues"
+		"issues": "https://github.com/Marfjeh/Search-Replace-DB/issues"
 	},
 	"bin": [ "srdb.cli.php" ],
 	"autoload": {

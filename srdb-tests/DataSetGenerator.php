@@ -23,24 +23,24 @@ $content = '<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem ac
 	pariatur?</p>';
 
 $serialised = array(
-				'number' => 123,
-				'float' => 12.345,
-				'string' => 'serialised string',
-				'accented' => 'föó ßåŗ',
-				'unicode' => '❤ ☀ ☆ ☂ ☻ ♞ ☯ 😸 😹',
-				'url' => 'http://example.com/'
-			);
+                'number' => 123,
+                'float' => 12.345,
+                'string' => 'serialised string',
+                'accented' => 'föó ßåŗ',
+                'unicode' => '❤ ☀ ☆ ☂ ☻ ♞ ☯ 😸 😹',
+                'url' => 'http://example.com/'
+            );
 
 $serialised[ 'nested' ] = $serialised;
 
-$numbers = range( 1, 100 );
-$letters = range( 'a', 'z' );
+$numbers = range(1, 100);
+$letters = range('a', 'z');
 //var_dump( $letters );
 
 //mb_internal_encoding( 'UTF-8' );
 
-header( 'Content-type: text/xml' );
-header( 'Charset: UTF-8' );
+header('Content-type: text/xml');
+header('Charset: UTF-8');
 
 //var_dump( unserialize( serialize( $serialised ) ) );
 
@@ -52,14 +52,13 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>
         <column>url</column>
 		<column>serialised</column>';
 
-for( $i = 1; $i < 51; $i++ ) {
+for ($i = 1; $i < 51; $i++) {
+    $s = $serialised;
+    $s[ 'url' ] .= $numbers[ array_rand($numbers, 1) ] . '/';
+    $row_content = str_replace('~~~', $numbers[ array_rand($numbers, 1) ], $content);
+    $row_content = str_replace('^^^', $letters[ array_rand($letters, 1) ], $row_content);
 
-	$s = $serialised;
-	$s[ 'url' ] .= $numbers[ array_rand( $numbers, 1 ) ] . '/';
-	$row_content = str_replace( '~~~', $numbers[ array_rand( $numbers, 1 ) ], $content );
-	$row_content = str_replace( '^^^', $letters[ array_rand( $letters, 1 ) ], $row_content );
-
-	echo '
+    echo '
 		<row>
 			<value>' . $i . '</value>
 			<value>
@@ -68,12 +67,11 @@ for( $i = 1; $i < 51; $i++ ) {
 				]]>
 			</value>
 			<value>http://example.com/' . $i . '/</value>
-			<value>' . serialize( $s ) . '</value>
+			<value>' . serialize($s) . '</value>
 		</row>
 	';
 
-	//var_dump( unserialize( serialize( $s ) ) );
-
+    //var_dump( unserialize( serialize( $s ) ) );
 }
 
 echo '
