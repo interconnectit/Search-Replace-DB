@@ -1,11 +1,13 @@
 # Search Replace DB (Marf Edit)
 
-A little change to the index.php that the password textbox is hidden instead showing the password plain. Because [this issue](0) is not closed and noting has done to it since 18 april 2014.
+A little change to the index.php that the password textbox is hidden instead showing the password plain. Because [this issue](0) is not closed and nothing has done to it since 18 april 2014.
 Because showing the password in a normal textbox in a office where everyone can see your bad password is naughty.
 
 It also includes some fixes so that it works on PHP 7.X or higher. as PHP 5.3 is old as dinosaurs. 
 As i use this script at work (and some coworkers as well), i try to keep this up to date.
----
+
+
+# 
 
 This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
 If you find a problem let us know in the issues area and if you can improve the code then please fork the repository and send us a pull request :)
