@@ -124,6 +124,7 @@ class icit_srdb_ui extends icit_srdb {
 
 	public $is_wordpress = false;
 	public $is_drupal = false;
+	public $is_magento2 = false;
 
 	public function __construct() {
 
@@ -191,7 +192,18 @@ class icit_srdb_ui extends icit_srdb {
 
 			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
 
-		} else {
+		} elseif( $bootstrap && $this->is_magento2()) {
+			$config = MAGENTO2_CONFIG['db']['connection']['default'];
+			// populate db details
+			$name 		= $config[ 'dbname' ];
+			$user 		= $config[ 'username' ];
+			$pass 		= $config[ 'password' ];
+			$host 		= $config[ 'host' ];
+			$port		= 3306;
+			$charset 	= 'utf8';
+			$collate 	= '';
+			$this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+		}else {
 
 			$this->response();
 
@@ -711,6 +723,33 @@ class icit_srdb_ui extends icit_srdb {
 
 		}
 
+		return false;
+	}
+
+
+	public function is_magento2() {
+		$path_mod = '';
+		$depth = 0;
+		$max_depth = 4;
+		$bootstrap_file = 'app/etc/env.php';
+		while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+			$path_mod .= '/..';
+			if ( $depth++ >= $max_depth )
+				break;
+		}
+		if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+			try {
+				// require the bootstrap include
+				define('MAGENTO2_CONFIG', require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ));
+				// confirm environment
+				$this->set( 'is_magento2', true );
+				return true;
+			} catch( Exception $error ) {
+				// We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
+				// This is a consequence of the 'complete' method in JavaScript
+				$this->add_error( 'Magento detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db' );
+			}
+		}
 		return false;
 	}
 
