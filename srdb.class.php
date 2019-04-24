@@ -912,7 +912,12 @@ class icit_srdb {
 
 						foreach( $columns as $column ) {
 
-							$edited_data = $data_to_fix = $row[ $column ];
+							$raw_data = $row[$column];
+							if(@unserialize($raw_data)!==false)
+							{
+								$raw_data = serialize(unserialize($raw_data));
+							}
+							$edited_data = $data_to_fix = $raw_data;
 
 							if ( in_array( $column, $primary_key ) ) {
 								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
