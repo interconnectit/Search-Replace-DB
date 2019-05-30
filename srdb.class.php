@@ -278,7 +278,9 @@ class icit_srdb {
 		// normalised to utf-8 internally and output in the appropriate charset.
 		mb_regex_encoding( 'UTF-8' );
 
-		// allow a string for columns
+        ini_set('unserialize_callback_func', 'object_serializer' );
+
+        // allow a string for columns
 		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
@@ -770,9 +772,7 @@ class icit_srdb {
 				return serialize( $data );
 
 		} catch( Exception $error ) {
-
-			$this->add_error( $error->getMessage(), 'results' );
-
+		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class. P.S. It\'s most commonly a Yoast plugin that causes this error.', 'results' );
 		}
 
 		return $data;
@@ -912,12 +912,7 @@ class icit_srdb {
 
 						foreach( $columns as $column ) {
 
-							$raw_data = $row[$column];
-							if(@unserialize($raw_data)!==false)
-							{
-								$raw_data = serialize(unserialize($raw_data));
-							}
-							$edited_data = $data_to_fix = $raw_data;
+                            $edited_data = $data_to_fix = $row[ $column ];
 
 							if ( in_array( $column, $primary_key ) ) {
 								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
@@ -1219,4 +1214,17 @@ class icit_srdb {
 		return $string;
 	}
 
+
+}
+
+
+/**
+ * .. make classes
+ *
+ * @param string $class_name
+ *
+ * @return void
+ */
+function object_serializer( $class_name ) {
+    eval("class {$class_name} extends ArrayObject {}");
 }
