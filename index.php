@@ -1506,6 +1506,7 @@ class icit_srdb_ui extends icit_srdb {
 			}
 			.fields-large input[type="text"] {
 				width: 100%;
+				display: block;
 			}
 
 			.label-text {
@@ -1519,10 +1520,6 @@ class icit_srdb_ui extends icit_srdb {
 				.fields-large label {
 					margin: 0;
 					text-align: left;
-					display: inline-block;
-				}
-				.fields-large input[type="text"] {
-					width: 15em;
 				}
 				.regex-on .fields-large .regex-left + input[type="text"] {
 					width: 12.7em;
