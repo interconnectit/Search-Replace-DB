@@ -375,7 +375,8 @@ class icit_srdb {
 
 
 	public function errors( $no, $message, $file, $line ) {
-		echo $message . "\n";
+		echo "Internal Error [$no]: $message in $file on line $line\n";
+		exit($no);
 	}
 
 
