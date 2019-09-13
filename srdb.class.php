@@ -191,13 +191,13 @@ class icit_srdb {
 	 * @var array Stores a list of exceptions
 	 */
 	public $errors = array(
-						'search' => array(),
-						'db' => array(),
-						'tables' => array(),
-						'results' => array(),
-                        'exclude_tables'=>array(),
-                        'compatibility' => array()
-					);
+		'search' => array(),
+		'db' => array(),
+		'tables' => array(),
+		'results' => array(),
+		'exclude_tables'=>array(),
+		'compatibility' => array()
+	);
 
 	public $error_type = 'search';
 
@@ -270,7 +270,7 @@ class icit_srdb {
 			'search' 			=> '',
 			'replace' 			=> '',
 			'tables'			=> array(),
-            'exclude_tables'    => array(),
+			'exclude_tables'    => array(),
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
@@ -351,18 +351,18 @@ class icit_srdb {
             elseif (is_array($this->search)){
                 $report = array();
                 for ($i = 0; $i < count($this->search); $i++){
-                    $report[$i] = $this->replacer($this->search[$i], $this->replace[$i], $this->tables, $this->exclude_tables);
+                    $report[$i] = $this->replacer($this->search[$i], $this->replace[$i]);
                 }
 
                 //$report = array_merge($report, $new_report);
-//                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
-//                    $new_report = $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables);
+//                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i]));
+//                    $new_report = $this->replacer($this->search[$i],$this->replace[$i]);
 //                    $report['table_reports'] = array_merge($report['table_reports'], $new_report['table_reports']);
 //                }
 
             }
 			else {
-				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
+				$report = $this->replacer( $this->search, $this->replace );
 			}
 
 		} else {
@@ -832,13 +832,14 @@ class icit_srdb {
 	 * We split large tables into 50,000 row blocks when dealing with them to save
 	 * on memmory consumption.
 	 *
-	 * @param string $search     What we want to replace
-	 * @param string $replace    What we want to replace it with.
-	 * @param array  $tables     The tables we want to look at.
+	 * @param string $search         What we want to replace
+	 * @param string $replace        What we want to replace it with.
+	 * @param array  $include_tables The tables we want to look at.
+	 * @param array  $exclude_tables The tables we don't want to look at.
 	 *
-	 * @return array    Collection of information gathered during the run.
+	 * @return array Collection of information gathered during the run.
 	 */
-	public function replacer( $search = '', $replace = '', $tables = array( ), $exclude_tables = array() ) {
+	public function replacer( $search = '', $replace = '' ) {
 		$search = (string)$search;
 		// check we have a search string, bail if not
 		if ( '' === $search ) {
@@ -871,20 +872,41 @@ class icit_srdb {
 		if ( $this->get( 'dry_run' ) and !(in_array('The dry-run option was selected. No replacements will be made.', $errors['results']))) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
-		// if no tables selected assume all
-		if ( empty( $tables ) ) {
-			$all_tables = $this->get_tables();
-			$tables = array_keys( $all_tables );
+		// Full tables list.
+		$tables = array_keys($this->get_tables());
+
+		// Calculating tables to keep...
+		// If no tables selected assume all.
+
+		// With those to keep.
+		if (!empty($this->tables) && is_array($this->tables)) {
+			$tables = array_filter($tables, function ($table) {
+				foreach($this->tables as $pattern) {
+          if (preg_match("/^$pattern$/", $table)) {
+            return true;
+					}
+				}
+				$this->add_error('Ignoring Table (not included): ' . $table);
+				return false;
+			});
 		}
+		// With those to exclude.
+		if (!empty($this->exclude_tables) && is_array($this->exclude_tables)) {
+			$tables = array_filter($tables, function ($table) {
+				foreach($this->exclude_tables as $pattern) {
+          if (preg_match("/^$pattern$/", $table)) {
+						$this->add_error('Ignoring Table (excluded): ' . $table);
+						return false;
+					}
+				}
+				return true;
+			});
+		}
+
 
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
 			foreach( $tables as $table ) {
-                if (in_array($table, $exclude_tables))
-                {
-                    $this->add_error('Ignoring Table: ' . $table);
-                    continue;
-                }
 				$encoding = $this->get_table_character_set( $table );
 				switch( $encoding ) {
 

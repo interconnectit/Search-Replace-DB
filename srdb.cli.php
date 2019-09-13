@@ -108,6 +108,12 @@ ARGS
   -t, --tables
     If set only runs the script on the specified table, comma
     separate for multiple values.
+    Can be regular expressions (ex: -t .*term.*,wf.*).
+    Each pattern will be surrounded by ^$ (^PATTERN$) to be able to match exactly a table name.
+  -w, --exclude-tables
+    If set, exclude all the matching tables.
+    Can be regular expressions (See -t).
+    Ex: --exclude-tables .*wf.*,.*[0-9]+.*
   -i, --include-cols
     If set only runs the script on the specified columns, comma
     separate for multiple values.
