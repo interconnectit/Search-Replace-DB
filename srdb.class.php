@@ -1154,6 +1154,9 @@ class icit_srdb {
 
 			foreach ( $searches as $key => $search ) {
 				$parts = mb_split( preg_quote( $search ), $subject );
+				if (!is_array($parts)) {
+					continue;
+				}
 				$count += count( $parts ) - 1;
 				$subject = implode( $replacements[ $key ], $parts );
 			}
