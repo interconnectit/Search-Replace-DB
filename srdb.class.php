@@ -953,6 +953,10 @@ class icit_srdb {
 
 						}
 
+						if ( empty( $update_sql ) ){
+							continue;
+						}
+
 						if ( $dry_run ) {
 							// nothing for this state
 						} elseif ( $update && ! empty( $where_sql ) ) {
