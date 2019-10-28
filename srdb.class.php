@@ -1009,7 +1009,7 @@ class icit_srdb {
 		} else {
 			while( $column = $this->db_fetch( $fields ) ) {
 				$columns[] = $column[ 'Field' ];
-				if ( $column[ 'Key' ] == 'PRI' )
+				if ( $column[ 'Key' ] == 'PRI' && $primary_key === null )
 					$primary_key[] = $column[ 'Field' ];
 			}
 		}
