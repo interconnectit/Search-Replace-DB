@@ -38,7 +38,7 @@
  *
  *
  * Version 4.0:
- * 		* Support for continuous integration through Travis CI
+ *      * Support for continuous integration through Travis CI
  *      * Aility to do multiple search-replaces
  *      * Ability to exclude tables
  *      * Support for autodetection of Joomla, Docker, and Typo3 configurations
@@ -49,61 +49,61 @@
  *      * UI Tweaks
  *
  * Version 3.1.0:
- *		* Added port number option to both web and CLI interfaces.
- *		* More reliable fallback on non-PDO systems.
- *		* Confirmation on 'Delete me'
- *		* Comprehensive check to prevent accidental deletion of web projects
- *		* Removed mysql functions and replaced with mysqli
+ *      * Added port number option to both web and CLI interfaces.
+ *      * More reliable fallback on non-PDO systems.
+ *      * Confirmation on 'Delete me'
+ *      * Comprehensive check to prevent accidental deletion of web projects
+ *      * Removed mysql functions and replaced with mysqli
  *
  * Version 3.0:
- * 		* Major overhaul
- * 		* Multibyte string replacements
- * 		* Convert tables to InnoDB
- * 		* Convert tables to utf8_unicode_ci
- * 		* Preview/view changes in report
- * 		* Optionally use preg_replace()
- * 		* Better error/exception handling & reporting
- * 		* Reports per table
- * 		* Exclude/include multiple columns
+ *      * Major overhaul
+ *      * Multibyte string replacements
+ *      * Convert tables to InnoDB
+ *      * Convert tables to utf8_unicode_ci
+ *      * Preview/view changes in report
+ *      * Optionally use preg_replace()
+ *      * Better error/exception handling & reporting
+ *      * Reports per table
+ *      * Exclude/include multiple columns
  *
  * Version 2.2.0:
- * 		* Added remove script patch from David Anderson (wordshell.net)
- * 		* Added ability to replace strings with nothing
- *		* Copy changes
- * 		* Added code to recursive_unserialize_replace to deal with objects not
- * 		just arrays. This was submitted by Tina Matter.
- * 		ToDo: Test object handling. Not sure how it will cope with object in the
- * 		db created with classes that don't exist in anything but the base PHP.
+ *      * Added remove script patch from David Anderson (wordshell.net)
+ *      * Added ability to replace strings with nothing
+ *      * Copy changes
+ *      * Added code to recursive_unserialize_replace to deal with objects not
+ *      just arrays. This was submitted by Tina Matter.
+ *      ToDo: Test object handling. Not sure how it will cope with object in the
+ *      db created with classes that don't exist in anything but the base PHP.
  *
  * Version 2.1.0:
  *              - Changed to version 2.1.0
- *		* Following change by Sergei Biryukov - merged in and tested by Dave Coveney
+ *      * Following change by Sergei Biryukov - merged in and tested by Dave Coveney
  *              - Added Charset Support (tested with UTF-8, not tested on other charsets)
- *		* Following changes implemented by James Whitehead with thanks to all the commenters and feedback given!
- * 		- Removed PHP warnings if you go to step 3+ without DB details.
- * 		- Added options to skip changing the guid column. If there are other
- * 		columns that need excluding you can add them to the $exclude_cols global
- * 		array. May choose to add another option to the table select page to let
- * 		you add to this array from the front end.
- * 		- Minor tweak to label styling.
- * 		- Added comments to each of the functions.
- * 		- Removed a dead param from icit_srdb_replacer
+ *      * Following changes implemented by James Whitehead with thanks to all the commenters and feedback given!
+ *      - Removed PHP warnings if you go to step 3+ without DB details.
+ *      - Added options to skip changing the guid column. If there are other
+ *      columns that need excluding you can add them to the $exclude_cols global
+ *      array. May choose to add another option to the table select page to let
+ *      you add to this array from the front end.
+ *      - Minor tweak to label styling.
+ *      - Added comments to each of the functions.
+ *      - Removed a dead param from icit_srdb_replacer
  * Version 2.0.0:
- * 		- returned to using unserialize function to check if string is
- * 		serialized or not
- * 		- marked is_serialized_string function as deprecated
- * 		- changed form order to improve usability and make use on multisites a
- * 		bit less scary
- * 		- changed to version 2, as really should have done when the UI was
- * 		introduced
- * 		- added a recursive array walker to deal with serialized strings being
- * 		stored in serialized strings. Yes, really.
- * 		- changes by James R Whitehead (kudos for recursive walker) and David
- * 		Coveney 2011-08-26
+ *      - returned to using unserialize function to check if string is
+ *      serialized or not
+ *      - marked is_serialized_string function as deprecated
+ *      - changed form order to improve usability and make use on multisites a
+ *      bit less scary
+ *      - changed to version 2, as really should have done when the UI was
+ *      introduced
+ *      - added a recursive array walker to deal with serialized strings being
+ *      stored in serialized strings. Yes, really.
+ *      - changes by James R Whitehead (kudos for recursive walker) and David
+ *      Coveney 2011-08-26
  *  Version 1.0.2:
- *  	- typos corrected, button text tweak - David Coveney / Robert O'Rourke
+ *      - typos corrected, button text tweak - David Coveney / Robert O'Rourke
  *  Version 1.0.1
- *  	- styling and form added by James R Whitehead.
+ *      - styling and form added by James R Whitehead.
  *
  *  Credits:  moz667 at gmail dot com for his recursive_array_replace posted at
  *            uk.php.net which saved me a little time - a perfect sample for me
@@ -126,6 +126,7 @@ class icit_srdb_ui extends icit_srdb
     public $is_drupal = false;
     public $is_joomla = false;
     public $is_docker = false;
+    public $is_magento2 = false;
 
     public function __construct()
     {
@@ -249,7 +250,18 @@ class icit_srdb_ui extends icit_srdb
 
             $this->response($name, $user, $pass, $host, $port, $charset, $collate);
 
-        } else {
+        } elseif( $bootstrap && $this->is_magento2()) {
+            $config = MAGENTO2_CONFIG['db']['connection']['default'];
+            // populate db details
+            $name       = $config[ 'dbname' ];
+            $user       = $config[ 'username' ];
+            $pass       = $config[ 'password' ];
+            $host       = $config[ 'host' ];
+            $port       = 3306;
+            $charset    = 'utf8';
+            $collate    = '';
+            $this->response( $name, $user, $pass, $host, $port, $charset, $collate );
+        }else {
 
             $this->response();
 
@@ -293,7 +305,7 @@ class icit_srdb_ui extends icit_srdb
             }
 
 
-            $charset = 'utf8'; // isset( $_POST[ 'char' ] ) ? stripcslashes( $_POST[ 'char' ] ) : '';	// your db charset
+            $charset = 'utf8'; // isset( $_POST[ 'char' ] ) ? stripcslashes( $_POST[ 'char' ] ) : '';   // your db charset
             $collate = '';
         }
 
@@ -893,6 +905,32 @@ class icit_srdb_ui extends icit_srdb
         return false;
     }
 
+    public function is_magento2() {
+        $path_mod = '';
+        $depth = 0;
+        $max_depth = 4;
+        $bootstrap_file = 'app/etc/env.php';
+        while( ! file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+            $path_mod .= '/..';
+            if ( $depth++ >= $max_depth )
+                break;
+        }
+        if ( file_exists( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ) ) {
+            try {
+                // require the bootstrap include
+                define('MAGENTO2_CONFIG', require_once( dirname( __FILE__ ) . "{$path_mod}/{$bootstrap_file}" ));
+                // confirm environment
+                $this->set( 'is_magento2', true );
+                return true;
+            } catch( Exception $error ) {
+                // We can't add_error here as 'db' because if the db errors array is not empty, the interface doesn't activate!
+                // This is a consequence of the 'complete' method in JavaScript
+                $this->add_error( 'Magento detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db' );
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Search through the file name passed for a set of defines used to set up
@@ -1334,22 +1372,22 @@ class icit_srdb_ui extends icit_srdb
 
         <div class="fields">
 
-					<span class="submit-group">
-						<input type="submit" name="submit[update]" value="update details"/>
+                    <span class="submit-group">
+                        <input type="submit" name="submit[update]" value="update details"/>
 
-						<input type="submit" name="submit[dryrun]"
+                        <input type="submit" name="submit[dryrun]"
                                value="dry run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required"/>
 
-						<input type="submit" name="submit[liverun]"
+                        <input type="submit" name="submit[liverun]"
                                value="live run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required"/>
 
-						<span class="separator">/</span>
-					</span>
+                        <span class="separator">/</span>
+                    </span>
 
             <span class="submit-group">
-						<?php if (in_array('InnoDB', $this->get('engines'))) { ?>
+                        <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
                             <input type="submit" name="submit[innodb]"
                                    value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                    class="db-required secondary field-advanced"/>
@@ -1359,11 +1397,11 @@ class icit_srdb_ui extends icit_srdb
                        value="convert to utf8 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                        class="db-required secondary field-advanced"/>
 
-						<input type="submit" name="submit[utf8mb4]"
+                        <input type="submit" name="submit[utf8mb4]"
                                value="convert to utf8mb4 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required secondary field-advanced"/>
 
-					</span>
+                    </span>
 
         </div>
 
@@ -2403,31 +2441,31 @@ window.console = window.console || {
             },
 
             report_tpl: '\
-				<p class="main-report">\
-				In the process of <span data-report="search_replace"></span> we scanned\
-				<strong data-report="tables"></strong> tables with a total of\
-				<strong data-report="rows"></strong> rows,\
-				<strong data-report="changes"></strong> cells\
-				<span data-report="dry_run"></span> changed.\
-				<strong data-report="updates"></strong> db updates were performed.\
-				It all took <strong data-report="time"></strong> seconds.\
-				</p>',
+                <p class="main-report">\
+                In the process of <span data-report="search_replace"></span> we scanned\
+                <strong data-report="tables"></strong> tables with a total of\
+                <strong data-report="rows"></strong> rows,\
+                <strong data-report="changes"></strong> cells\
+                <span data-report="dry_run"></span> changed.\
+                <strong data-report="updates"></strong> db updates were performed.\
+                It all took <strong data-report="time"></strong> seconds.\
+                </p>',
             table_report_tpl: '\
-				<th data-report="table"></th>\
-				<td data-report="rows"></td>\
-				<td data-report="changes"></td>\
-				<td data-report="updates"></td>\
-				<td data-report="time"></td>',
+                <th data-report="table"></th>\
+                <td data-report="rows"></td>\
+                <td data-report="changes"></td>\
+                <td data-report="updates"></td>\
+                <td data-report="time"></td>',
             table_report_head_tpl: '',
 
             strings_dry: {
                 search_replace: 'searching for <strong>&ldquo;<span data-report="search"></span>&rdquo;</strong>\
-								(to be replaced by <strong>&ldquo;<span data-report="replace"></span>&rdquo;</strong>)',
+                                (to be replaced by <strong>&ldquo;<span data-report="replace"></span>&rdquo;</strong>)',
                 updates: 'would have been'
             },
             strings_live: {
                 search_replace: 'replacing <strong data-report="search"></strong> with\
-								<strong data-report="replace"></strong>',
+                                <strong data-report="replace"></strong>',
                 updates: 'were'
             },
 
@@ -2740,7 +2778,7 @@ window.console = window.console || {
 
                         // scroll back to top most errors block
                         //if ( t.errors !== errors && $( '.errors' ).length && $( '.errors' ).eq( 0 ).offset().top < $( 'body' ).scrollTop() )
-                        //	$( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
+                        //  $( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
 
                         // track errors
                         $.extend(true, t.errors, errors);
@@ -2789,18 +2827,18 @@ window.console = window.console || {
 
                                 if (!$table_reports[c].length)
                                     $table_reports[c] = $('\
-									<table class="table-reports-' + c + '" >\
-										<thead>\
-											<tr>\
-												<th>Table</th>\
-												<th>Rows</th>\
-												<th>Cells changed</th>\
-												<th>Updates</th>\
-												<th>Seconds</th>\
-											</tr>\
-										</thead>\
-										<tbody></tbody>\
-									</table>').appendTo($report[c]);
+                                    <table class="table-reports-' + c + '" >\
+                                        <thead>\
+                                            <tr>\
+                                                <th>Table</th>\
+                                                <th>Rows</th>\
+                                                <th>Cells changed</th>\
+                                                <th>Updates</th>\
+                                                <th>Seconds</th>\
+                                            </tr>\
+                                        </thead>\
+                                        <tbody></tbody>\
+                                    </table>').appendTo($report[c]);
 
                                 $.each(report[c].table_reports, function (table, table_report) {
 
@@ -2844,25 +2882,25 @@ window.console = window.console || {
 
                             if (!$table_reports.length)
                                 $table_reports = $('\
-									<table class="table-reports">\
-										<thead>\
-											<tr>\
-												<th>Table</th>\
-												<th>Charset</th>\
-												<th>Collation</th>\
-											</tr>\
-										</thead>\
-										<tbody></tbody>\
-									</table>').appendTo($report);
+                                    <table class="table-reports">\
+                                        <thead>\
+                                            <tr>\
+                                                <th>Table</th>\
+                                                <th>Charset</th>\
+                                                <th>Collation</th>\
+                                            </tr>\
+                                        </thead>\
+                                        <tbody></tbody>\
+                                    </table>').appendTo($report);
 
                             $.each(report.converted, function (table, converted) {
 
                                 $('\
-											<tr class="' + table + '">\
-												<td>' + table + '</td>\
-												<td>' + report.collation.replace(/^([^_]+).*$/, '$1') + '</td>\
-												<td>' + report.collation + '</td>\
-											</tr>')
+                                            <tr class="' + table + '">\
+                                                <td>' + table + '</td>\
+                                                <td>' + report.collation.replace(/^([^_]+).*$/, '$1') + '</td>\
+                                                <td>' + report.collation + '</td>\
+                                            </tr>')
                                     .hide()
                                     .appendTo($table_reports.find('tbody'))
                                     .fadeIn(150);
@@ -2991,13 +3029,13 @@ window.console = window.console || {
                             match_replace,
                             text,
                             $change = $('\
-										<div class="diff-wrap">\
-											<h3>row ' + item.row + ', column `' + item.column + '`</h3>\
-											<div class="diff">\
-												<pre class="from"></pre>\
-												<pre class="to"></pre>\
-											</div>\
-										</div>')
+                                        <div class="diff-wrap">\
+                                            <h3>row ' + item.row + ', column `' + item.column + '`</h3>\
+                                            <div class="diff">\
+                                                <pre class="from"></pre>\
+                                                <pre class="to"></pre>\
+                                            </div>\
+                                        </div>')
                                 .find('.from').text(item.from).end()
                                 .find('.to').text(item.to).end()
                                 .appendTo($changes);
@@ -3073,13 +3111,13 @@ window.console = window.console || {
                 // fetch products feed from interconnectit.com
                 var $products,
                     tpl = '\
-						<div class="product">\
-							<a href="{{custom_fields.link}}" title="Link opens in new tab" target="_blank">\
-								<div class="product-thumb"><img src="{{attachments[0].url}}" alt="{{title_plain}}" /></div>\
-								<h2>{{title}}</h2>\
-								<div class="product-description">{{content}}</div>\
-							</a>\
-						</div>';
+                        <div class="product">\
+                            <a href="{{custom_fields.link}}" title="Link opens in new tab" target="_blank">\
+                                <div class="product-thumb"><img src="{{attachments[0].url}}" alt="{{title_plain}}" /></div>\
+                                <h2>{{title}}</h2>\
+                                <div class="product-description">{{content}}</div>\
+                            </a>\
+                        </div>';
 
                 // get products as jsonp
                 $.ajax({
@@ -3112,13 +3150,13 @@ window.console = window.console || {
                 // fetch products feed from interconnectit.com
                 var $blogs,
                     tpl = '\
-						<div class="blog">\
-							<a href="{{url}}" title="Link opens in new tab" target="_blank">\
-								<h2>{{title}}</h2>\
-								<div class="date">{{date}}</div>\
-								<div class="categories">Filed under: {{categories}}</div>\
-							</a>\
-						</div>';
+                        <div class="blog">\
+                            <a href="{{url}}" title="Link opens in new tab" target="_blank">\
+                                <h2>{{title}}</h2>\
+                                <div class="date">{{date}}</div>\
+                                <div class="categories">Filed under: {{categories}}</div>\
+                            </a>\
+                        </div>';
 
                 // get products as jsonp
                 $.ajax({
