@@ -531,7 +531,6 @@ class icit_srdb_ui extends icit_srdb
         PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class. 
         P.S. It\'s most commonly a Yoast plugin that causes this error. Your changes will still have taken place within the rest of the database.', 'results' );
     }
-    }
 
     public function fatal_handler()
     {
