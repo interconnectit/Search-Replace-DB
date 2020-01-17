@@ -804,7 +804,10 @@ class icit_srdb {
 				return serialize( $data );
 
 		} catch( Exception $error ) {
-		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class. P.S. It\'s most commonly a Yoast plugin that causes this error.', 'results' );
+		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a 
+		    serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data 
+		    because the PHP can\'t access this class. P.S. It\'s most commonly a Yoast plugin that causes this error.',
+		    'results' );
 		}
 
 		return $data;
@@ -1052,12 +1055,6 @@ class icit_srdb {
 
 		return array( $primary_key, $columns );
 	}
-
-
-	public function do_column() {
-
-	}
-
 
 	/**
 	 * Convert table engines

@@ -527,6 +527,10 @@ class icit_srdb_ui extends icit_srdb
     public function errors($no, $message, $file, $line)
     {
         $this->add_error('<p class="error">' . "<strong>{$no}:</strong> {$message} in {$file} on line {$line}" . '</p>', 'results');
+        $this->add_error( 'This is usually caused by a plugin storing classes as a serialised string which other 
+        PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class. 
+        P.S. It\'s most commonly a Yoast plugin that causes this error. Your changes will still have taken place within the rest of the database.', 'results' );
+    }
     }
 
     public function fatal_handler()
@@ -1430,7 +1434,7 @@ class icit_srdb_ui extends icit_srdb
 
     <h1 class="branding">interconnect/it</h1>
 
-    <h2>Safe Search and Replace on Database with Serialized Data v3.1.0</h2>
+    <h2>Safe Search and Replace on Database with Serialized Data v4.0</h2>
 
     <p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised
         PHP Arrays and Objects.</p>
