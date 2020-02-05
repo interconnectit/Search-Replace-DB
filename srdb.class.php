@@ -858,7 +858,7 @@ class icit_srdb {
 					case 'utf32':
 						//$encoding = 'utf8';
 						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
-						continue;
+//						continue;
 						break;
 
 					default:
@@ -869,8 +869,8 @@ class icit_srdb {
 
 				$report[ 'tables' ]++;
 
-				// get primary key and columns
-				list( $primary_key, $columns ) = $this->get_columns( $table );
+				// get primary key and columns (20200205 added field type check)
+				list( $primary_key, $columns, $columntype ) = $this->get_columns( $table );
 				
 				if ( $primary_key === null || empty( $primary_key ) ) {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
@@ -925,6 +925,10 @@ class icit_srdb {
 
 							// include cols
 							if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
+								continue;
+
+							// binary field type
+							if ( strpos($columntype[$column], 'binary') !== false )
 								continue;
 							
 							// Run a search replace on the data that'll respect the serialisation.
@@ -1001,6 +1005,7 @@ class icit_srdb {
 	public function get_columns( $table ) {
 		$primary_key = array();
 		$columns = array( );
+		$columninf = array( );
 
 		// Get a list of columns in this table
 		$fields = $this->db_query( "DESCRIBE {$table}" );
@@ -1009,12 +1014,13 @@ class icit_srdb {
 		} else {
 			while( $column = $this->db_fetch( $fields ) ) {
 				$columns[] = $column[ 'Field' ];
+				$columntype[$column[ 'Field' ]] = $column[ 'Type' ];
 				if ( $column[ 'Key' ] == 'PRI' )
 					$primary_key[] = $column[ 'Field' ];
 			}
 		}
 
-		return array( $primary_key, $columns );
+		return array( $primary_key, $columns, $columntype );
 	}
 
 
