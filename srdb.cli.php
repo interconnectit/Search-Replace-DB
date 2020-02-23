@@ -185,20 +185,38 @@ class icit_srdb_cli extends icit_srdb {
 
 		switch( $type ) {
 			case 'error':
-				list( $error_type, $error ) = $args;
+				$error_type = $args[1];
+				$error= $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $error_type, $error ) = $args;
+				}
 				$output .= "$error_type: $error";
 				break;
 			case 'search_replace_table_start':
-				list( $table, $search, $replace ) = $args;
+				$table = $args[2];
+				$search = $args[1];
+				$replace = $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $table, $search, $replace ) = $args;
+				}
 				$output .= "{$table}: replacing {$search} with {$replace}";
 				break;
 			case 'search_replace_table_end':
-				list( $table, $report ) = $args;
+				$table = $args[1];
+				$report = $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $table, $report ) = $args;
+				}
 				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
 				$output .= "{$table}: {$report['rows']} rows, {$report['change']} changes found, {$report['updates']} updates made in {$time} seconds";
 				break;
 			case 'search_replace_end':
-				list( $search, $replace, $report ) = $args;
+				$search = $args[2];
+				$replace = $args[1];
+				$report = $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $search, $replace, $report ) = $args;
+				}
 				$time = number_format( $report[ 'end' ] - $report[ 'start' ], 8 );
 				$dry_run_string = $this->dry_run ? "would have been" : "were";
 				$output .= "
@@ -208,11 +226,21 @@ Replacing {$search} with {$replace} on {$report['tables']} tables with {$report[
 It took {$time} seconds";
 				break;
 			case 'update_engine':
-				list( $table, $report, $engine ) = $args;
+				$table = $args[2];
+				$report = $args[1];
+				$engine = $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $table, $report, $engine ) = $args;
+				}
 				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $engine;
 				break;
 			case 'update_collation':
-				list( $table, $report, $collation ) = $args;
+				$table = $args[2];
+				$report = $args[1];
+				$collation = $args[0];
+				if (PHP_MAJOR_VERSION < 7) {
+					list( $table, $report, $collation ) = $args;
+				}
 				$output .= $table . ( $report[ 'converted' ][ $table ] ? ' has been' : 'has not been' ) . ' converted to ' . $collation;
 				break;
 		}

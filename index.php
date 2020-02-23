@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v3.1.0
+ * Safe Search and Replace on Database with Serialized Data v3.1.1
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -36,6 +36,18 @@
  * License: GPL v3
  * License URL: http://www.gnu.org/copyleft/gpl.html
  *
+ *
+ * Version 3.1.1:
+ *		* php 7.3 supported. (php 5.6 compatible)
+ *		* supported for php 7.3 Backward incompatible changes.
+ 		  https://www.php.net/manual/en/migration73.incompatible.php
+ *		    Ex) Continue Targeting Switch issues Warning
+ *		* supported for php 7.1 Backward incompatible changes.
+ 		  https://www.php.net/manual/en/migration70.incompatible.php
+ *		    Ex) Changes to list() handling
+ *		* Fixed the problem that error occurs when converting binary type 
+ *		  field of MySQL table. (binary field is skiped.)
+ *		    Ex) WPPlugin: IP Geo Block
  *
  * Version 3.1.0:
  *		* Added port number option to both web and CLI interfaces.
@@ -112,6 +124,17 @@ header( 'HTTP/1.1 200 OK' );
 header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
 header('Pragma: no-cache'); // HTTP 1.0.
 header('Expires: 0'); // Proxies.
+
+// php 7.x compatible.
+if (!defined('PHP_VERSION_ID')) {
+	$version = explode('.', PHP_VERSION);
+
+	define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+
+	define('PHP_MAJOR_VERSION',   $version[0]);
+	define('PHP_MINOR_VERSION',   $version[1]);
+	define('PHP_RELEASE_VERSION', $version[2]);
+}
 
 require_once( 'srdb.class.php' );
 
