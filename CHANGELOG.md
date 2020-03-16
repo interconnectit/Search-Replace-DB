@@ -18,7 +18,7 @@
  * Comprehensive check to prevent accidental deletion of web projects
  * Removed mysql functions and replaced with mysqli
 
-# Version 3.0
+## Version 3.0
  * Major overhaul
  * Multibyte string replacements
  * Convert tables to InnoDB
