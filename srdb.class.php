@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v3.1.0
+ * Safe Search and Replace on Database with Serialized Data
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -32,9 +32,22 @@
  * on +44 (0)151 331 5140 and we will do the work for you at our hourly rate,
  * minimum 1hr
  *
- * License: GPL v3
- * License URL: http://www.gnu.org/copyleft/gpl.html
  *
+ * This file is part of Search-Replace-DB.
+ *
+ * Search-Replace-DB is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * Search-Replace-DB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Search-Replace-DB.
+ * If not, see <https://www.gnu.org/licenses/>.
  */
 
 class icit_srdb {
