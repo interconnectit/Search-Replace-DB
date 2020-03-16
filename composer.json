@@ -4,7 +4,11 @@
     "license": "GPL-3.0",
     "homepage": "https://github.com/interconnectit/Search-Replace-DB",
     "require": {
-        "php": ">=5.6"
+        "php": ">=5.6",
+        "ext-mysqli": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "ext-json": "*"
     },
     "support": {
         "issues": "https://github.com/interconnectit/Search-Replace-DB/issues"

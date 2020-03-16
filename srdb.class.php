@@ -1,5 +1,4 @@
 <?php
-
 /**
  *
  * Safe Search and Replace on Database with Serialized Data v3.1.0
@@ -221,19 +220,20 @@ class icit_srdb {
 
 
 	/**
-	 * @var resource Database connection
+	 * @var mysqli|PDO connection
 	 */
 	public $db;
 
 
 	/**
-	 * @var use PDO
+	 * @var bool
 	 */
 	public $use_pdo = true;
 
 
 	/**
-	 * @var int How many rows to select at a time when replacing
+     * How many rows to select at a time when replacing
+	 * @var int
 	 */
 	public $page_size = 50000;
 
@@ -256,7 +256,7 @@ class icit_srdb {
 	 * @param bool $live    live run
 	 * @param array $exclude_cols  tables to run replcements against
 	 *
-	 * @return void
+	 * @return array|void
 	 */
 
 	public function __construct( $args ) {
@@ -357,12 +357,6 @@ class icit_srdb {
                     $report[$i] = $this->replacer($this->search[$i], $this->replace[$i], $this->tables, $this->exclude_tables);
                 }
 
-                //$report = array_merge($report, $new_report);
-//                  $report = array_merge($report, $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables));
-//                    $new_report = $this->replacer($this->search[$i],$this->replace[$i],$this->tables, $this->exclude_tables);
-//                    $report['table_reports'] = array_merge($report['table_reports'], $new_report['table_reports']);
-//                }
-
             }
 			else {
 				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
@@ -401,6 +395,9 @@ class icit_srdb {
 	}
 
 
+    /**
+     * @param $exception Exception
+     */
 	public function exceptions( $exception ) {
 		echo $exception->getMessage() . "\n";
 	}
@@ -439,7 +436,7 @@ class icit_srdb {
 	 * Setup connection, populate tables array
 	 * Also responsible for selecting the type of connection to use.
 	 *
-	 * @return void
+	 * @return void|bool
 	 */
 	public function db_setup() {
 		$mysqli_available = class_exists( 'mysqli' );
@@ -680,6 +677,10 @@ class icit_srdb {
 			return mysqli_error( $this->db );
 	}
 
+    /**
+     * @param $data mysqli_result|PDOStatement
+     * @return array|null
+     */
 	public function db_fetch( $data ) {
 		if ( $this->use_pdo() )
 			return $data->fetch();
@@ -804,8 +805,8 @@ class icit_srdb {
 				return serialize( $data );
 
 		} catch( Exception $error ) {
-		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a 
-		    serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data 
+		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a
+		    serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data
 		    because the PHP can\'t access this class. P.S. It\'s most commonly a Yoast plugin that causes this error.',
 		    'results' );
 		}
@@ -840,7 +841,7 @@ class icit_srdb {
 	 * @param string $replace    What we want to replace it with.
 	 * @param array  $tables     The tables we want to look at.
 	 *
-	 * @return array    Collection of information gathered during the run.
+	 * @return array|bool    Collection of information gathered during the run.
 	 */
 	public function replacer( $search = '', $replace = '', $tables = array( ), $exclude_tables = array() ) {
 		$search = (string)$search;
