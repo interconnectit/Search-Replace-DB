@@ -152,9 +152,9 @@ class icit_srdb_ui extends icit_srdb
             }
 
 // populate db details
-            $name = DB_NAME;
-            $user = DB_USER;
-            $pass = DB_PASSWORD;
+            $name = '';
+            $user = '';
+            $pass = '';
 
 // Port and host need to be split apart.
             if (strstr(DB_HOST, ':') !== false) {
@@ -178,9 +178,9 @@ class icit_srdb_ui extends icit_srdb
             $database_opts = $database->getConnectionOptions();
 
 // populate db details
-            $name = $database_opts['database'];
-            $user = $database_opts['username'];
-            $pass = $database_opts['password'];
+            $name = '';
+            $user = '';
+            $pass = '';
             $host = $database_opts['host'];
             $port = $database_opts['port'];
             $charset = 'utf8';
@@ -200,9 +200,9 @@ class icit_srdb_ui extends icit_srdb
             $jconfig = new JConfig();
 
 // populate db details
-            $name = $jconfig->db;
-            $user = $jconfig->user;
-            $pass = $jconfig->password;
+            $name = '';
+            $user = '';
+            $pass = '';
 
 // Port and host need to be split apart.
             if (strstr($jconfig->host, ':') !== false) {
@@ -222,9 +222,9 @@ class icit_srdb_ui extends icit_srdb
         } elseif ($this->is_typo()) {
 
 // populate db details
-            $name = DB_NAME;
-            $user = DB_USER;
-            $pass = DB_PASSWORD;
+            $name = '';
+            $user = '';
+            $pass = '';
             $port = DB_PORT;
             $host = DB_HOST;
             $charset = 'utf8';
@@ -241,8 +241,8 @@ class icit_srdb_ui extends icit_srdb
 
         } elseif ($bootstrap && $this->is_docker()) {
             $name = '';
-            $user = 'root';
-            $pass = DB_PASSWORD;
+            $user = '';
+            $pass = '';
             $host = DB_HOST;
             $port = DB_PORT;
             $charset = 'utf8';
@@ -253,9 +253,9 @@ class icit_srdb_ui extends icit_srdb
         } elseif( $bootstrap && $this->is_magento2()) {
             $config = MAGENTO2_CONFIG['db']['connection']['default'];
             // populate db details
-            $name       = $config[ 'dbname' ];
-            $user       = $config[ 'username' ];
-            $pass       = $config[ 'password' ];
+            $name = '';
+            $user = '';
+            $pass = '';
             $host       = $config[ 'host' ];
             $port       = 3306;
             $charset    = 'utf8';
@@ -527,8 +527,8 @@ class icit_srdb_ui extends icit_srdb
     public function errors($no, $message, $file, $line)
     {
         $this->add_error('<p class="error">' . "<strong>{$no}:</strong> {$message} in {$file} on line {$line}" . '</p>', 'results');
-        $this->add_error( 'This is usually caused by a plugin storing classes as a serialised string which other 
-        PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class. 
+        $this->add_error( 'This is usually caused by a plugin storing classes as a serialised string which other
+        PHP classes can\'t then access. It is not possible to unserialise this data because the PHP can\'t access this class.
         P.S. It\'s most commonly a Yoast plugin that causes this error. Your changes will still have taken place within the rest of the database.', 'results' );
     }
 
