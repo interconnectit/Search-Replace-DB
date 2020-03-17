@@ -58,17 +58,6 @@ $required = array(
     'u:'
 );
 
-function isSecure()
-{
-    return
-        !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-}
-
-if (!isSecure()) {
-    echo "\nWarning: the network connection you are using is transmitting your password unencrypted. \nConsider using an https:// connection, or change your database password after using the script \n\n";
-}
-
-
 function strip_colons($string)
 {
     return str_replace(':', '', $string);
