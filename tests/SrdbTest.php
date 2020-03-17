@@ -43,7 +43,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
         'name' => 'srdbtest',
         'user' => 'travis',
         'pass' => '',
-        'table'=> 'posts'
+        'table' => 'posts'
     );
 
     public static function setUpBeforeClass(): void
@@ -53,12 +53,12 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
 
         // setup the database
 
-        if (self::$pdo == null) {
-            self::$pdo = new PDO("mysql:host=" . static::TESTDB['host'],
-                static::TESTDB['user'],
-                static::TESTDB['pass'],
-                array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'));
-        }
+        self::$pdo = new PDO("mysql:host=" . static::TESTDB['host'],
+            static::TESTDB['user'],
+            static::TESTDB['pass'],
+            array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'));
+
+        self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         self::$pdo->query("CREATE DATABASE IF NOT EXISTS `" . static::TESTDB['user'] . "` CHARACTER SET = 'utf8mb4' COLLATE = 'utf8mb4_general_ci';");
         self::$pdo->query("CREATE TABLE IF NOT EXISTS `" . static::TESTDB['name'] . "`.`" . static::TESTDB['table'] . "` (
@@ -69,7 +69,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
 				PRIMARY KEY (`id`)
 			  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;");
 
-        self::$pdo->query("USE `" . static::TESTDB['table'] . "`;");
+        self::$pdo->query("USE `" . static::TESTDB['name'] . "`;");
 
         // Get the charset of the table.
         $charset = self::get_table_character_set();
@@ -83,9 +83,9 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
                         (`id`, `content`, `url`,`serialised`)
                         VALUES (?, ?, ?, ?)");
 
-        $xml = simplexml_load_file(dirname( __FILE__ ) . '/DataSet.xml');
+        $xml = simplexml_load_file(dirname(__FILE__) . '/DataSet.xml');
 
-        foreach($xml->table[0]->row as $row){
+        foreach ($xml->table[0]->row as $row) {
             $stm->bindValue(1, (int)$row->value[0], PDO::PARAM_INT);
             $stm->bindValue(2, (string)$row->value[1]);
             $stm->bindValue(3, (string)$row->value[2]);
@@ -239,7 +239,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
 
         // test the database is actually changed
         $modified = self::$pdo->query("SELECT url FROM `" . static::TESTDB['table'] . "` LIMIT 1;")->fetchColumn();
-        $this->assertRegExp("#{$result}#", $modified, 'Database not updated, modified result is ' . $modified);
+        $this->assertRegExp("{$result}", $modified, 'Database not updated, modified result is ' . $modified);
 
     }
 
@@ -292,7 +292,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
 
         // search replace strings
         $search = 'serialised string';
-        $replace = 'longer serialised string';
+        $replace = 'longer longer serialised string';
 
         // class instance with regex enabled
         $srdb = new icit_srdb(array_merge(array(
