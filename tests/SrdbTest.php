@@ -39,11 +39,11 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
     static private $pdo;
 
     const TESTDB = array(
-        'host' => '127.0.0.1:23306',
+        'host' => '127.0.0.1',
         'name' => 'srdbtest',
-        'user' => 'root',
-        'pass' => 'example',
-        'table' => 'posts'
+        'user' => 'travis',
+        'pass' => '',
+        'table'=> 'posts'
     );
 
     public static function setUpBeforeClass(): void
