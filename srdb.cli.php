@@ -55,8 +55,7 @@ $opts = array(
 $required = array(
     'h:',
     'n:',
-    'u:',
-    'p:'
+    'u:'
 );
 
 function isSecure()
