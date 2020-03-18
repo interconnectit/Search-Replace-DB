@@ -3,6 +3,7 @@
 /**
  *
  * Safe Search and Replace on Database with Serialized Data v4.0
+ * Copyright © 2020  Interconnect IT Limited
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -32,7 +33,6 @@
  * OK? If you don't wish to take responsibility, hire us at Interconnect IT Ltd
  * on +44 (0)151 331 5140 and we will do the work for you at our hourly rate,
  * minimum 1hr
- *
  *
  * This file is part of Search-Replace-DB.
  *

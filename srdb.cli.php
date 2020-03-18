@@ -2,6 +2,7 @@
 <?php
 /*
  * This file is part of Search-Replace-DB.
+ * Copyright © 2020  Interconnect IT Limited
  *
  * Search-Replace-DB is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -139,6 +140,12 @@ ARGS
     Defaults to true, can be set to false to run script silently.
   --help
     Displays this help message ;)
+
+Search-Replace-DB  Copyright © 2020  Interconnect IT Limited
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions; see README for details.
+
 ";
     exit;
 }

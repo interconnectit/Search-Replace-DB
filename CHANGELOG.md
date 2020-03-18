@@ -10,7 +10,7 @@
  * Script checks if the connection is secure and gives a warning otherwise
  * Bug fixes
  * UI Tweaks
- * Password is not mandatory in cli
+ * Password is not mandatory in CLI
 
 ## Version 3.1.0
  * Added port number option to both web and CLI interfaces.
