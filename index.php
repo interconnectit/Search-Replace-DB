@@ -631,16 +631,6 @@ class icit_srdb_ui extends icit_srdb
         }
 
         if (file_exists($currentDir . "{$pathMod}/{$configFile}")) {
-            $configPath = $currentDir . "{$pathMod}/{$configFile}";
-
-            $config = require $configPath;
-
-            define('DB_NAME', $config['DB']['database']);
-            define('DB_USER', $config['DB']['username']);
-            define('DB_PASSWORD', $config['DB']['password']);
-            define('DB_HOST', $config['DB']['host']);
-            define('DB_PORT', $config['DB']['port']);
-
             return true;
         }
 
@@ -709,26 +699,7 @@ class icit_srdb_ui extends icit_srdb
                 return true;
 
             } catch (Exception $error) {
-
-// try and get database values using regex approach
-                $db_details = $this->define_find($this->path . '/wp-config.php');
-
-                if ($db_details) {
-
-                    define('DB_NAME', $db_details['name']);
-                    define('DB_USER', $db_details['user']);
-                    define('DB_PASSWORD', $db_details['pass']);
-                    define('DB_HOST', $db_details['host']);
-                    define('DB_CHARSET', $db_details['char']);
-                    define('DB_COLLATE', $db_details['coll']);
-
-// additional error message
-                    $this->add_error('WordPress detected but could not bootstrap environment. There might be a PHP error, possibly caused by changes to the database', 'db');
-
-                }
-
-                if ($db_details)
-                    return true;
+                $this->add_error('WordPress detected but could not bootstrap to retrieve configuration. There might be a PHP error, possibly caused by changes to the database', 'recoverable_db');
             }
         }
 
