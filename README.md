@@ -169,7 +169,7 @@ php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com
 
 php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
 
-php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s '["search1", "search2"]' -r '["replace1", "replace2"]'
+php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "search" -r "replace"
 ```
 
 ## Troubleshooting
