@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/interconnectit/Search-Replace-DB.svg?branch=4.0)](https://travis-ci.org/interconnectit/Search-Replace-DB)
+
 # Search Replace DB
 
 This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
