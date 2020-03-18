@@ -76,7 +76,12 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
         if ($charset) {
             self::$pdo->query("SET NAMES {$charset};");
         }
+        static::loadContent();
+    }
 
+    public static function loadContent(): void
+    {
+        static::$pdo->exec("TRUNCATE table `" . static::TESTDB['table'] . "`");
         $stm = self::$pdo->prepare(
             "INSERT INTO
                         `" . static::TESTDB['name'] . "`.`" . static::TESTDB['table'] . "`
@@ -89,10 +94,16 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
             $stm->bindValue(1, (int)$row->value[0], PDO::PARAM_INT);
             $stm->bindValue(2, (string)$row->value[1]);
             $stm->bindValue(3, (string)$row->value[2]);
-            $stm->bindValue(4, (string)$row->value[3]);
+            $stm->bindValue(4, serialize(unserialize((string)$row->value[3])));
             $stm->execute();
         }
     }
+
+    protected function setUp(): void
+    {
+        static::loadContent();
+    }
+
 
     public static function tearDownAfterClass(): void
     {
@@ -204,13 +215,11 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
     {
 
         // search replace strings
-        $search = '#https?://([a-z0-9\.-]+)/?#';
-        $replace = 'https://$1/';
+        $search = '#https?://([a-z0-9\.-]+)/#';
+        $replace = 'https://\1/';
 
         // class instance with regex enabled
         $srdb = new icit_srdb(array_merge(array(
-            'search' => $search,
-            'replace' => $replace,
             'regex' => true,
             'dry_run' => false
         ), static::TESTDB));
@@ -220,9 +229,25 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
         $result = 'https://example.com/';
         $replaced = $srdb->str_replace($search, $replace, $subject);
         $this->assertEquals($result, $replaced);
+    }
+
+    public function testRegexReplaceDB()
+    {
+        // search replace strings
+        $search = '#^https?://([a-z0-9\.]+)/#';
+        $replace = 'https://$1/';
+
+        $result = '#https://example.com/#';
+
+        // class instance with regex enabled
+        $srdb = new icit_srdb(array_merge(array(
+            'search' => $search,
+            'replace' => $replace,
+            'regex' => true,
+            'dry_run' => false
+        ), static::TESTDB));
 
         // results from sample data
-
         // no errors
         $this->assertEmpty($srdb->errors['results'],
             "Search replace script errors were found: \n" . implode("\n", $srdb->errors['results']));
@@ -235,11 +260,11 @@ class SrdbTest extends \PHPUnit\Framework\TestCase
 
         // cells changed
         $changes = $srdb->report['change'];
-        $this->assertEquals(150, $changes, 'Wrong number of changes reported');
+        $this->assertEquals(100, $changes, 'Wrong number of changes reported');
 
         // test the database is actually changed
         $modified = self::$pdo->query("SELECT url FROM `" . static::TESTDB['table'] . "` LIMIT 1;")->fetchColumn();
-        $this->assertRegExp("{$result}", $modified, 'Database not updated, modified result is ' . $modified);
+        $this->assertRegExp($result, $modified, 'Database not updated, modified result is ' . $modified);
 
     }
 
