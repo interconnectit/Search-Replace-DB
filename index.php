@@ -2406,7 +2406,7 @@ window.console = window.console || {
                     '<input id="search-' + t.searches + '" type="text" placeholder="search for&hellip;" ' +
                     'value="<?php $this->esc_html_attr($this->search, true); ?>" name="search-' + t.searches + '"/> ' +
                     '<span class="hide-if-regex-off regex-right">/</span></label> ' +
-                    '<label for="replace-' + t.searches + '"><span class="label-text">with</span>' +
+                    '<label for="replace-' + t.searches + '"><span class="label-text">with </span>' +
                     '<input id="replace-' + t.searches + '" type="text" placeholder="replace with&hellip;"' +
                     'value="<?php $this->esc_html_attr($this->replace, true); ?>" name="replace-' + t.searches + '"/></label>').appendTo($new_search);
 
