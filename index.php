@@ -742,11 +742,7 @@ class icit_srdb_ui extends icit_srdb
         <h1>Database Details</h1>
 
         <?php $this->get_errors('environment'); ?>
-
         <?php $this->get_errors('recoverable_db'); ?>
-
-        <?php $this->get_errors('db'); ?>
-
         <?php $this->get_errors('compatibility'); ?>
         <?php $this->get_errors('connection'); ?>
 
