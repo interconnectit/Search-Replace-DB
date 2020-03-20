@@ -841,7 +841,7 @@ class icit_srdb_ui extends icit_srdb
     <!-- 4. results -->
     <fieldset class="row row-results">
 
-        <h1>Actions</h1>
+        <h1>Let's go</h1>
 
         <?php $this->get_errors('results'); ?>
 
