@@ -844,13 +844,18 @@ class icit_srdb_ui extends icit_srdb
         <div class="fields">
 
                     <span class="submit-group">
-                        <input type="submit" name="submit[dryrun]"
-                               value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                        <div class="dryrun">
+                            <input type="submit" name="submit[dryrun]"
+                                    value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required"/>
-
-                        <input type="submit" name="submit[liverun]"
-                               value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required"/>
+                        </div>
+                        <hr>
+                        <div class="liverun">
+                            <label class="liverun-label label-text">You cannot undo this once started - are you sure?</label>
+                            <input type="submit" name="submit[liverun]"
+                                   value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                               class="db-required run-script"/>
+                        </div>
 
                         <span class="separator">/</span>
                     </span>
@@ -882,7 +887,7 @@ class icit_srdb_ui extends icit_srdb
     <!-- 5. branding -->
     <section class="row row-delete">
 
-        <h1>Delete</h1>
+        <h1>DELETE</h1>
 
         <div class="fields">
             <p>
@@ -1280,6 +1285,24 @@ legend, fieldset {
 .label-text {
     display: block;
     font-weight: bold;
+}
+
+.run-script {
+    font-weight: bold;
+    font-size: 120%;
+}
+
+.dryrun, .liverun {
+    padding-bottom: 20px;
+}
+
+.liverun-label {
+    padding-top: 20px;
+    display: block;
+}
+
+hr {
+    width: 9999px;
 }
 
 @media only screen and (min-width: 1110px) {
