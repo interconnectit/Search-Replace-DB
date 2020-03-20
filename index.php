@@ -851,7 +851,7 @@ class icit_srdb_ui extends icit_srdb
                         </div>
                         <hr>
                         <div class="liverun">
-                            <label class="liverun-label label-text">You cannot undo this once started - are you sure?</label>
+                            <div><p class="label-text">You cannot undo this once started - are you sure?</p></div>
                             <input type="submit" name="submit[liverun]"
                                    value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required run-script"/>
@@ -1296,9 +1296,8 @@ legend, fieldset {
     padding-bottom: 20px;
 }
 
-.liverun-label {
+.liverun {
     padding-top: 20px;
-    display: block;
 }
 
 hr {
