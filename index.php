@@ -1300,10 +1300,6 @@ legend, fieldset {
     padding-top: 20px;
 }
 
-hr {
-    width: 9999px;
-}
-
 @media only screen and (min-width: 1110px) {
     .label-text {
         display: inline;
