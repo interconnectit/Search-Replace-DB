@@ -1492,6 +1492,10 @@ url('data:image/png;base64,R0lGODlhEAAQAPQAAJkAAP///5sGBufGxsl6evv4+O7Y2KgoKLtWV
     margin:0;
     padding:0;
     color: #de1301;
+    padding-top: 20px;
+    padding-bottom: 35px;
+    font-size: small;
+    font-weight: bold;
 }
 .multi-search:focus {
     outline: none;
