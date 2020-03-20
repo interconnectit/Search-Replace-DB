@@ -751,13 +751,13 @@ class icit_srdb_ui extends icit_srdb
         <div class="fields fields-small">
 
             <div class="field field-short">
-                <label for="name">name</label>
+                <label for="name">database name</label>
                 <input id="name" name="name" type="text"
                        value="<?php $this->esc_html_attr($this->name, true); ?>"/>
             </div>
 
             <div class="field field-short">
-                <label for="user">user</label>
+                <label for="user">username</label>
                 <input id="user" name="user" type="text"
                        value="<?php $this->esc_html_attr($this->user, true); ?>"/>
             </div>
@@ -779,6 +779,10 @@ class icit_srdb_ui extends icit_srdb
                 <input id="port" name="port" type="text"
                        value="<?php $this->esc_html_attr($this->port, true); ?>"/>
             </div>
+
+            <span class="submit-group">
+                        <input type="submit" name="submit[update]" value="Test connection"/>
+            </span>
 
         </div>
 
@@ -842,14 +846,12 @@ class icit_srdb_ui extends icit_srdb
         <div class="fields">
 
                     <span class="submit-group">
-                        <input type="submit" name="submit[update]" value="update details"/>
-
                         <input type="submit" name="submit[dryrun]"
-                               value="dry run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                               value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required"/>
 
                         <input type="submit" name="submit[liverun]"
-                               value="live run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                               value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                                class="db-required"/>
 
                         <span class="separator">/</span>
