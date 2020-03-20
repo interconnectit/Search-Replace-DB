@@ -694,23 +694,25 @@ class icit_srdb_ui extends icit_srdb
         <?php $this->get_errors('search'); ?>
 
         <div class="fields fields-large">
-            <button class="add-search" type="modify-ui" onclick="add_search()">Add search</button>
-            <button class="remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">Remove search</button>
-
             <div class="sr-boxes">
-            <div class="sr-box-0">
-                <label for="search-0"><span class="label-text">replace</span> <span
-                        class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
-                                                                            placeholder="search for&hellip;"
-                                                                            value="<?php $this->esc_html_attr($this->search, true); ?>"
-                                                                            name="search-0"/><span
-                        class="hide-if-regex-off regex-right">/</span></label>
-                <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
-                                                                                   placeholder="replace with&hellip;"
-                                                                                   value="<?php $this->esc_html_attr($this->replace, true); ?>"
-                                                                                   name="replace-0"/></label>
-        </div>
-        </div>
+                <div class="sr-box-0">
+                    <label for="search-0"><span class="label-text">replace</span> <span
+                            class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
+                                                                                placeholder="search for&hellip;"
+                                                                                value="<?php $this->esc_html_attr($this->search, true); ?>"
+                                                                                name="search-0"/><span
+                            class="hide-if-regex-off regex-right">/</span></label>
+                    <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
+                                                                                       placeholder="replace with&hellip;"
+                                                                                       value="<?php $this->esc_html_attr($this->replace, true); ?>"
+                                                                                       name="replace-0"/></label>
+                </div>
+            </div>
+
+            <div>
+                <button class="multi-search add-search" type="modify-ui" onclick="add_search()">+ add more search terms</button>
+                <button class="multi-search remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">- remove search terms</button>
+            </div>
 
             <label for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
                                                              value="1" <?php $this->checked(true, $this->regex); ?> />
@@ -1281,6 +1283,7 @@ legend, fieldset {
 
 .label-text {
     display: block;
+    font-weight: bold;
 }
 
 @media only screen and (min-width: 1110px) {
@@ -1315,6 +1318,7 @@ legend, fieldset {
 
 .field label {
     display: block;
+    font-weight: bold;
 }
 
 .table-select {
@@ -1480,6 +1484,17 @@ url('data:image/png;base64,R0lGODlhEAAQAPQAAJkAAP///5sGBufGxsl6evv4+O7Y2KgoKLtWV
 .submit-group {
     display: block;
     margin: 0 0;
+}
+
+.multi-search {
+    background:none;
+    border:none;
+    margin:0;
+    padding:0;
+    color: #de1301;
+}
+.multi-search:focus {
+    outline: none;
 }
 [type="modify-ui"],
 .field input[type="submit"] {
