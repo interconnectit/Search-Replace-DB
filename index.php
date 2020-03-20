@@ -714,7 +714,7 @@ class icit_srdb_ui extends icit_srdb
                 <button class="multi-search remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">- remove search terms</button>
             </div>
 
-            <label for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
+            <label class="label-text" for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
                                                              value="1" <?php $this->checked(true, $this->regex); ?> />
                 use regex</label>
 
