@@ -782,8 +782,7 @@ class icit_srdb_ui extends icit_srdb
                         <input type="submit" name="submit[update]" value="Test connection"/>
             </span>
 
-            <div class="successful-connection db-required secondary field-advanced"
-                <?php if (!$this->db_valid()) echo 'style="display:none"'; ?>>
+            <div class="successful-connection" style="display:none">
                 Success. You are connected.
             </div>
 
@@ -2331,6 +2330,7 @@ window.console = window.console || {
 
                                 if (!error_list.length) {
                                     if (type == 'db') {
+                                        $('.successful-connection').show();
                                         $('[name="use_tables"]').removeAttr('disabled');
                                         // update the table dropdown if we're changing db
                                         if ($('.table-select').html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ))
@@ -2356,16 +2356,6 @@ window.console = window.console || {
                                 });
 
                                 if (type == 'db') {
-
-                                    $('.successful-connection').show();
-                                    $('[name="use_tables"]').removeAttr('disabled');
-                                    // update the table dropdown if we're changing db
-                                    if ($('.table-select').html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ))
-                                        $('.table-select').html(info.table_select);
-                                    // add/remove innodb button if innodb is available or not
-                                    if ($.inArray('InnoDB', info.engines) >= 0 && !$('[name="submit\[innodb\]"]').length)
-                                        $('[name="submit\[utf8\]"]').before('<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />');
-
                                     $('[name="use_tables"]').eq(0).click().end().attr('disabled', 'disabled');
                                     $('.table-select').html('');
                                     $('[name="submit\[innodb\]"]').remove();
