@@ -782,6 +782,13 @@ class icit_srdb_ui extends icit_srdb
                         <input type="submit" name="submit[update]" value="Test connection"/>
             </span>
 
+            <div class="successful-connection db-required secondary field-advanced"
+                <?php if (!$this->db_valid()) echo 'style="display:none"'; ?>>
+                Success. You are connected.
+            </div>
+
+
+
         </div>
 
     </fieldset>
@@ -1298,6 +1305,14 @@ legend, fieldset {
 
 .liverun {
     padding-top: 20px;
+}
+
+.successful-connection {
+    background-color: green;
+    font-weight: bold;
+    display: inline-block;
+    padding: 5px 10px 8px;
+    border: 2px solid green;
 }
 
 @media only screen and (min-width: 1110px) {
@@ -1873,6 +1888,8 @@ window.console = window.console || {
     };
 
 ;
+
+
 (function ($) {
 
     var srdb;
@@ -2161,6 +2178,7 @@ window.console = window.console || {
 
                 } else {
                     t.run(data);
+
                 }
 
                 return false;
@@ -2242,6 +2260,7 @@ window.console = window.console || {
 
                             if (!error_list.length) {
                                 if (type == 'db') {
+                                    $('.successful-connection').show();
                                     $('[name="use_tables"]').removeAttr('disabled');
                                     // update the table dropdown if we're changing db
                                     if ($('.table-select').html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ))
@@ -2252,6 +2271,8 @@ window.console = window.console || {
                                 }
                                 return;
                             }
+
+                            $('.successful-connection').hide();
 
                             var $row = $('.row-' + type),
                                 $errors = $row.find('.errors');
