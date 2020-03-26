@@ -1005,7 +1005,7 @@ class icit_srdb_ui extends icit_srdb {
 				<div class="fields fields-small">
 
 					<div class="field field-short">
-						<label for="name">name</label>
+						<label for="name">database name</label>
 						<input id="name" name="name" type="text" value="<?php $this->esc_html_attr( $this->name, true ); ?>" />
 					</div>
 

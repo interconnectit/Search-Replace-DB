@@ -146,3 +146,4 @@ This happens occasionally and could be for a couple of reasons:
  * When the script starts, it attempts to start your WordPress or Drupal installation to auto-detect your username and password settings. If this fails, you will see a message informing you that auto-detection failed. You will have to enter your details manually.
  * Script was unable to set the timeout so PHP closed the connection before the table could be processed, this can happen on some server configurations.
  * When using php-fpm (as you have with VVV) make sure that the socket is owned by the server user `chown www-data:www-data /var/run/php5-fpm.sock`.
+ * php-mbstring must be installed 
