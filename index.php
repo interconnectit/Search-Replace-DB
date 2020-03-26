@@ -464,7 +464,7 @@ class icit_srdb_ui extends icit_srdb
         $this->add_error('<p class="exception">' . $exception->getMessage() . '</p>');
     }
 
-    public function errors($no, $message, $file, $line)
+    public function error_handler($no, $message, $file, $line)
     {
         $this->add_error('<p class="error">' . "<strong>{$no}:</strong> {$message} in {$file} on line {$line}" . '</p>', 'results');
         $this->add_error( 'This is usually caused by a plugin storing classes as a serialised string which other
