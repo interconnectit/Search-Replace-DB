@@ -269,7 +269,7 @@ class icit_srdb {
 		set_exception_handler( array( $this, 'exceptions' ) );
 
 		// handle errors
-		set_error_handler( array( $this, 'errors' ), E_ERROR | E_WARNING );
+		set_error_handler( array( $this, 'error_handler' ), E_ERROR | E_WARNING );
 
 		// Setting this so that mb_split works correctly.
 		// BEAR IN MIND that this affects the handling of strings INTERNALLY rather than
@@ -373,9 +373,40 @@ class icit_srdb {
 		echo $exception->getMessage() . "\n";
 	}
 
+	/**
+	 * Custom error handler
+	 *
+	 * @param $errno
+	 * @param $message
+	 * @param $file
+	 * @param $line
+	 *
+	 * @return bool
+	 */
+	public function error_handler( $errno, $message, $file, $line ) {
+		if (!(error_reporting() & $errno)) {
+			return false;
+		}
 
-	public function errors( $no, $message, $file, $line ) {
-		echo $message . "\n";
+		switch ( $errno ) {
+			case E_USER_ERROR:
+				echo "ERROR [$errno]: $message\n";
+				echo "Aborting...\n";
+				exit($errno);
+				break;
+
+			case E_USER_WARNING:
+				echo "WARNING [$errno] $message\n";
+				break;
+
+			default:
+				echo "Unknown error: [$errno] $message in $file on line $line\n";
+				exit($errno);
+				break;
+		}
+
+		/* Don't execute PHP internal error handler */
+		return true;
 	}
 
 
