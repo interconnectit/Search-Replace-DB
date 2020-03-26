@@ -689,30 +689,32 @@ class icit_srdb_ui extends icit_srdb
     <!-- 1. search/replace -->
     <fieldset class="row row-search">
 
-        <h1>search<span>/</span>replace</h1>
+        <h1>Search<span>Replace</span></h1>
 
         <?php $this->get_errors('search'); ?>
 
         <div class="fields fields-large">
-            <button class="add-search" type="modify-ui" onclick="add_search()">Add search</button>
-            <button class="remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">Remove search</button>
-
             <div class="sr-boxes">
-            <div class="sr-box-0">
-                <label for="search-0"><span class="label-text">replace</span> <span
-                        class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
-                                                                            placeholder="search for&hellip;"
-                                                                            value="<?php $this->esc_html_attr($this->search, true); ?>"
-                                                                            name="search-0"/><span
-                        class="hide-if-regex-off regex-right">/</span></label>
-                <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
-                                                                                   placeholder="replace with&hellip;"
-                                                                                   value="<?php $this->esc_html_attr($this->replace, true); ?>"
-                                                                                   name="replace-0"/></label>
-        </div>
-        </div>
+                <div class="sr-box-0">
+                    <label for="search-0"><span class="label-text">replace</span> <span
+                            class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
+                                                                                placeholder="search for&hellip;"
+                                                                                value="<?php $this->esc_html_attr($this->search, true); ?>"
+                                                                                name="search-0"/><span
+                            class="hide-if-regex-off regex-right">/</span></label>
+                    <label for="replace-0"><span class="label-text">with</span> <input id="replace-0" type="text"
+                                                                                       placeholder="replace with&hellip;"
+                                                                                       value="<?php $this->esc_html_attr($this->replace, true); ?>"
+                                                                                       name="replace-0"/></label>
+                </div>
+            </div>
 
-            <label for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
+            <div>
+                <button class="multi-search add-search" type="modify-ui" onclick="add_search()">+ add more search terms</button>
+                <button class="multi-search remove-search hide-if-multisearch-off" type="modify-ui" onclick="remove_search()">- remove search terms</button>
+            </div>
+
+            <label class="label-text" for="regex" class="field-advanced"><input id="regex" type="checkbox" name="regex"
                                                              value="1" <?php $this->checked(true, $this->regex); ?> />
                 use regex</label>
 
@@ -737,27 +739,23 @@ class icit_srdb_ui extends icit_srdb
     <!-- 2. db details -->
     <fieldset class="row row-db">
 
-        <h1>db details</h1>
+        <h1>Database Details</h1>
 
         <?php $this->get_errors('environment'); ?>
-
         <?php $this->get_errors('recoverable_db'); ?>
-
-        <?php $this->get_errors('db'); ?>
-
         <?php $this->get_errors('compatibility'); ?>
         <?php $this->get_errors('connection'); ?>
 
         <div class="fields fields-small">
 
             <div class="field field-short">
-                <label for="name">name</label>
+                <label for="name">database name</label>
                 <input id="name" name="name" type="text"
                        value="<?php $this->esc_html_attr($this->name, true); ?>"/>
             </div>
 
             <div class="field field-short">
-                <label for="user">user</label>
+                <label for="user">username</label>
                 <input id="user" name="user" type="text"
                        value="<?php $this->esc_html_attr($this->user, true); ?>"/>
             </div>
@@ -780,6 +778,16 @@ class icit_srdb_ui extends icit_srdb
                        value="<?php $this->esc_html_attr($this->port, true); ?>"/>
             </div>
 
+            <span class="submit-group">
+                        <input type="submit" name="submit[update]" value="Test connection"/>
+            </span>
+
+            <div class="successful-connection" style="display:none">
+                Success. You are connected.
+            </div>
+
+
+
         </div>
 
     </fieldset>
@@ -787,7 +795,7 @@ class icit_srdb_ui extends icit_srdb
     <!-- 3. tables -->
     <fieldset class="row row-tables">
 
-        <h1>tables</h1>
+        <h1>Which Tables?</h1>
 
         <?php $this->get_errors('tables'); ?>
 
@@ -829,49 +837,49 @@ class icit_srdb_ui extends icit_srdb
             </div>
 
         </div>
+        <div class="fields">
+            <span class="submit-group">
+                <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
+                    <input type="submit" name="submit[innodb]"
+                           value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                           class="db-required secondary field-advanced"/>
+                <?php } ?>
+
+                <input type="submit" name="submit[utf8]"
+                       value="convert to utf8 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required secondary field-advanced"/>
+
+                <input type="submit" name="submit[utf8mb4]"
+                       value="convert to utf8mb4 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required secondary field-advanced"/>
+
+            </span>
+        </div>
 
     </fieldset>
 
     <!-- 4. results -->
     <fieldset class="row row-results">
 
-        <h1>actions</h1>
+        <h1>Let's go</h1>
 
         <?php $this->get_errors('results'); ?>
 
         <div class="fields">
-
-                    <span class="submit-group">
-                        <input type="submit" name="submit[update]" value="update details"/>
-
-                        <input type="submit" name="submit[dryrun]"
-                               value="dry run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required"/>
-
-                        <input type="submit" name="submit[liverun]"
-                               value="live run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required"/>
-
-                        <span class="separator">/</span>
-                    </span>
-
             <span class="submit-group">
-                        <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
-                            <input type="submit" name="submit[innodb]"
-                                   value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                                   class="db-required secondary field-advanced"/>
-                        <?php } ?>
-
-                <input type="submit" name="submit[utf8]"
-                       value="convert to utf8 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                       class="db-required secondary field-advanced"/>
-
-                        <input type="submit" name="submit[utf8mb4]"
-                               value="convert to utf8mb4 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required secondary field-advanced"/>
-
-                    </span>
-
+                <div class="dryrun">
+                    <input type="submit" name="submit[dryrun]"
+                            value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required"/>
+                </div>
+                <hr>
+                <div class="liverun">
+                    <div><p class="label-text">You cannot undo this once started - are you sure?</p></div>
+                    <input type="submit" name="submit[liverun]"
+                           value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required run-script"/>
+                </div>
+            </span>
         </div>
 
         <?php $this->get_report(); ?>
@@ -882,7 +890,7 @@ class icit_srdb_ui extends icit_srdb
     <!-- 5. branding -->
     <section class="row row-delete">
 
-        <h1>delete</h1>
+        <h1>DELETE</h1>
 
         <div class="fields">
             <p>
@@ -892,6 +900,15 @@ class icit_srdb_ui extends icit_srdb
         </div>
 
     </section>
+    <div id="deleteModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Some text in the Modal..</p>
+        </div>
+
+    </div>
 
 </form>
 
@@ -959,7 +976,7 @@ class icit_srdb_ui extends icit_srdb
 <!-- 2. subscribe -->
 <section class="row row-subscribe">
 
-    <h1>newsletter</h1>
+    <h1>Newsletter</h1>
 
     <form action="http://interconnectit.us2.list-manage.com/subscribe/post" method="POST"
           class="fields fields-small">
@@ -997,7 +1014,7 @@ class icit_srdb_ui extends icit_srdb
 <!-- 3. contribute -->
 <section class="row row-contribute">
 
-    <h1>contribute</h1>
+    <h1>Contribute</h1>
 
     <div class="content">
 
@@ -1010,7 +1027,7 @@ class icit_srdb_ui extends icit_srdb
 
 <section class="row row-blog">
 
-    <h1>blogs</h1>
+    <h1>Blogs</h1>
 
     <div class="content">
         <p><a href="http://interconnectit.com/blog/" target="_blank">We couldn't load our blog feed for some
@@ -1022,7 +1039,7 @@ class icit_srdb_ui extends icit_srdb
 <!-- 5. products -->
 <section class="row row-products">
 
-    <h1>products</h1>
+    <h1>Products</h1>
 
     <div class="content">
         <p><a href="http://interconnectit.com/products/" target="_blank">We couldn't load our product feed for
@@ -1050,6 +1067,44 @@ class icit_srdb_ui extends icit_srdb
 * {
     margin: 0;
     padding: 0;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 ::-webkit-input-placeholder { /* WebKit browsers */
@@ -1154,8 +1209,7 @@ label {
 
 .row h1 {
     display: block;
-    font-size: 4.0rem;
-    font-weight: normal;
+    font-weight: lighter;
     margin: 15px 0 20px;
     float: left;
 }
@@ -1163,17 +1217,12 @@ label {
 .row h1,
 .branding {
     width: 260px;
-    background:
-url('data:image/png;base64,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')
-;
     no-repeat: 0;
-    height: 40px;
     overflow: hidden;
-    text-indent: -9999px;
 }
 
 h1 span {
-    color: #de1301;
+    font-weight: bold;
 }
 
 .row-db h1 {
@@ -1285,6 +1334,28 @@ legend, fieldset {
 
 .label-text {
     display: block;
+    font-weight: bold;
+}
+
+.run-script {
+    font-weight: bold;
+    font-size: 120%;
+}
+
+.dryrun, .liverun {
+    padding-bottom: 20px;
+}
+
+.liverun {
+    padding-top: 20px;
+}
+
+.successful-connection {
+    background-color: green;
+    font-weight: bold;
+    display: inline-block;
+    padding: 5px 10px 8px;
+    border: 2px solid green;
 }
 
 @media only screen and (min-width: 1110px) {
@@ -1319,6 +1390,7 @@ legend, fieldset {
 
 .field label {
     display: block;
+    font-weight: bold;
 }
 
 .table-select {
@@ -1484,6 +1556,21 @@ url('data:image/png;base64,R0lGODlhEAAQAPQAAJkAAP///5sGBufGxsl6evv4+O7Y2KgoKLtWV
 .submit-group {
     display: block;
     margin: 0 0;
+}
+
+.multi-search {
+    background:none;
+    border:none;
+    margin:0;
+    padding:0;
+    color: #de1301;
+    padding-top: 20px;
+    padding-bottom: 35px;
+    font-size: small;
+    font-weight: bold;
+}
+.multi-search:focus {
+    outline: none;
 }
 [type="modify-ui"],
 .field input[type="submit"] {
@@ -1837,6 +1924,7 @@ h1 a {
     return ( ( /s:\d/.exec(text) ) ? true : false );
 }
 
+
 // patch console free browsers
 window.console = window.console || {
         log: function () {
@@ -1844,880 +1932,892 @@ window.console = window.console || {
     };
 
 ;
-(function ($) {
 
-    var srdb;
+    (function ($) {
 
-    srdb = function () {
+        var srdb;
 
-        var t = this,
-            dom = $('html');
+        srdb = function () {
 
-        $.extend(t, {
+            var t = this,
+                dom = $('html');
 
-            errors: {},
-            report: {},
-            info: {},
-            prev_data: {},
-            tables: 0,
-            rows: 0,
-            changes: 0,
-            updates: 0,
-            time: [0.0],
-            button: false,
-            running: false,
-            countdown: null,
-            escape: false,
-            searches: 1,
+            $.extend(t, {
 
-            // constructor
-            init: function () {
+                errors: {},
+                report: {},
+                info: {},
+                prev_data: {},
+                tables: 0,
+                rows: 0,
+                changes: 0,
+                updates: 0,
+                time: [0.0],
+                button: false,
+                running: false,
+                countdown: null,
+                escape: false,
+                searches: 1,
 
-                // search replace ui
-                if ($('.row-db').length) {
+                // constructor
+                init: function () {
 
-                    // show/hide tables
-                    dom.on('click', '[name="use_tables"]', t.toggle_tables);
-                    dom.find('[name="use_tables"][checked]').click();
+                    // search replace ui
+                    if ($('.row-db').length) {
 
-                    // toggle regex mode
-                    dom.on('click', '[name="regex"]', t.toggle_regex);
-                    dom.find('[name="regex"][checked]').click();
+                        // show/hide tables
+                        dom.on('click', '[name="use_tables"]', t.toggle_tables);
+                        dom.find('[name="use_tables"][checked]').click();
 
-                    // ajax form
-                    dom.on('submit', 'form', t.submit_proxy);
-                    dom.on('click', '[type="submit"]', t.submit);
+                        // toggle regex mode
+                        dom.on('click', '[name="regex"]', t.toggle_regex);
+                        dom.find('[name="regex"][checked]').click();
 
-                    // prevent accidental browsing away
-                    window.onbeforeunload = function () {
-                        return t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default;
-                    };
+                        // ajax form
+                        dom.on('submit', 'form', t.submit_proxy);
+                        dom.on('click', '[type="submit"]', t.submit);
 
-                    // deleted ui
-                } else {
+                        // prevent accidental browsing away
+                        window.onbeforeunload = function () {
+                            return t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default;
+                        };
 
-                    // mailchimp
-                    dom.on('submit', 'form[action*="list-manage.com"]', t.mailchimp);
+                        // deleted ui
+                    } else {
 
-                    // fetch blog feed
-                    t.fetch_blogs();
+                        // mailchimp
+                        dom.on('submit', 'form[action*="list-manage.com"]', t.mailchimp);
 
-                    // fetch product feed
-                    t.fetch_products();
+                        // fetch blog feed
+                        t.fetch_blogs();
 
-                }
+                        // fetch product feed
+                        t.fetch_products();
 
-            },
-
-            report_tpl: '\
-                <p class="main-report">\
-                In the process of <span data-report="search_replace"></span> we scanned\
-                <strong data-report="tables"></strong> tables with a total of\
-                <strong data-report="rows"></strong> rows,\
-                <strong data-report="changes"></strong> cells\
-                <span data-report="dry_run"></span> changed.\
-                <strong data-report="updates"></strong> db updates were performed.\
-                It all took <strong data-report="time"></strong> seconds.\
-                </p>',
-            table_report_tpl: '\
-                <th data-report="table"></th>\
-                <td data-report="rows"></td>\
-                <td data-report="changes"></td>\
-                <td data-report="updates"></td>\
-                <td data-report="time"></td>',
-            table_report_head_tpl: '',
-
-            strings_dry: {
-                search_replace: 'searching for <strong>&ldquo;<span data-report="search"></span>&rdquo;</strong>\
-                                (to be replaced by <strong>&ldquo;<span data-report="replace"></span>&rdquo;</strong>)',
-                updates: 'would have been'
-            },
-            strings_live: {
-                search_replace: 'replacing <strong data-report="search"></strong> with\
-                                <strong data-report="replace"></strong>',
-                updates: 'were'
-            },
-
-            confirm_strings: {
-                live_run: 'Are you absolutely ready to run search/replace? Make sure you have backed up your database!',
-                modify: 'Are you absolutely ready to modify the tables? Make sure you have backed up your database!',
-                unload_default: 'DON\'T FORGET TO DELETE THIS SCRIPT!!!\n\nClick the delete button at the bottom to remove it.',
-                unload_running: 'The script is still in progress, do you definitely want to leave this page?'
-            },
-
-            toggle_tables: function () {
-                if (this.id == 'all_tables') {
-                    dom.find('.table-select').slideUp(400);
-                } else {
-                    dom.find('.table-select').slideDown(400);
-                }
-            },
-
-            add_search: function () {
-                var $row= $('.sr-boxes');
-                $new_search = $('<div class="sr-box-' + t.searches + '"></div>').appendTo($row);
-                $('<label for="search-' + t.searches + '"><span class="label-text">replace</span> ' +
-                    '<span class="hide-if-regex-off regex-left">/</span>' +
-                    '<input id="search-' + t.searches + '" type="text" placeholder="search for&hellip;" ' +
-                    'value="<?php $this->esc_html_attr($this->search, true); ?>" name="search-' + t.searches + '"/> ' +
-                    '<span class="hide-if-regex-off regex-right">/</span></label> ' +
-                    '<label for="replace-' + t.searches + '"><span class="label-text">with </span>' +
-                    '<input id="replace-' + t.searches + '" type="text" placeholder="replace with&hellip;"' +
-                    'value="<?php $this->esc_html_attr($this->replace, true); ?>" name="replace-' + t.searches + '"/></label>').appendTo($new_search);
-
-                if (t.searches == 1)
-                    dom.removeClass('multisearch-off');
-
-                t.searches = t.searches+1;
-
-            },
-
-            remove_search: function () {
-                t.searches = t.searches-1;
-                key = '.sr-box-' + t.searches;
-                $rem_search = $(key);
-                $rem_search.remove();
-                if (t.searches == 1)
-                    dom.addClass('multisearch-off');
-            },
-
-            toggle_regex: function () {
-                if ($(this).is(':checked'))
-                    dom.removeClass('regex-off').addClass('regex-on');
-                else
-                    dom.removeClass('regex-on').addClass('regex-off');
-            },
-
-            reset: function () {
-                t.errors = {};
-                t.report = {};
-                t.tables = 0;
-                t.rows = 0;
-                t.changes = 0;
-                t.updates = 0;
-                t.time = [0.0];
-            },
-
-            map_form_data: function ($form) {
-                var data_temp = $form.serializeArray(),
-                    data = {};
-                $.map(data_temp, function (field, i) {
-                    if (data[field.name]) {
-                        if (!$.isArray(data[field.name]))
-                            data[field.name] = [data[field.name]];
-                        data[field.name].push(field.value);
                     }
-                    else {
-                        if (field.value === '1')
-                            field.value = true;
-                        data[field.name] = field.value;
+
+                },
+
+                report_tpl: '\
+                    <p class="main-report">\
+                    In the process of <span data-report="search_replace"></span> we scanned\
+                    <strong data-report="tables"></strong> tables with a total of\
+                    <strong data-report="rows"></strong> rows,\
+                    <strong data-report="changes"></strong> cells\
+                    <span data-report="dry_run"></span> changed.\
+                    <strong data-report="updates"></strong> db updates were performed.\
+                    It all took <strong data-report="time"></strong> seconds.\
+                    </p>'
+                    ,
+                table_report_tpl: '\
+                    <th data-report="table"></th>\
+                    <td data-report="rows"></td>\
+                    <td data-report="changes"></td>\
+                    <td data-report="updates"></td>\
+                    <td data-report="time"></td>',
+                table_report_head_tpl: '',
+
+                strings_dry: {
+                    search_replace: 'searching for <strong>&ldquo;<span data-report="search"></span>&rdquo;</strong>\
+                                    (to be replaced by <strong>&ldquo;<span data-report="replace"></span>&rdquo;</strong>)',
+                    updates: 'would have been'
+                },
+                strings_live: {
+                    search_replace: 'replacing <strong data-report="search"></strong> with\
+                                    <strong data-report="replace"></strong>',
+                    updates: 'were'
+                },
+
+                confirm_strings: {
+                    live_run: 'Are you absolutely ready to run search/replace? Make sure you have backed up your database!',
+                    modify: 'Are you absolutely ready to modify the tables? Make sure you have backed up your database!',
+                    unload_default: 'DON\'T FORGET TO DELETE THIS SCRIPT!!!\n\nClick the delete button at the bottom to remove it.',
+                    unload_running: 'The script is still in progress, do you definitely want to leave this page?'
+                },
+
+                toggle_tables: function () {
+                    if (this.id == 'all_tables') {
+                        dom.find('.table-select').slideUp(400);
+                    } else {
+                        dom.find('.table-select').slideDown(400);
                     }
-                });
-                return data;
-            },
+                },
 
-            submit_proxy: function (e) {
-                if (t.button !== 'submit[delete]')
-                    return false;
-                return true;
-            },
+                add_search: function () {
+                    var $row= $('.sr-boxes');
+                    $new_search = $('<div class="sr-box-' + t.searches + '"></div>').appendTo($row);
+                    $('<label for="search-' + t.searches + '"><span class="label-text">replace</span> ' +
+                        '<span class="hide-if-regex-off regex-left">/</span>' +
+                        '<input id="search-' + t.searches + '" type="text" placeholder="search for&hellip;" ' +
+                        'value="<?php $this->esc_html_attr($this->search, true); ?>" name="search-' + t.searches + '"/> ' +
+                        '<span class="hide-if-regex-off regex-right">/</span></label> ' +
+                        '<label for="replace-' + t.searches + '"><span class="label-text">with </span>' +
+                        '<input id="replace-' + t.searches + '" type="text" placeholder="replace with&hellip;"' +
+                        'value="<?php $this->esc_html_attr($this->replace, true); ?>" name="replace-' + t.searches + '"/></label>').appendTo($new_search);
 
-            submit: function (e) {
+                    if (t.searches == 1)
+                        dom.removeClass('multisearch-off');
 
-                // workaround for submission not coming from a button click
-                var $button = $(this),
-                    $form = $(this).parents('form'),
-                    submit = $button.attr('name'),
-                    button_text = $button.val(),
-                    seconds = 5;
+                    t.searches = t.searches+1;
 
-                // track button clicked
-                t.button = submit;
+                },
 
-                // reset escape parameter
-                t.escape = false;
+                remove_search: function () {
+                    t.searches = t.searches-1;
+                    key = '.sr-box-' + t.searches;
+                    $rem_search = $(key);
+                    $rem_search.remove();
+                    if (t.searches == 1)
+                        dom.addClass('multisearch-off');
+                },
 
-                // add spinner
-                $button.addClass('active');
+                toggle_regex: function () {
+                    if ($(this).is(':checked'))
+                        dom.removeClass('regex-off').addClass('regex-on');
+                    else
+                        dom.removeClass('regex-on').addClass('regex-off');
+                },
 
-                if (submit == 'submit[delete]' && !t.running) {
-                    if (!confirm('Do you really want to delete the Search/Replace script directory and -all its contents-?')) {
+                reset: function () {
+                    t.errors = {};
+                    t.report = {};
+                    t.tables = 0;
+                    t.rows = 0;
+                    t.changes = 0;
+                    t.updates = 0;
+                    t.time = [0.0];
+                },
+
+                map_form_data: function ($form) {
+                    var data_temp = $form.serializeArray(),
+                        data = {};
+                    $.map(data_temp, function (field, i) {
+                        if (data[field.name]) {
+                            if (!$.isArray(data[field.name]))
+                                data[field.name] = [data[field.name]];
+                            data[field.name].push(field.value);
+                        }
+                        else {
+                            if (field.value === '1')
+                                field.value = true;
+                            data[field.name] = field.value;
+                        }
+                    });
+                    return data;
+                },
+
+                submit_proxy: function (e) {
+                    if (t.button !== 'submit[delete]')
+                        return false;
+                    return true;
+                },
+
+                submit: function (e) {
+
+                    // workaround for submission not coming from a button click
+                    var $button = $(this),
+                        $form = $(this).parents('form'),
+                        submit = $button.attr('name'),
+                        button_text = $button.val(),
+                        seconds = 5;
+
+                    // track button clicked
+                    t.button = submit;
+
+                    // reset escape parameter
+                    t.escape = false;
+
+                    // add spinner
+                    $button.addClass('active');
+
+                    if (submit == 'submit[delete]' && !t.running) {
+                        if (!confirm('Do you really want to delete the Search/Replace script directory and -all its contents-?')) {
+                            t.complete();
+                            return false;
+                        }
+
+                        window.onbeforeunload = null;
+                        $('[type="submit"]').not($button).attr('disabled', 'disabled');
+                        return true;
+                    }
+
+                    if (submit == 'submit[liverun]' && !window.confirm(t.confirm_strings.live_run)) {
                         t.complete();
                         return false;
                     }
 
-                    window.onbeforeunload = null;
-                    $('[type="submit"]').not($button).attr('disabled', 'disabled');
-                    return true;
-                }
+                    if (( submit == 'submit[innodb]' || submit == 'submit[utf8]' || submit == 'submit[utf8mb4]' ) && !window.confirm(t.confirm_strings.modify)) {
+                        t.complete();
+                        return false;
+                    }
 
-                if (submit == 'submit[liverun]' && !window.confirm(t.confirm_strings.live_run)) {
-                    t.complete();
-                    return false;
-                }
+                    // disable buttons & add spinner
+                    $('[type="submit"]').attr('disabled', 'disabled');
 
-                if (( submit == 'submit[innodb]' || submit == 'submit[utf8]' || submit == 'submit[utf8mb4]' ) && !window.confirm(t.confirm_strings.modify)) {
-                    t.complete();
-                    return false;
-                }
+                    // stop normal submission
+                    e.preventDefault();
 
-                // disable buttons & add spinner
-                $('[type="submit"]').attr('disabled', 'disabled');
+                    // reset reports
+                    t.reset();
 
-                // stop normal submission
-                e.preventDefault();
+                    // get form data as an object
+                    data = t.map_form_data($form);
 
-                // reset reports
-                t.reset();
+                    // use all tables if none selected
+                    if (dom.find('#all_tables').is(':checked') || !data['tables[]'] || !data['tables[]'].length)
+                        data['tables[]'] = $.map($('select[name^="tables"] option'), function (el, i) {
+                            return $(el).attr('value');
+                        });
 
-                // get form data as an object
-                data = t.map_form_data($form);
+                    data['search'] = [];
+                    data['replace'] = [];
+                    for ( i = 0; i < t.searches; i++){
+                        s_key = 'search-'+i;
+                        r_key = 'replace-'+i;
+                        data['search'].push(data[s_key]);
+                        data['replace'].push(data[r_key])
+                    }
 
-                // use all tables if none selected
-                if (dom.find('#all_tables').is(':checked') || !data['tables[]'] || !data['tables[]'].length)
-                    data['tables[]'] = $.map($('select[name^="tables"] option'), function (el, i) {
-                        return $(el).attr('value');
-                    });
+                    // check we don't just have one table selected as we get a string not array
+                    if (!$.isArray(data['tables[]']))
+                        data['tables[]'] = [data['tables[]']];
 
-                data['search'] = [];
-                data['replace'] = [];
-                for ( i = 0; i < t.searches; i++){
-                    s_key = 'search-'+i;
-                    r_key = 'replace-'+i;
-                    data['search'].push(data[s_key]);
-                    data['replace'].push(data[r_key])
-                }
+                    // add in ajax and submit params
+                    data = $.extend({
+                        ajax: true,
+                        submit: submit
+                    }, data);
 
-                // check we don't just have one table selected as we get a string not array
-                if (!$.isArray(data['tables[]']))
-                    data['tables[]'] = [data['tables[]']];
+                    // count down & stop button
+                    if (submit.match(/dryrun|liverun|innodb|utf8|utf8mb4/)) {
 
-                // add in ajax and submit params
-                data = $.extend({
-                    ajax: true,
-                    submit: submit
-                }, data);
-
-                // count down & stop button
-                if (submit.match(/dryrun|liverun|innodb|utf8|utf8mb4/)) {
-
-                    // insert stop button
-                    $('<input type="submit" name="submit[stop]" value="stop" class="stop-button" />')
-                        .click(function () {
-                            clearInterval(t.countdown);
-                            t.escape = true;
-                            t.complete();
-                            $('[type="submit"].db-required').removeAttr('disabled');
-                            $button.val(button_text);
-                        })
-                        .insertAfter($button);
-
-                    if (submit.match(/liverun|innodb|utf8|utf8mb4/)) {
-
-                        $button.val(button_text + ' in ... ' + seconds);
-
-                        t.countdown = setInterval(function () {
-                            if (seconds == 0) {
+                        // insert stop button
+                        $('<input type="submit" name="submit[stop]" value="stop" class="stop-button" />')
+                            .click(function () {
                                 clearInterval(t.countdown);
+                                t.escape = true;
+                                t.complete();
+                                $('[type="submit"].db-required').removeAttr('disabled');
                                 $button.val(button_text);
-                                t.run(data);
-                                return;
-                            }
-                            $button.val(button_text + ' in ... ' + --seconds);
-                        }, 1000);
+                            })
+                            .insertAfter($button);
+
+                        if (submit.match(/liverun|innodb|utf8|utf8mb4/)) {
+
+                            $button.val(button_text + ' in ... ' + seconds);
+
+                            t.countdown = setInterval(function () {
+                                if (seconds == 0) {
+                                    clearInterval(t.countdown);
+                                    $button.val(button_text);
+                                    t.run(data);
+                                    return;
+                                }
+                                $button.val(button_text + ' in ... ' + --seconds);
+                            }, 1000);
+
+                        } else {
+                            t.run(data);
+                        }
 
                     } else {
                         t.run(data);
                     }
 
-                } else {
-                    t.run(data);
-                }
+                    return false;
+                },
 
-                return false;
-            },
+                // trigger ajax
+                run: function (data) {
+                    var $feedback = $('.errors, .report'),
+                        feedback_length = $feedback.length;
 
-            // trigger ajax
-            run: function (data) {
-                var $feedback = $('.errors, .report'),
-                    feedback_length = $feedback.length;
+                    // set running flag
+                    t.running = true;
 
-                // set running flag
-                t.running = true;
+                    // clear previous errors
+                    if (feedback_length) {
+                        $feedback.each(function (i) {
+                            $(this).fadeOut(200, function () {
+                                $(this).remove();
 
-                // clear previous errors
-                if (feedback_length) {
-                    $feedback.each(function (i) {
-                        $(this).fadeOut(200, function () {
-                            $(this).remove();
-
-                            // start recursive table post
-                            if (i + 1 == feedback_length)
-                                t.recursive_fetch_json(data, 0);
+                                // start recursive table post
+                                if (i + 1 == feedback_length)
+                                    t.recursive_fetch_json(data, 0);
+                            });
                         });
-                    });
-                } else {
-                    // start recursive table post
-                    t.recursive_fetch_json(data, 0);
-                }
+                    } else {
+                        // start recursive table post
+                        t.recursive_fetch_json(data, 0);
+                    }
 
-                return false;
-            },
-
-            complete: function () {
-                // remove spinner
-                $('[type="submit"]')
-                    .removeClass('active')
-                    .not('.db-required')
-                    .removeAttr('disabled');
-                if (typeof t.errors.db != 'undefined' && !t.errors.db.length)
-                    $('[type="submit"].db-required').removeAttr('disabled');
-                t.running = false;
-                $('.stop-button').remove();
-            },
-
-            recursive_fetch_json: function (data, i) {
-
-                // break from loop
-                if (t.escape) {
                     return false;
-                }
-                if (data['tables[]'].length && typeof data['tables[]'][i] == 'undefined') {
-                    t.complete();
-                    return false;
-                }
+                },
 
-                // clone
-                var post_data = $.extend(true, {}, data),
-                    dry_run = data.submit != 'submit[liverun]',
-                    strings = dry_run ? t.strings_dry : t.strings_live,
-                    result = true,
-                    start = Date.now() / 1000,
-                    end = start;
+                complete: function () {
+                    // remove spinner
+                    $('[type="submit"]')
+                        .removeClass('active')
+                        .not('.db-required')
+                        .removeAttr('disabled');
+                    if (typeof t.errors.db != 'undefined' && !t.errors.db.length)
+                        $('[type="submit"].db-required').removeAttr('disabled');
+                    t.running = false;
+                    $('.stop-button').remove();
+                },
 
-                // remap values so we just do one table at a time
-                post_data['tables[]'] = [data['tables[]'][i]];
-                post_data.use_tables = 'subset';
+                recursive_fetch_json: function (data, i) {
 
-                // processing function
-                function process_response(response) {
+                    // break from loop
+                    if (t.escape) {
+                        return false;
+                    }
+                    if (data['tables[]'].length && typeof data['tables[]'][i] == 'undefined') {
+                        t.complete();
+                        return false;
+                    }
 
-                    if (response) {
+                    // clone
+                    var post_data = $.extend(true, {}, data),
+                        dry_run = data.submit != 'submit[liverun]',
+                        strings = dry_run ? t.strings_dry : t.strings_live,
+                        result = true,
+                        start = Date.now() / 1000,
+                        end = start;
 
-                        var errors = response.errors,
-                            report = response.report,
-                            info = response.info;
+                    // remap values so we just do one table at a time
+                    post_data['tables[]'] = [data['tables[]'][i]];
+                    post_data.use_tables = 'subset';
 
-                        // append errors
-                        $.each(errors, function (type, error_list) {
+                    // processing function
+                    function process_response(response) {
 
-                            if (!error_list.length) {
-                                if (type == 'db') {
-                                    $('[name="use_tables"]').removeAttr('disabled');
-                                    // update the table dropdown if we're changing db
-                                    if ($('.table-select').html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ))
-                                        $('.table-select').html(info.table_select);
-                                    // add/remove innodb button if innodb is available or not
-                                    if ($.inArray('InnoDB', info.engines) >= 0 && !$('[name="submit\[innodb\]"]').length)
-                                        $('[name="submit\[utf8\]"]').before('<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />');
+                        if (response) {
+
+                            var errors = response.errors,
+                                report = response.report,
+                                info = response.info;
+
+                            // append errors
+                            $.each(errors, function (type, error_list) {
+
+                                if (!error_list.length) {
+                                    if (type == 'db') {
+                                        $('.successful-connection').show();
+                                        $('[name="use_tables"]').removeAttr('disabled');
+                                        // update the table dropdown if we're changing db
+                                        if ($('.table-select').html() == '' || ( t.prev_data.name && t.prev_data.name !== data.name ))
+                                            $('.table-select').html(info.table_select);
+                                        // add/remove innodb button if innodb is available or not
+                                        if ($.inArray('InnoDB', info.engines) >= 0 && !$('[name="submit\[innodb\]"]').length)
+                                            $('[name="submit\[utf8\]"]').before('<input type="submit" name="submit[innodb]" value="convert to innodb" class="db-required secondary field-advanced" />');
+                                    }
+                                    return;
                                 }
-                                return;
-                            }
+
+                                var $row = $('.row-' + type),
+                                    $errors = $row.find('.errors');
+
+                                if (!$errors.length) {
+                                    $errors = $('<div class="errors"></div>').hide().insertAfter($('legend,h1', $row));
+                                    $errors.fadeIn(200);
+                                }
+
+                                $.each(error_list, function (i, error) {
+                                    if (!t.errors[type] || $.inArray(error, t.errors[type]) < 0)
+                                        $('<p>' + error + '</p>').hide().appendTo($errors).fadeIn(200);
+                                });
+
+                                if (type == 'db') {
+                                    $('[name="use_tables"]').eq(0).click().end().attr('disabled', 'disabled');
+                                    $('.table-select').html('');
+                                    $('[name="submit\[innodb\]"]').remove();
+
+                                }
+
+
+                            $('.successful-connection').hide();
 
                             var $row = $('.row-' + type),
                                 $errors = $row.find('.errors');
 
-                            if (!$errors.length) {
-                                $errors = $('<div class="errors"></div>').hide().insertAfter($('legend,h1', $row));
-                                $errors.fadeIn(200);
-                            }
-
-                            $.each(error_list, function (i, error) {
-                                if (!t.errors[type] || $.inArray(error, t.errors[type]) < 0)
-                                    $('<p>' + error + '</p>').hide().appendTo($errors).fadeIn(200);
                             });
 
-                            if (type == 'db') {
-                                $('[name="use_tables"]').eq(0).click().end().attr('disabled', 'disabled');
-                                $('.table-select').html('');
-                                $('[name="submit\[innodb\]"]').remove();
-                            }
 
-                        });
+                            // scroll back to top most errors block
+                            //if ( t.errors !== errors && $( '.errors' ).length && $( '.errors' ).eq( 0 ).offset().top < $( 'body' ).scrollTop() )
+                            //  $( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
 
-                        // scroll back to top most errors block
-                        //if ( t.errors !== errors && $( '.errors' ).length && $( '.errors' ).eq( 0 ).offset().top < $( 'body' ).scrollTop() )
-                        //  $( 'html,body' ).animate( { scrollTop: $( '.errors' ).eq(0).offset().top }, 300 );
+                            // track errors
+                            $.extend(true, t.errors, errors);
 
-                        // track errors
-                        $.extend(true, t.errors, errors);
+                            // track info
+                            $.extend(true, t.info, info);
+                            // append reports
+                            if (report.length>0) {
 
-                        // track info
-                        $.extend(true, t.info, info);
-                        // append reports
-                        if (report.length>0) {
+                                var $row = $('.row-results'),
+                                    $report = $row.find('.report'),
+                                    $table_reports = [];
 
-                            var $row = $('.row-results'),
-                                $report = $row.find('.report'),
-                                $table_reports = [];
+                                for (c = 0; c < report.length; c++) {
+                                    $table_reports[c] = $row.find('.table-reports-' + c + '');
 
-                            for (c = 0; c < report.length; c++) {
-                                $table_reports[c] = $row.find('.table-reports-' + c + '');
+                                    if (!$report.length)
+                                        $report[c] = $('<div class="report report-"' + c + '"></div>').appendTo($row);
+
+                                    end = Date.now() / 1000;
+                                    if (t.time.length != report.length){
+                                        t.time.push(0.0);
+                                    }
+                                    t.tables += report[c].tables;
+                                    t.rows += report[c].rows;
+                                    t.changes += report[c].change;
+                                    t.updates += report[c].updates;
+                                    t.time[c] += t.get_time(start, end);
+                                    console.log($report[c]);
+                                    if (i == 0) {
+
+    //                                if (!$report[c].find('.main-report').length) {
+                                        $(t.report_tpl)
+                                            .find('[data-report="search_replace"]').html(strings.search_replace).end()
+                                            .find('[data-report="search"]').text(data.search[c]).end()
+                                            .find('[data-report="replace"]').text(data.replace[c]).end()
+                                            .find('[data-report="dry_run"]').html(strings.updates).end()
+                                            .prependTo($report[c]);
+                                    }
+                                    $('.main-report')
+                                        .find('[data-report="tables"]').html(t.tables).end()
+                                        .find('[data-report="rows"]').html(t.rows).end()
+                                        .find('[data-report="changes"]').html(t.changes).end()
+                                        .find('[data-report="updates"]').html(t.updates).end()
+                                        .find('[data-report="time"]').html(t.time[c].toFixed(7)).end();
+
+                                    if (!$table_reports[c].length)
+                                        $table_reports[c] = $('\
+                                        <table class="table-reports-' + c + '" >\
+                                            <thead>\
+                                                <tr>\
+                                                    <th>Table</th>\
+                                                    <th>Rows</th>\
+                                                    <th>Cells changed</th>\
+                                                    <th>Updates</th>\
+                                                    <th>Seconds</th>\
+                                                </tr>\
+                                            </thead>\
+                                            <tbody></tbody>\
+                                        </table>').appendTo($report[c]);
+
+                                    $.each(report[c].table_reports, function (table, table_report) {
+
+                                        var $view_changes = '',
+                                            changes_length = table_report.changes.length;
+
+                                        if (changes_length) {
+                                            $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
+                                                .data('report', table_report)
+                                                .data('table', table)
+                                                .click(t.changes_overlay);
+                                        }
+                                        $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
+                                            .hide()
+                                            .find('[data-report="table"]').html(table).end()
+                                            .find('[data-report="rows"]').html(table_report.rows).end()
+                                            .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
+                                            .find('[data-report="updates"]').html(table_report.updates).end()
+                                            .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
+                                            .appendTo($table_reports[c].find('tbody'))
+                                            .fadeIn(150);
+
+                                    });
+
+                                    $.extend(true, t.report, report[c]);
+
+                                }
+                                // fetch next table
+                                console.log(i, report[0].table_reports);
+                                t.recursive_fetch_json(data, ++i);
+
+
+                            } else if (report.collation) {
+
+                                var $row = $('.row-results'),
+                                    $report = $row.find('.report'),
+                                    $table_reports = $row.find('.table-reports');
 
                                 if (!$report.length)
-                                    $report[c] = $('<div class="report report-"' + c + '"></div>').appendTo($row);
+                                    $report = $('<div class="report"></div>').appendTo($row);
 
-                                end = Date.now() / 1000;
-                                if (t.time.length != report.length){
-                                    t.time.push(0.0);
-                                }
-                                t.tables += report[c].tables;
-                                t.rows += report[c].rows;
-                                t.changes += report[c].change;
-                                t.updates += report[c].updates;
-                                t.time[c] += t.get_time(start, end);
-                                console.log($report[c]);
-                                if (i == 0) {
+                                if (!$table_reports.length)
+                                    $table_reports = $('\
+                                        <table class="table-reports">\
+                                            <thead>\
+                                                <tr>\
+                                                    <th>Table</th>\
+                                                    <th>Charset</th>\
+                                                    <th>Collation</th>\
+                                                </tr>\
+                                            </thead>\
+                                            <tbody></tbody>\
+                                        </table>').appendTo($report);
 
-//                                if (!$report[c].find('.main-report').length) {
-                                    $(t.report_tpl)
-                                        .find('[data-report="search_replace"]').html(strings.search_replace).end()
-                                        .find('[data-report="search"]').text(data.search[c]).end()
-                                        .find('[data-report="replace"]').text(data.replace[c]).end()
-                                        .find('[data-report="dry_run"]').html(strings.updates).end()
-                                        .prependTo($report[c]);
-                                }
-                                $('.main-report')
-                                    .find('[data-report="tables"]').html(t.tables).end()
-                                    .find('[data-report="rows"]').html(t.rows).end()
-                                    .find('[data-report="changes"]').html(t.changes).end()
-                                    .find('[data-report="updates"]').html(t.updates).end()
-                                    .find('[data-report="time"]').html(t.time[c].toFixed(7)).end();
+                                $.each(report.converted, function (table, converted) {
 
-                                if (!$table_reports[c].length)
-                                    $table_reports[c] = $('\
-                                    <table class="table-reports-' + c + '" >\
-                                        <thead>\
-                                            <tr>\
-                                                <th>Table</th>\
-                                                <th>Rows</th>\
-                                                <th>Cells changed</th>\
-                                                <th>Updates</th>\
-                                                <th>Seconds</th>\
-                                            </tr>\
-                                        </thead>\
-                                        <tbody></tbody>\
-                                    </table>').appendTo($report[c]);
-
-                                $.each(report[c].table_reports, function (table, table_report) {
-
-                                    var $view_changes = '',
-                                        changes_length = table_report.changes.length;
-
-                                    if (changes_length) {
-                                        $view_changes = $('<a href="#" title="View the first ' + changes_length + ' modifications">view changes</a>')
-                                            .data('report', table_report)
-                                            .data('table', table)
-                                            .click(t.changes_overlay);
-                                    }
-                                    $('<tr class="' + table + '">' + t.table_report_tpl + '</tr>')
+                                    $('\
+                                                <tr class="' + table + '">\
+                                                    <td>' + table + '</td>\
+                                                    <td>' + report.collation.replace(/^([^_]+).*$/, '$1') + '</td>\
+                                                    <td>' + report.collation + '</td>\
+                                                </tr>')
                                         .hide()
-                                        .find('[data-report="table"]').html(table).end()
-                                        .find('[data-report="rows"]').html(table_report.rows).end()
-                                        .find('[data-report="changes"]').html(table_report.change + ' ').append($view_changes).end()
-                                        .find('[data-report="updates"]').html(table_report.updates).end()
-                                        .find('[data-report="time"]').html(t.get_time(start, end).toFixed(7)).end()
-                                        .appendTo($table_reports[c].find('tbody'))
+                                        .appendTo($table_reports.find('tbody'))
                                         .fadeIn(150);
 
+                                    $('.table-select option[value="' + table + '"]').html(function () {
+                                        return $(this).html().replace(new RegExp('collation: .*?$'), 'collation: ' + report.collation);
+                                    });
+
                                 });
 
-                                $.extend(true, t.report, report[c]);
+                                // fetch next table
+                                t.recursive_fetch_json(data, ++i);
+
+                            } else {
+
+                                console.log('no report');
+                                t.complete();
 
                             }
-                            // fetch next table
-                            console.log(i, report[0].table_reports);
-                            t.recursive_fetch_json(data, ++i);
-
-
-                        } else if (report.collation) {
-
-                            var $row = $('.row-results'),
-                                $report = $row.find('.report'),
-                                $table_reports = $row.find('.table-reports');
-
-                            if (!$report.length)
-                                $report = $('<div class="report"></div>').appendTo($row);
-
-                            if (!$table_reports.length)
-                                $table_reports = $('\
-                                    <table class="table-reports">\
-                                        <thead>\
-                                            <tr>\
-                                                <th>Table</th>\
-                                                <th>Charset</th>\
-                                                <th>Collation</th>\
-                                            </tr>\
-                                        </thead>\
-                                        <tbody></tbody>\
-                                    </table>').appendTo($report);
-
-                            $.each(report.converted, function (table, converted) {
-
-                                $('\
-                                            <tr class="' + table + '">\
-                                                <td>' + table + '</td>\
-                                                <td>' + report.collation.replace(/^([^_]+).*$/, '$1') + '</td>\
-                                                <td>' + report.collation + '</td>\
-                                            </tr>')
-                                    .hide()
-                                    .appendTo($table_reports.find('tbody'))
-                                    .fadeIn(150);
-
-                                $('.table-select option[value="' + table + '"]').html(function () {
-                                    return $(this).html().replace(new RegExp('collation: .*?$'), 'collation: ' + report.collation);
-                                });
-
-                            });
-
-                            // fetch next table
-                            t.recursive_fetch_json(data, ++i);
 
                         } else {
 
-                            console.log('no report');
+                            console.log('no response');
                             t.complete();
 
                         }
 
-                    } else {
+                        // remember previous request
+                        t.prev_data = $.extend({}, data);
 
-                        console.log('no response');
-                        t.complete();
 
+                        return true;
                     }
 
-                    // remember previous request
-                    t.prev_data = $.extend({}, data);
+                    return $.ajax({
+                        url: window.location.href,
+                        data: post_data,
+                        type: 'POST',
+                        dataType: 'json',
+                        // sometimes WordPress forces a 404, we can still get responseJSON in some cases though
+                        error: function (xhr) {
+                            if (xhr.responseJSON)
+                                process_response(xhr.responseJSON);
+                            else {
+                                // handle error
+                                alert(
+                                    'The script encountered an error while running an AJAX request.\
+                                    \
+                                    If you are using your hosts file to map a domain try browsing via the IP address directly.\
+                                    \
+                                    If you are still running into problems we recommend trying the CLI script bundled with this package.\
+                                    See the README for details.'
+                                );
 
-                    return true;
-                }
-
-                return $.ajax({
-                    url: window.location.href,
-                    data: post_data,
-                    type: 'POST',
-                    dataType: 'json',
-                    // sometimes WordPress forces a 404, we can still get responseJSON in some cases though
-                    error: function (xhr) {
-                        if (xhr.responseJSON)
-                            process_response(xhr.responseJSON);
-                        else {
-                            // handle error
-                            alert(
-                                'The script encountered an error while running an AJAX request.\
-                                \
-                                If you are using your hosts file to map a domain try browsing via the IP address directly.\
-                                \
-                                If you are still running into problems we recommend trying the CLI script bundled with this package.\
-                                See the README for details.'
-                            );
-
-                            try {
-                                process_response({errors: {db: ['The script encountered an error while running an AJAX request.']}});
-                            } catch (e) {
-                                // We're not interested in the nuts and bolts.
-                                // Squelch exceptions and just use process_response to print a generic error.
+                                try {
+                                    process_response({errors: {db: ['The script encountered an error while running an AJAX request.']}});
+                                } catch (e) {
+                                    // We're not interested in the nuts and bolts.
+                                    // Squelch exceptions and just use process_response to print a generic error.
+                                }
+                                // Reactivate the interface.
+                                t.complete();
                             }
-                            // Reactivate the interface.
-                            t.complete();
-                        }
-                    },
-                    success: function (data) {
-                        process_response(data);
-                    }
-                });
-
-            },
-
-            get_time: function (start, end) {
-                start = start || 0.0;
-                end = end || 0.0;
-                start = parseFloat(start);
-                end = parseFloat(end);
-                var diff = end - start;
-                return parseFloat(diff < 0.0 ? 0.0 : diff);
-            },
-
-            changes_overlay: function (e) {
-                e.preventDefault();
-
-                var $overlay = $('.changes-overlay'),
-                    table = $(this).data('table'),
-                    report = $(this).data('report')
-                changes = report.changes,
-                    search = $('[name="search"]').val(),
-                    replace = $('[name="replace"]').val(),
-                    regex = $('[name="regex"]').is(':checked'),
-                    regex_i = $('[name="regex_i"]').is(':checked'),
-                    regex_m = $('[name="regex_m"]').is(':checked'),
-                    regex_search_iter = new RegExp(search, 'g' + ( regex_i ? 'i' : '' ) + ( regex_m ? 'm' : '' )),
-                    regex_search = new RegExp(search, 'g' + ( regex_i ? 'i' : '' ) + ( regex_m ? 'm' : '' ));
-
-                if (!$overlay.length) {
-                    $overlay = $('<div class="changes-overlay"><div class="overlay-header"><a class="close" href="#close">&times; Close</a><h1></h1></div><div class="changes"></div></div>')
-                        .hide()
-                        .find('.close')
-                        .click(function (e) {
-                            e.preventDefault();
-                            $overlay.fadeOut(300);
-                            $('body').css({overflow: 'auto'});
-                        })
-                        .end()
-                        .appendTo($('body'));
-                    $(document).on('keyup', function (e) {
-                        // escape key
-                        if ($overlay.is(':visible') && e.which == 27) {
-                            $overlay.find('.close').click();
+                        },
+                        success: function (data) {
+                            process_response(data);
                         }
                     });
-                }
 
-                $('body').css({overflow: 'hidden'});
+                },
 
-                $overlay
-                    .find('h1').html(table + ' <small>Showing first 20 changes</small>').end()
-                    .find('.changes').html('').end()
-                    .fadeIn(300)
-                    .find('.changes').html(function () {
-                    var $changes = $(this);
-                    $.each(changes, function (i, item) {
-                        if (i >= 20)
-                            return false;
-                        var match_search,
-                            match_replace,
-                            text,
-                            $change = $('\
-                                        <div class="diff-wrap">\
-                                            <h3>row ' + item.row + ', column `' + item.column + '`</h3>\
-                                            <div class="diff">\
-                                                <pre class="from"></pre>\
-                                                <pre class="to"></pre>\
-                                            </div>\
-                                        </div>')
-                                .find('.from').text(item.from).end()
-                                .find('.to').text(item.to).end()
-                                .appendTo($changes);
+                get_time: function (start, end) {
+                    start = start || 0.0;
+                    end = end || 0.0;
+                    start = parseFloat(start);
+                    end = parseFloat(end);
+                    var diff = end - start;
+                    return parseFloat(diff < 0.0 ? 0.0 : diff);
+                },
 
-                        var from_div = $change.find('.from');
-                        var to_div = $change.find('.to');
+                changes_overlay: function (e) {
+                    e.preventDefault();
 
-                        var original_text = from_div.html();
+                    var $overlay = $('.changes-overlay'),
+                        table = $(this).data('table'),
+                        report = $(this).data('report')
+                    changes = report.changes,
+                        search = $('[name="search"]').val(),
+                        replace = $('[name="replace"]').val(),
+                        regex = $('[name="regex"]').is(':checked'),
+                        regex_i = $('[name="regex_i"]').is(':checked'),
+                        regex_m = $('[name="regex_m"]').is(':checked'),
+                        regex_search_iter = new RegExp(search, 'g' + ( regex_i ? 'i' : '' ) + ( regex_m ? 'm' : '' )),
+                        regex_search = new RegExp(search, 'g' + ( regex_i ? 'i' : '' ) + ( regex_m ? 'm' : '' ));
 
-                        // Only display highlights if this isn't a serialised object.
-                        // We CANNOT show highlights properly without writing a FULL COMPLETE
-                        // php compatible serialize unserialize pair.
-                        // Any attempt to work around the above restriction will not work,
-                        // if you try it, you will find you are -writing such functions yourself-!
-                        if (!containsSerialisedString(original_text)) {
-                            if (regex) {
-                                var result_of_regex;
+                    if (!$overlay.length) {
+                        $overlay = $('<div class="changes-overlay"><div class="overlay-header"><a class="close" href="#close">&times; Close</a><h1></h1></div><div class="changes"></div></div>')
+                            .hide()
+                            .find('.close')
+                            .click(function (e) {
+                                e.preventDefault();
+                                $overlay.fadeOut(300);
+                                $('body').css({overflow: 'auto'});
+                            })
+                            .end()
+                            .appendTo($('body'));
+                        $(document).on('keyup', function (e) {
+                            // escape key
+                            if ($overlay.is(':visible') && e.which == 27) {
+                                $overlay.find('.close').click();
+                            }
+                        });
+                    }
 
-                                var copied_char_from_source = 0;
+                    $('body').css({overflow: 'hidden'});
 
-                                var output_search_panel = '';
-                                var output_replace_panel = '';
+                    $overlay
+                        .find('h1').html(table + ' <small>Showing first 20 changes</small>').end()
+                        .find('.changes').html('').end()
+                        .fadeIn(300)
+                        .find('.changes').html(function () {
+                        var $changes = $(this);
+                        $.each(changes, function (i, item) {
+                            if (i >= 20)
+                                return false;
+                            var match_search,
+                                match_replace,
+                                text,
+                                $change = $('\
+                                            <div class="diff-wrap">\
+                                                <h3>row ' + item.row + ', column `' + item.column + '`</h3>\
+                                                <div class="diff">\
+                                                    <pre class="from"></pre>\
+                                                    <pre class="to"></pre>\
+                                                </div>\
+                                            </div>')
+                                    .find('.from').text(item.from).end()
+                                    .find('.to').text(item.to).end()
+                                    .appendTo($changes);
 
-                                while (result_of_regex = regex_search_iter.exec(original_text)) {
-                                    var search_match_start = result_of_regex.index;
-                                    var search_match_end = regex_search_iter.lastIndex;
+                            var from_div = $change.find('.from');
+                            var to_div = $change.find('.to');
 
-                                    output_search_panel = output_search_panel + original_text.slice(copied_char_from_source, search_match_start);
-                                    output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source, search_match_start);
+                            var original_text = from_div.html();
 
-                                    output_search_panel = output_search_panel + '<span class="highlight">';
-                                    output_search_panel = output_search_panel + original_text.slice(search_match_start, search_match_end);
-                                    output_search_panel = output_search_panel + '</span>';
-                                    output_replace_panel = output_replace_panel + '<span class="highlight">';
-                                    output_replace_panel = output_replace_panel + original_text.slice(search_match_start, search_match_end).replace(regex_search, replace);
-                                    output_replace_panel = output_replace_panel + '</span>';
+                            // Only display highlights if this isn't a serialised object.
+                            // We CANNOT show highlights properly without writing a FULL COMPLETE
+                            // php compatible serialize unserialize pair.
+                            // Any attempt to work around the above restriction will not work,
+                            // if you try it, you will find you are -writing such functions yourself-!
+                            if (!containsSerialisedString(original_text)) {
+                                if (regex) {
+                                    var result_of_regex;
 
-                                    copied_char_from_source = search_match_end;
-                                }
+                                    var copied_char_from_source = 0;
 
-                                output_search_panel = output_search_panel + original_text.slice(copied_char_from_source);
-                                output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source);
+                                    var output_search_panel = '';
+                                    var output_replace_panel = '';
 
-                                from_div.html(output_search_panel);
-                                to_div.html(output_replace_panel);
-                            } else {
-                                // Do a multiple straight up search replace on search with the highlight string we want to put in.
-                                var original_chunks = original_text.split(search);
+                                    while (result_of_regex = regex_search_iter.exec(original_text)) {
+                                        var search_match_start = result_of_regex.index;
+                                        var search_match_end = regex_search_iter.lastIndex;
 
-                                from_div.html(original_chunks.join('<span class="highlight">' + search + '</span>'));
+                                        output_search_panel = output_search_panel + original_text.slice(copied_char_from_source, search_match_start);
+                                        output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source, search_match_start);
 
-                                if (replace) {
-                                    // only display highlights if this isn't a serialised object
-                                    if (!containsSerialisedString(to_div.html())) {
-                                        to_div.html(original_chunks.join('<span class="highlight">' + replace + '</span>'));
+                                        output_search_panel = output_search_panel + '<span class="highlight">';
+                                        output_search_panel = output_search_panel + original_text.slice(search_match_start, search_match_end);
+                                        output_search_panel = output_search_panel + '</span>';
+                                        output_replace_panel = output_replace_panel + '<span class="highlight">';
+                                        output_replace_panel = output_replace_panel + original_text.slice(search_match_start, search_match_end).replace(regex_search, replace);
+                                        output_replace_panel = output_replace_panel + '</span>';
+
+                                        copied_char_from_source = search_match_end;
+                                    }
+
+                                    output_search_panel = output_search_panel + original_text.slice(copied_char_from_source);
+                                    output_replace_panel = output_replace_panel + original_text.slice(copied_char_from_source);
+
+                                    from_div.html(output_search_panel);
+                                    to_div.html(output_replace_panel);
+                                } else {
+                                    // Do a multiple straight up search replace on search with the highlight string we want to put in.
+                                    var original_chunks = original_text.split(search);
+
+                                    from_div.html(original_chunks.join('<span class="highlight">' + search + '</span>'));
+
+                                    if (replace) {
+                                        // only display highlights if this isn't a serialised object
+                                        if (!containsSerialisedString(to_div.html())) {
+                                            to_div.html(original_chunks.join('<span class="highlight">' + replace + '</span>'));
+                                        }
                                     }
                                 }
                             }
-                        }
-                        return true;
-                    });
-                    $(this).scrollTop(0);
-                }).end();
-
-            },
-
-            onunload: function () {
-                return window.confirm(t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default);
-            },
-
-            fetch_products: function () {
-
-                // fetch products feed from interconnectit.com
-                var $products,
-                    tpl = '\
-                        <div class="product">\
-                            <a href="{{custom_fields.link}}" title="Link opens in new tab" target="_blank">\
-                                <div class="product-thumb"><img src="{{attachments[0].url}}" alt="{{title_plain}}" /></div>\
-                                <h2>{{title}}</h2>\
-                                <div class="product-description">{{content}}</div>\
-                            </a>\
-                        </div>';
-
-                // get products as jsonp
-                $.ajax({
-                    type: 'GET',
-                    url: 'http://products.network.interconnectit.com/api/core/get_posts/',
-                    data: {order: 'ASC', orderby: 'menu_order title'},
-                    dataType: 'jsonp',
-                    jsonpCallback: 'show_products',
-                    contentType: 'application/json',
-                    success: function (products) {
-                        $products = $('.row-products .content').html('');
-                        $.each(products.posts, function (i, product) {
-
-                            // run template replacement
-                            $products.append(tpl.replace(/{{([a-z\.\[\]0-9_]+)}}/g, function (match, p1, offset, search) {
-                                return typeof eval('product.' + p1) != 'undefined' ? eval('product.' + p1) : '';
-                            }));
-
+                            return true;
                         });
-                    },
-                    error: function (e) {
+                        $(this).scrollTop(0);
+                    }).end();
 
-                    }
-                });
+                },
 
-            },
+                onunload: function () {
+                    return window.confirm(t.running ? t.confirm_strings.unload_running : t.confirm_strings.unload_default);
+                },
 
-            fetch_blogs: function () {
+                fetch_products: function () {
 
-                // fetch products feed from interconnectit.com
-                var $blogs,
-                    tpl = '\
-                        <div class="blog">\
-                            <a href="{{url}}" title="Link opens in new tab" target="_blank">\
-                                <h2>{{title}}</h2>\
-                                <div class="date">{{date}}</div>\
-                                <div class="categories">Filed under: {{categories}}</div>\
-                            </a>\
-                        </div>';
+                    // fetch products feed from interconnectit.com
+                    var $products,
+                        tpl = '\
+                            <div class="product">\
+                                <a href="{{custom_fields.link}}" title="Link opens in new tab" target="_blank">\
+                                    <div class="product-thumb"><img src="{{attachments[0].url}}" alt="{{title_plain}}" /></div>\
+                                    <h2>{{title}}</h2>\
+                                    <div class="product-description">{{content}}</div>\
+                                </a>\
+                            </div>';
 
-                // get products as jsonp
-                $.ajax({
-                    type: 'GET',
-                    url: 'http://interconnectit.com/api/core/get_posts/',
-                    data: {count: 3, category__not_in: [216]},
-                    dataType: 'jsonp',
-                    jsonpCallback: 'show_blogs',
-                    contentType: 'application/json',
-                    success: function (blogs) {
-                        $blogs = $('.row-blog .content').html('');
-                        $.each(blogs.posts, function (i, blog) {
+                    // get products as jsonp
+                    $.ajax({
+                        type: 'GET',
+                        url: 'http://products.network.interconnectit.com/api/core/get_posts/',
+                        data: {order: 'ASC', orderby: 'menu_order title'},
+                        dataType: 'jsonp',
+                        jsonpCallback: 'show_products',
+                        contentType: 'application/json',
+                        success: function (products) {
+                            $products = $('.row-products .content').html('');
+                            $.each(products.posts, function (i, product) {
 
-                            // run template replacement
-                            $blogs.append(tpl.replace(/{{([a-z\.\[\]0-9_]+)}}/g, function (match, p1, offset, search) {
-                                var value = typeof eval('blog.' + p1) != 'undefined' ? eval('blog.' + p1) : '';
-                                if (p1 == 'date')
-                                    value = new Date(value).toDateString();
-                                if (p1 == 'categories')
-                                    value = $.map(value, function (category, i) {
-                                        return category.title;
-                                    }).join(', ');
-                                return value;
-                            }));
+                                // run template replacement
+                                $products.append(tpl.replace(/{{([a-z\.\[\]0-9_]+)}}/g, function (match, p1, offset, search) {
+                                    return typeof eval('product.' + p1) != 'undefined' ? eval('product.' + p1) : '';
+                                }));
 
-                        });
-                    },
-                    error: function (e) {
-
-                    }
-                });
-
-            },
-
-            mailchimp: function (e) {
-                e.preventDefault();
-
-                var $this = $(this),
-                    $form = $this.is('form') ? $this : $this.parents('form'),
-                    $button = $form.find('input[type="submit"]').addClass('active'),
-                    action = $form.attr('action').replace(/subscribe\/post$/, 'subscribe/post-json');
-
-                // remove errors
-                $('.row-subscribe .errors').remove();
-
-                // get response from mailchimp
-                $.ajax({
-                    type: 'GET',
-                    url: action,
-                    data: $form.serialize() + '&c=?',
-                    dataType: 'json',
-                    success: function (response) {
-
-                        if (response && response.result == 'success') {
-                            $form.find('>*').fadeOut(150, function () {
-                                $form.html('');
-                                $('<div class="content"><p class="thanks">Success! We didn&rsquo;t think it was possible but now we like you even more!</p></div>')
-                                    .hide()
-                                    .insertAfter($form)
-                                    .fadeIn(300);
-                                $form.remove();
                             });
-                        }
-
-                        if (response && response.result != 'success') {
-
-                            $('<div class="errors"><p>Computer says no&hellip; Can you check you&rsquo;ve filled in the email address field correctly?</p></div>')
-                                .hide()
-                                .insertAfter('.row-subscribe h1')
-                                .fadeIn(200);
+                        },
+                        error: function (e) {
 
                         }
-                    },
-                    complete: function () {
-                        $button.removeClass('active');
-                    }
-                });
+                    });
 
-            }
+                },
 
-        });
+                fetch_blogs: function () {
 
-        // constructor
-        t.init();
+                    // fetch products feed from interconnectit.com
+                    var $blogs,
+                        tpl = '\
+                            <div class="blog">\
+                                <a href="{{url}}" title="Link opens in new tab" target="_blank">\
+                                    <h2>{{title}}</h2>\
+                                    <div class="date">{{date}}</div>\
+                                    <div class="categories">Filed under: {{categories}}</div>\
+                                </a>\
+                            </div>';
 
-        return t;
-    }
+                    // get products as jsonp
+                    $.ajax({
+                        type: 'GET',
+                        url: 'http://interconnectit.com/api/core/get_posts/',
+                        data: {count: 3, category__not_in: [216]},
+                        dataType: 'jsonp',
+                        jsonpCallback: 'show_blogs',
+                        contentType: 'application/json',
+                        success: function (blogs) {
+                            $blogs = $('.row-blog .content').html('');
+                            $.each(blogs.posts, function (i, blog) {
 
-    // load on ready
-    $(document).ready(srdb);
+                                // run template replacement
+                                $blogs.append(tpl.replace(/{{([a-z\.\[\]0-9_]+)}}/g, function (match, p1, offset, search) {
+                                    var value = typeof eval('blog.' + p1) != 'undefined' ? eval('blog.' + p1) : '';
+                                    if (p1 == 'date')
+                                        value = new Date(value).toDateString();
+                                    if (p1 == 'categories')
+                                        value = $.map(value, function (category, i) {
+                                            return category.title;
+                                        }).join(', ');
+                                    return value;
+                                }));
 
-})(jQuery);
+                            });
+                        },
+                        error: function (e) {
+
+                        }
+                    });
+
+                },
+
+                mailchimp: function (e) {
+                    e.preventDefault();
+
+                    var $this = $(this),
+                        $form = $this.is('form') ? $this : $this.parents('form'),
+                        $button = $form.find('input[type="submit"]').addClass('active'),
+                        action = $form.attr('action').replace(/subscribe\/post$/, 'subscribe/post-json');
+
+                    // remove errors
+                    $('.row-subscribe .errors').remove();
+
+                    // get response from mailchimp
+                    $.ajax({
+                        type: 'GET',
+                        url: action,
+                        data: $form.serialize() + '&c=?',
+                        dataType: 'json',
+                        success: function (response) {
+
+                            if (response && response.result == 'success') {
+                                $form.find('>*').fadeOut(150, function () {
+                                    $form.html('');
+                                    $('<div class="content"><p class="thanks">Success! We didn&rsquo;t think it was possible but now we like you even more!</p></div>')
+                                        .hide()
+                                        .insertAfter($form)
+                                        .fadeIn(300);
+                                    $form.remove();
+                                });
+                            }
+
+                            if (response && response.result != 'success') {
+
+                                $('<div class="errors"><p>Computer says no&hellip; Can you check you&rsquo;ve filled in the email address field correctly?</p></div>')
+                                    .hide()
+                                    .insertAfter('.row-subscribe h1')
+                                    .fadeIn(200);
+
+                            }
+                        },
+                        complete: function () {
+                            $button.removeClass('active');
+                        }
+                    });
+
+                }
+
+            });
+
+            // constructor
+            t.init();
+
+            return t;
+        }
+
+        // load on ready
+        $(document).ready(srdb);
+
+    })(jQuery);
 </script>
 </body>
 </html>
