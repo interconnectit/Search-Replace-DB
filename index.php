@@ -837,36 +837,8 @@ class icit_srdb_ui extends icit_srdb
             </div>
 
         </div>
-
-    </fieldset>
-
-    <!-- 4. results -->
-    <fieldset class="row row-results">
-
-        <h1>Let's go</h1>
-
-        <?php $this->get_errors('results'); ?>
-
         <div class="fields">
-
-                    <span class="submit-group">
-                        <div class="dryrun">
-                            <input type="submit" name="submit[dryrun]"
-                                    value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required"/>
-                        </div>
-                        <hr>
-                        <div class="liverun">
-                            <div><p class="label-text">You cannot undo this once started - are you sure?</p></div>
-                            <input type="submit" name="submit[liverun]"
-                                   value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required run-script"/>
-                        </div>
-
-                        <span class="separator">/</span>
-                    </span>
-
-            <span class="submit-group">
+        <span class="submit-group">
                         <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
                             <input type="submit" name="submit[innodb]"
                                    value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
@@ -882,7 +854,32 @@ class icit_srdb_ui extends icit_srdb
                                class="db-required secondary field-advanced"/>
 
                     </span>
+        </div>
 
+    </fieldset>
+
+    <!-- 4. results -->
+    <fieldset class="row row-results">
+
+        <h1>Let's go</h1>
+
+        <?php $this->get_errors('results'); ?>
+
+        <div class="fields">
+            <span class="submit-group">
+                <div class="dryrun">
+                    <input type="submit" name="submit[dryrun]"
+                            value="Do a safe test run" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required"/>
+                </div>
+                <hr>
+                <div class="liverun">
+                    <div><p class="label-text">You cannot undo this once started - are you sure?</p></div>
+                    <input type="submit" name="submit[liverun]"
+                           value="Search and Replace" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required run-script"/>
+                </div>
+            </span>
         </div>
 
         <?php $this->get_report(); ?>
