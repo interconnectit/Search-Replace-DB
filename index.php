@@ -838,22 +838,22 @@ class icit_srdb_ui extends icit_srdb
 
         </div>
         <div class="fields">
-        <span class="submit-group">
-                        <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
-                            <input type="submit" name="submit[innodb]"
-                                   value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                                   class="db-required secondary field-advanced"/>
-                        <?php } ?>
+            <span class="submit-group">
+                <?php if (in_array('InnoDB', $this->get('engines'))) { ?>
+                    <input type="submit" name="submit[innodb]"
+                           value="convert to innodb" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                           class="db-required secondary field-advanced"/>
+                <?php } ?>
 
                 <input type="submit" name="submit[utf8]"
                        value="convert to utf8 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
                        class="db-required secondary field-advanced"/>
 
-                        <input type="submit" name="submit[utf8mb4]"
-                               value="convert to utf8mb4 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
-                               class="db-required secondary field-advanced"/>
+                <input type="submit" name="submit[utf8mb4]"
+                       value="convert to utf8mb4 unicode" <?php if (!$this->db_valid()) echo 'disabled="disabled"'; ?>
+                       class="db-required secondary field-advanced"/>
 
-                    </span>
+            </span>
         </div>
 
     </fieldset>
