@@ -373,6 +373,7 @@ class icit_srdb {
 
             default:
                 echo "Unknown error: [$errno] $message in $file on line $line\n";
+                exit($errno);
                 break;
         }
 
