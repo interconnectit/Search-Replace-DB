@@ -1154,7 +1154,8 @@ class icit_srdb {
 
 			foreach ( $searches as $key => $search ) {
 				$parts = mb_split( preg_quote( $search ), $subject );
-				if (!is_array($parts)) {
+				if ($parts === false) {
+					// Unable to split $subject, probably binary data, ignore it.
 					continue;
 				}
 				$count += count( $parts ) - 1;
