@@ -153,8 +153,8 @@ under certain conditions; see README for details.
 // missing field flag, show all missing instead of 1 at a time
 $missing_arg = false;
 
-if (version_compare(PHP_VERSION, '5.2') < 0) {
-    fwrite(STDERR, "The script requires php version 5.2 or above, whereas your php version is: " . PHP_VERSION . ". Please update php and try again. \n");
+if (version_compare(PHP_VERSION, '7.3') < 0) {
+    fwrite(STDERR, "This script has been tested using PHP7.3 +, whereas your version is: " . PHP_VERSION . ". Although this script may work with older versions you do so at your own risk. Please update php and try again. \n");
     exit(1);
 }
 
