@@ -848,6 +848,7 @@ class icit_srdb {
 
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
+			$continue = false;
 			foreach( $tables as $table ) {
 
 				$encoding = $this->get_table_character_set( $table );
@@ -858,12 +859,16 @@ class icit_srdb {
 					case 'utf32':
 						//$encoding = 'utf8';
 						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
-						continue;
+						$continue = true;// remove old bug to without warning in php 7.3
 						break;
 
 					default:
 						$this->db_set_charset( $encoding );
 						break;
+				}
+
+				if($continue){
+					continue;
 				}
 
 
