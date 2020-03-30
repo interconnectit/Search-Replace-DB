@@ -1,4 +1,21 @@
 <?php
+/*
+ * This file is part of Search-Replace-DB.
+ * Copyright © 2020  Interconnect IT Limited
+ * Search-Replace-DB is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
+ *
+ * Search-Replace-DB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Search-Replace-DB.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
 
 $content = '<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
 	totam rem aperiam, <a href="http://example.com/~~~/">eaque ipsa quae</a> ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt

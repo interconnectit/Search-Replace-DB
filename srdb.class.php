@@ -1,8 +1,7 @@
 <?php
-
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v3.1.0
+ * Safe Search and Replace on Database with Serialized Data
  *
  * This script is to solve the problem of doing database search and replace when
  * some data is stored within PHP serialized arrays or objects.
@@ -33,71 +32,23 @@
  * on +44 (0)151 331 5140 and we will do the work for you at our hourly rate,
  * minimum 1hr
  *
- * License: GPL v3
- * License URL: http://www.gnu.org/copyleft/gpl.html
  *
+ * This file is part of Search-Replace-DB.
+ * Copyright © 2020  Interconnect IT Limited
  *
- * Version 3.1.0:
- *		* Added port number option to both web and CLI interfaces.
- *		* More reliable fallback on non-PDO systems.
- *		* Confirmation on 'Delete me'
- *		* Comprehensive check to prevent accidental deletion of web projects
- *		* Removed mysql functions and replaced with mysqli
+ * Search-Replace-DB is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or any later version.
  *
- * Version 3.0:
- * 		* Major overhaul
- * 		* Multibyte string replacements
- * 		* Convert tables to InnoDB
- * 		* Convert tables to utf8_unicode_ci
- * 		* Preview/view changes in report
- * 		* Optionally use preg_replace()
- * 		* Better error/exception handling & reporting
- * 		* Reports per table
- * 		* Exclude/include multiple columns
+ * Search-Replace-DB is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
  *
- * Version 2.2.0:
- * 		* Added remove script patch from David Anderson (wordshell.net)
- * 		* Added ability to replace strings with nothing
- *		* Copy changes
- * 		* Added code to recursive_unserialize_replace to deal with objects not
- * 		just arrays. This was submitted by Tina Matter.
- * 		ToDo: Test object handling. Not sure how it will cope with object in the
- * 		db created with classes that don't exist in anything but the base PHP.
- *
- * Version 2.1.0:
- *              - Changed to version 2.1.0
- *		* Following change by Sergei Biryukov - merged in and tested by Dave Coveney
- *              - Added Charset Support (tested with UTF-8, not tested on other charsets)
- *		* Following changes implemented by James Whitehead with thanks to all the commenters and feedback given!
- * 		- Removed PHP warnings if you go to step 3+ without DB details.
- * 		- Added options to skip changing the guid column. If there are other
- * 		columns that need excluding you can add them to the $exclude_cols global
- * 		array. May choose to add another option to the table select page to let
- * 		you add to this array from the front end.
- * 		- Minor tweak to label styling.
- * 		- Added comments to each of the functions.
- * 		- Removed a dead param from icit_srdb_replacer
- * Version 2.0.0:
- * 		- returned to using unserialize function to check if string is
- * 		serialized or not
- * 		- marked is_serialized_string function as deprecated
- * 		- changed form order to improve usability and make use on multisites a
- * 		bit less scary
- * 		- changed to version 2, as really should have done when the UI was
- * 		introduced
- * 		- added a recursive array walker to deal with serialized strings being
- * 		stored in serialized strings. Yes, really.
- * 		- changes by James R Whitehead (kudos for recursive walker) and David
- * 		Coveney 2011-08-26
- *  Version 1.0.2:
- *  	- typos corrected, button text tweak - David Coveney / Robert O'Rourke
- *  Version 1.0.1
- *  	- styling and form added by James R Whitehead.
- *
- *  Credits:  moz667 at gmail dot com for his recursive_array_replace posted at
- *            uk.php.net which saved me a little time - a perfect sample for me
- *            and seems to work in all cases.
- *
+ * You should have received a copy of the GNU General Public License
+ * along with Search-Replace-DB.
+ * If not, see <https://www.gnu.org/licenses/>.
  */
 
 class icit_srdb {
@@ -111,6 +62,8 @@ class icit_srdb {
 	 * @var array Tables to run the replacement on
 	 */
 	public $tables = array();
+
+	public $exclude_tables = array();
 
 	/**
 	 * @var string Search term
@@ -182,7 +135,9 @@ class icit_srdb {
 						'search' => array(),
 						'db' => array(),
 						'tables' => array(),
-						'results' => array()
+						'results' => array(),
+                        'exclude_tables'=>array(),
+                        'compatibility' => array()
 					);
 
 	public $error_type = 'search';
@@ -207,19 +162,20 @@ class icit_srdb {
 
 
 	/**
-	 * @var resource Database connection
+	 * @var mysqli|PDO connection
 	 */
 	public $db;
 
 
 	/**
-	 * @var use PDO
+	 * @var bool
 	 */
 	public $use_pdo = true;
 
 
 	/**
-	 * @var int How many rows to select at a time when replacing
+     * How many rows to select at a time when replacing
+	 * @var int
 	 */
 	public $page_size = 50000;
 
@@ -242,8 +198,9 @@ class icit_srdb {
 	 * @param bool $live    live run
 	 * @param array $exclude_cols  tables to run replcements against
 	 *
-	 * @return void
+	 * @return array|void
 	 */
+
 	public function __construct( $args ) {
 
 		$args = array_merge( array(
@@ -255,6 +212,7 @@ class icit_srdb {
 			'search' 			=> '',
 			'replace' 			=> '',
 			'tables'			=> array(),
+            'exclude_tables'    => array(),
 			'exclude_cols' 		=> array(),
 			'include_cols' 		=> array(),
 			'dry_run' 			=> true,
@@ -279,20 +237,23 @@ class icit_srdb {
 		mb_regex_encoding( 'UTF-8' );
 
 		// allow a string for columns
-		foreach( array( 'exclude_cols', 'include_cols', 'tables' ) as $maybe_string_arg ) {
+		foreach( array( 'exclude_cols', 'include_cols', 'tables' , 'exclude_tables') as $maybe_string_arg ) {
+
+        ini_set('unserialize_callback_func', 'object_serializer' );
+
 			if ( is_string( $args[ $maybe_string_arg ] ) )
 				$args[ $maybe_string_arg ] = array_filter( array_map( 'trim', explode( ',', $args[ $maybe_string_arg ] ) ) );
 		}
-		
-		// verify that the port number is logical		
+
+		// verify that the port number is logical
 		// work around PHPs inability to stringify a zero without making it an empty string
 		// AND without casting away trailing characters if they are present.
-		$port_as_string = (string)$args['port'] ? (string)$args['port'] : "0";		
+		$port_as_string = (string)$args['port'] ? (string)$args['port'] : "0";
 		if ( (string)abs( (int)$args['port'] ) !== $port_as_string ) {
 			$port_error = 'Port number must be a positive integer if specified.';
 			$this->add_error( $port_error, 'db' );
 			if ( defined( 'STDIN' ) ) {
-				echo 'Error: ' . $port_error;	
+				echo 'Error: ' . $port_error;
 			}
 			return;
 		}
@@ -332,9 +293,15 @@ class icit_srdb {
 				$report = $this->update_collation( $this->alter_collation, $this->tables );
 			}
 
-			// default search/replace action
+            elseif (is_array($this->search)){
+                $report = array();
+                for ($i = 0; $i < count($this->search); $i++){
+                    $report[$i] = $this->replacer($this->search[$i], $this->replace[$i], $this->tables, $this->exclude_tables);
+                }
+
+            }
 			else {
-				$report = $this->replacer( $this->search, $this->replace, $this->tables );
+				$report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
 			}
 
 		} else {
@@ -347,6 +314,7 @@ class icit_srdb {
 		$this->set( 'report', $report );
 		return $report;
 	}
+
 
 
 	/**
@@ -369,44 +337,48 @@ class icit_srdb {
 	}
 
 
+    /**
+     * @param $exception Exception
+     */
 	public function exceptions( $exception ) {
 		echo $exception->getMessage() . "\n";
 	}
 
-	/**
-	 * Custom error handler
-	 *
-	 * @param $errno
-	 * @param $message
-	 * @param $file
-	 * @param $line
-	 *
-	 * @return bool
-	 */
+
+    /**
+     * Custom error handler
+     *
+     * @param $errno
+     * @param $message
+     * @param $file
+     * @param $line
+     *
+     * @return bool
+     */
 	public function error_handler( $errno, $message, $file, $line ) {
-		if (!(error_reporting() & $errno)) {
-			return false;
-		}
+        if (!(error_reporting() & $errno)) {
+            return false;
+        }
 
-		switch ( $errno ) {
-			case E_USER_ERROR:
-				echo "ERROR [$errno]: $message\n";
-				echo "Aborting...\n";
-				exit($errno);
-				break;
+        switch ( $errno ) {
+            case E_USER_ERROR:
+                echo "ERROR [$errno]: $message\n";
+                echo "Aborting...\n";
+                exit($errno);
+                break;
 
-			case E_USER_WARNING:
-				echo "WARNING [$errno] $message\n";
-				break;
+            case E_USER_WARNING:
+                echo "WARNING [$errno] $message\n";
+                break;
 
-			default:
-				echo "Unknown error: [$errno] $message in $file on line $line\n";
-				exit($errno);
-				break;
-		}
+            default:
+                echo "Unknown error: [$errno] $message in $file on line $line\n";
+                exit($errno);
+                break;
+        }
 
-		/* Don't execute PHP internal error handler */
-		return true;
+        /* Don't execute PHP internal error handler */
+        return true;
 	}
 
 
@@ -438,7 +410,7 @@ class icit_srdb {
 	 * Setup connection, populate tables array
 	 * Also responsible for selecting the type of connection to use.
 	 *
-	 * @return void
+	 * @return void|bool
 	 */
 	public function db_setup() {
 		$mysqli_available = class_exists( 'mysqli' );
@@ -468,6 +440,7 @@ class icit_srdb {
 			$this->add_error( 'Could not find any MySQL database drivers. (MySQLi or PDO required.)', 'db' );
 			return false;
 		}
+
 
 		// connect
 		$this->set( 'db', $this->connect( $connection_type ) );
@@ -516,7 +489,7 @@ class icit_srdb {
 	 * @return PDO|bool
 	 */
 	public function connect_pdo() {
-	
+
 		try {
 			$connection = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->name}", $this->user, $this->pass );
 		} catch( PDOException $e ) {
@@ -568,7 +541,8 @@ class icit_srdb {
 		FROM information_schema.`TABLES` t
 			LEFT JOIN information_schema.`COLLATION_CHARACTER_SET_APPLICABILITY` c
 				ON ( t.`TABLE_COLLATION` = c.`COLLATION_NAME` )
-		  WHERE t.`TABLE_SCHEMA` = '{$this->name}';
+		  WHERE t.`TABLE_SCHEMA` = '{$this->name}'
+		  ORDER BY t.`TABLE_NAME`;
 		";
 
 		$all_tables_mysql = $this->db_query( $show_table_status );
@@ -677,6 +651,10 @@ class icit_srdb {
 			return mysqli_error( $this->db );
 	}
 
+    /**
+     * @param $data mysqli_result|PDOStatement
+     * @return array|null
+     */
 	public function db_fetch( $data ) {
 		if ( $this->use_pdo() )
 			return $data->fetch();
@@ -778,7 +756,7 @@ class icit_srdb {
 			}
 
 			// Submitted by Tina Matter
-			elseif ( is_object( $data ) ) {
+			elseif ( is_object( $data ) && ! is_a( $data, '__PHP_Incomplete_Class' ) ) {
 				// $data_class = get_class( $data );
 				$_tmp = $data; // new $data_class( );
 				$props = get_object_vars( $data );
@@ -801,9 +779,10 @@ class icit_srdb {
 				return serialize( $data );
 
 		} catch( Exception $error ) {
-
-			$this->add_error( $error->getMessage(), 'results' );
-
+		    $this->add_error( $error->getMessage().':: This is usually caused by a plugin storing classes as a
+		    serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data
+		    because the PHP can\'t access this class. P.S. It\'s most commonly a Yoast plugin that causes this error.',
+		    'results' );
 		}
 
 		return $data;
@@ -836,9 +815,9 @@ class icit_srdb {
 	 * @param string $replace    What we want to replace it with.
 	 * @param array  $tables     The tables we want to look at.
 	 *
-	 * @return array    Collection of information gathered during the run.
+	 * @return array|bool    Collection of information gathered during the run.
 	 */
-	public function replacer( $search = '', $replace = '', $tables = array( ) ) {
+	public function replacer( $search = '', $replace = '', $tables = array( ), $exclude_tables = array() ) {
 		$search = (string)$search;
 		// check we have a search string, bail if not
 		if ( '' === $search ) {
@@ -850,8 +829,8 @@ class icit_srdb {
 						 'rows' => 0,
 						 'change' => 0,
 						 'updates' => 0,
-						 'start' => microtime( ),
-						 'end' => microtime( ),
+						 'start' => microtime(true),
+						 'end' => microtime(true),
 						 'errors' => array( ),
 						 'table_reports' => array( )
 						 );
@@ -861,14 +840,14 @@ class icit_srdb {
 						 'change' => 0,
 						 'changes' => array( ),
 						 'updates' => 0,
-						 'start' => microtime( ),
-						 'end' => microtime( ),
+						 'start' => microtime(true),
+						 'end' => microtime(true),
 						 'errors' => array( ),
 						 );
 
 		$dry_run = $this->get( 'dry_run' );
-
-		if ( $this->get( 'dry_run' ) ) 	// Report this as a search-only run.
+        $errors = $this->get('errors');
+		if ( $this->get( 'dry_run' ) and !(in_array('The dry-run option was selected. No replacements will be made.', $errors['results']))) 	// Report this as a search-only run.
 			$this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
 
 		// if no tables selected assume all
@@ -880,7 +859,11 @@ class icit_srdb {
 		if ( is_array( $tables ) && ! empty( $tables ) ) {
 
 			foreach( $tables as $table ) {
-
+                if (in_array($table, $exclude_tables))
+                {
+                    $this->add_error('Ignoring Table: ' . $table);
+                    continue;
+                }
 				$encoding = $this->get_table_character_set( $table );
 				switch( $encoding ) {
 
@@ -889,7 +872,7 @@ class icit_srdb {
 					case 'utf32':
 						//$encoding = 'utf8';
 						$this->add_error( "The table \"{$table}\" is encoded using \"{$encoding}\" which is currently unsupported.", 'results' );
-						continue;
+						continue 2;
 						break;
 
 					default:
@@ -902,15 +885,15 @@ class icit_srdb {
 
 				// get primary key and columns
 				list( $primary_key, $columns ) = $this->get_columns( $table );
-				
+
 				if ( $primary_key === null || empty( $primary_key ) ) {
 					$this->add_error( "The table \"{$table}\" has no primary key. Changes will have to be made manually.", 'results' );
 					continue;
 				}
-				
+
 				// create new table report instance
 				$new_table_report = $table_report;
-				$new_table_report[ 'start' ] = microtime();
+				$new_table_report[ 'start' ] = microtime(true);
 
 				$this->log( 'search_replace_table_start', $table, $search, $replace );
 
@@ -943,7 +926,7 @@ class icit_srdb {
 
 						foreach( $columns as $column ) {
 
-							$edited_data = $data_to_fix = $row[ $column ];
+                            $edited_data = $data_to_fix = $row[ $column ];
 
 							if ( in_array( $column, $primary_key ) ) {
 								$where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
@@ -957,7 +940,7 @@ class icit_srdb {
 							// include cols
 							if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) )
 								continue;
-							
+
 							// Run a search replace on the data that'll respect the serialisation.
 							$edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
 
@@ -989,7 +972,7 @@ class icit_srdb {
 						} elseif ( $update && ! empty( $where_sql ) ) {
 
 							$sql = 'UPDATE ' . $table . ' SET ' . implode( ', ', $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
-							
+
 							$result = $this->db_update( $sql );
 
 							if ( ! is_int( $result ) && ! $result ) {
@@ -1010,7 +993,7 @@ class icit_srdb {
 
 				}
 
-				$new_table_report[ 'end' ] = microtime();
+				$new_table_report[ 'end' ] = microtime(true);
 
 				// store table report in main
 				$report[ 'table_reports' ][ $table ] = $new_table_report;
@@ -1021,7 +1004,7 @@ class icit_srdb {
 
 		}
 
-		$report[ 'end' ] = microtime( );
+		$report[ 'end' ] = microtime(true);
 
 		$this->log( 'search_replace_end', $search, $replace, $report );
 
@@ -1048,12 +1031,6 @@ class icit_srdb {
 		return array( $primary_key, $columns );
 	}
 
-
-	public function do_column() {
-
-	}
-
-
 	/**
 	 * Convert table engines
 	 *
@@ -1074,7 +1051,7 @@ class icit_srdb {
 			$report = array( 'engine' => $engine, 'converted' => array() );
 
 			$all_tables = $this->get_tables();
-			
+
 			if ( empty( $tables ) ) {
 				$tables = array_keys( $all_tables );
 			}
@@ -1125,7 +1102,7 @@ class icit_srdb {
 			$report = array( 'collation' => $collation, 'converted' => array() );
 
 			$all_tables = $this->get_tables();
-				
+
 			if ( empty( $tables ) ) {
 				$tables = array_keys( $all_tables );
 			}
@@ -1185,10 +1162,9 @@ class icit_srdb {
 
 			foreach ( $searches as $key => $search ) {
 				$parts = mb_split( preg_quote( $search ), $subject );
-				if ($parts === false) {
-					// Unable to split $subject, probably binary data, ignore it.
-					continue;
-				}
+                if (!is_array($parts)) {
+                    continue;
+                }
 				$count += count( $parts ) - 1;
 				$subject = implode( $replacements[ $key ], $parts );
 			}
@@ -1249,4 +1225,17 @@ class icit_srdb {
 		return $string;
 	}
 
+
+}
+
+
+/**
+ * .. make classes
+ *
+ * @param string $class_name
+ *
+ * @return void
+ */
+function object_serializer( $class_name ) {
+    eval("class {$class_name} extends ArrayObject {}");
 }

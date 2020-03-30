@@ -1,16 +1,30 @@
+[![Build Status](https://travis-ci.org/interconnectit/Search-Replace-DB.svg?branch=4.0)](https://travis-ci.org/interconnectit/Search-Replace-DB)
+
 # Search Replace DB
 
-This script was made to aid the process of migrating PHP and MySQL based websites. It has additional features for WordPress and Drupal but works for most other similar CMSes.
+This script was made to aid the process of migrating PHP and MySQL
+based websites. It has additional features for WordPress and Drupal
+but works for most other similar CMSes.
 
-If you find a problem let us know in the issues area and if you can improve the code then please fork the repository and send us a pull request :)
+If you find a problem let us know in the issues area and if you can
+improve the code then please fork the repository and send us a pull
+request :)
 
 ## Warnings & Limitations
 
-1. Three character UTF8 seems to break in certain cases.
-2. We can't test every possible case, though we do our best. Backups and verifications are important.
-3. The license for this script is GPL v3 and no longer WTFPL. Please bear this in mind if contributing or branching.
-4. You use this script at your own risk and we have no responsibility for any problems it may cause.
-5. *Do backups.*
+We can't test every possible case, though we do our best. Backups and
+verifications are important.
+
+You use this script at your own risk and we have no responsibility for
+any problems it may cause.
+
+There are many edge cases and WordPress plugins that likes to mess
+your database, we don't have a silver bullet.
+
+The license for this software is GPL v3, please bear this in mind if
+contributing or branching.
+
+*Do backups*, also *do backups* and finally *do backups*!
 
 ## Usage
 
@@ -23,7 +37,9 @@ If you find a problem let us know in the issues area and if you can improve the 
 
 ## Installation
 
-If you would like Search Replace DB to detect your WordPress installation, you should install it within a new subfolder within your WordPress installation.
+If you would like Search Replace DB to detect your WordPress
+installation, you should install it within a new subfolder within your
+WordPress installation.
 
 For example, if you have
 	
@@ -53,9 +69,13 @@ You can copy Search Replace DB into the following location:
 
 ### CLI script
 
-To invoke the script, nagivate in your shell to the directory to where you installed Search Replace DB.
+To invoke the script, navigate in your shell to the directory to where
+you installed Search Replace DB.
 
-Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for usage information:
+
+Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
+--help` for usage information:
+
 
 	-h, --host
 	
@@ -71,7 +91,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 		
 	-p, --pass
 	
-		Required. Database user's password.
+		Database user's password.
 		
 	--port
 	
@@ -80,19 +100,23 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 		
 	-s, --search
 	
-		String to search for or `preg_replace()` style regular
-		expression.
+		String to search for, `preg_replace()` style regular
+		expression, or a JSON array of values to replace. 
 		
 	-r, --replace
 	
-		None empty string to replace search with or
-		`preg_replace()` style replacement.
+		None empty string to replace search with,
+		`preg_replace()` style replacement, or a JSON array of values to replace.
 		
 	-t, --tables
 	
 		If set only runs the script on the specified table, comma
 		separate for multiple values.
 		
+	-w, --exclude tables
+	    If set runs the script on all tables except for the specified ones, 
+	    comma seperate for multiple values
+	
 	-i, --include-cols
 	
 		If set only runs the script on the specified columns, comma
@@ -107,6 +131,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	
 		Treats value for -s or --search as a regular expression and
 		-r or --replace as a regular expression replacement.
+		The value in -s needs to be surrounded by a delimiter such as "/" or "#" which needs to go before or after the string.
 		
 	-l, --pagesize
 	
@@ -137,13 +162,60 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php --help` for u
 	
 		Displays this help message ;)
 
+### Example cli commmands: 
+
+```bash
+php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
+php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+
+php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "search" -r "replace"
+```
+
 ## Troubleshooting
+
+### Nothing works after the search/replace operation!
+
+It's time to use your backups!
 
 ### I get a popup saying there was an AJAX error
 
 This happens occasionally and could be for a couple of reasons:
 
- * When the script starts, it attempts to start your WordPress or Drupal installation to auto-detect your username and password settings. If this fails, you will see a message informing you that auto-detection failed. You will have to enter your details manually.
- * Script was unable to set the timeout so PHP closed the connection before the table could be processed, this can happen on some server configurations.
- * When using php-fpm (as you have with VVV) make sure that the socket is owned by the server user `chown www-data:www-data /var/run/php5-fpm.sock`.
- * php-mbstring must be installed 
+ * When the script starts, it attempts to start your WordPress or
+   Drupal installation to auto-detect your username and password
+   settings. If this fails, you will see a message informing you that
+   auto-detection failed. You will have to enter your details
+   manually.
+   
+ * Script was unable to set the timeout so PHP closed the connection
+   before the table could be processed, this can happen on some server
+   configurations.
+   
+## Contributing
+
+You can view the source code and submit a pull request using GitHub,
+the project's page is located at:
+
+https://github.com/interconnectit/Search-Replace-DB/
+
+We appreciate a small unittest among the code, please explain what
+you are  is trying to solve.
+
+# License
+
+This file is part of Search-Replace-DB.
+
+Search-Replace-DB is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or any later version.
+
+Search-Replace-DB is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Search-Replace-DB.
+If not, see <https://www.gnu.org/licenses/>.
