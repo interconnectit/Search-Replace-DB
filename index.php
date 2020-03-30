@@ -923,9 +923,6 @@ class icit_srdb_ui extends icit_srdb
 
     <p><strong class="red">WARNINGS!</strong>
         Ensure data is backed up.
-        We take no responsibility for any damage caused by this script or its misuse.
-        DB Connection Settings are auto-filled when WordPress or Drupal is detected but can be confused by
-        commented out settings so CHECK!
         There is NO UNDO!
         Be careful running this script on a production server.</p>
 
