@@ -243,7 +243,7 @@ class icit_srdb_cli extends icit_srdb
                 break;
             case 'search_replace_table_end':
                 list($table, $report) = $args;
-                $time = number_format($report['end'] - $report['start'], 8);
+                $time = number_format(floatval($report['end']) - floatval($report['start']), 8);
                 if ($time < 0){
                     $time = $time * -1;
                 }
@@ -257,7 +257,7 @@ class icit_srdb_cli extends icit_srdb
                 if (is_array($replace)) {
                     $replace = implode(' or ', $replace);
                 }
-                $time = number_format($report['end'] - $report['start'], 8);
+                $time = number_format(floatval($report['end']) - floatval($report['start']), 8);
                 if ($time < 0){
                     $time = $time * -1;
                 }
