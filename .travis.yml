@@ -1,0 +1,24 @@
+language: php
+php:
+    - 7.3
+    - 7.4
+
+services:
+    - mysql
+
+cache:
+    apt: true
+    directories:
+        - $HOME/.composer/cache
+        - vendor
+
+before_install:
+    - phpenv config-rm xdebug.ini
+    - mysql -e 'create database srdbtest;'
+
+
+install:
+    - composer install -o --prefer-dist --no-interaction
+
+script:
+    - composer test

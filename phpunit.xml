@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit colors="true">
+    <testsuites>
+        <testsuite name="search-replace-db">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -1,19 +1,19 @@
 {
   "name": "search-replace-db",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "A PHP search replace tool for quickly modifying a string throughout a database. Useful for changing the base URL when migrating a WordPress site from development to production.",
   "main": "srdb.cli.php",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-   
+
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/interconnectit/Search-Replace-DB.git"
   },
-  "author": "",
+  "author": "Interconnect IT Limited",
   "license": "GPL-v3",
   "bugs": {
     "url": "https://github.com/interconnectit/Search-Replace-DB/issues"
