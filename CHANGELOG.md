@@ -4,7 +4,7 @@
  * Support for continuous integration through Travis CI
  * Ability to do multiple search-replaces
  * Ability to exclude tables
- * Support for autodetection of Joomla, Docker, and Typo3 configurations
+ * Remove specific loaders for WP
  * Script now checks whether the correct version of PHP is used
  * Script checks if necessary modules are installed
  * Script checks if the connection is secure and gives a warning otherwise
