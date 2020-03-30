@@ -3,8 +3,7 @@
 # Search Replace DB
 
 This script was made to aid the process of migrating PHP and MySQL
-based websites. It has additional features for WordPress and Drupal
-but works for most other similar CMSes.
+based websites. Works with most common CMSes.
 
 If you find a problem let us know in the issues area and if you can
 improve the code then please fork the repository and send us a pull
@@ -33,39 +32,10 @@ contributing or branching.
 3. Upload the script folder to your web root or higher.	
 4. Browse to the script folder URL in your web browser.
 5. Fill in the fields as needed.
-6. Choose the `Dry run` button to do a dry run without searching/replacing.
+6. Choose the `Do a safe test run` button to do a dry run without searching/replacing.
 
 ## Installation
-
-If you would like Search Replace DB to detect your WordPress
-installation, you should install it within a new subfolder within your
-WordPress installation.
-
-For example, if you have
-	
-	/website.com/index.php
-   
-	/website.com/wp-config.php
-   
-	/website.com/wordpress/
-   
-	/website.com/wordpress/index.php
-   
-	/website.com/wordpress/wp-settings.php
-   
-	etc.
-	
-You can copy Search Replace DB into the following location:
-
-	/website.com/wordpress/Search-Replace-DB/
-	
-	/website.com/wordpress/Search-Replace-DB/index.php
-	
-	/website.com/wordpress/Search-Replace-DB/srdb.class.php
-	
-	/website.com/wordpress/Search-Replace-DB/srdb.cli.php
-	
-	etc.
+To install the script, please place the files inside your sites public folder and head to yourWebsiteUrl/search-replace-db
 
 ### CLI script
 
