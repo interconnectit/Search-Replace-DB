@@ -9,6 +9,18 @@ If you find a problem let us know in the issues area and if you can
 improve the code then please fork the repository and send us a pull
 request :)
 
+## What's New
+ * Support for continuous integration through Travis CI
+ * Ability to do multiple search-replaces
+ * Ability to exclude tables
+ * Remove specific loaders for WP
+ * Script now checks whether the correct version of PHP is used
+ * Script checks if necessary modules are installed
+ * Script checks if the connection is secure and gives a warning otherwise
+ * Bug fixes
+ * UI Tweaks
+ * Password is not mandatory in CLI
+
 ## Warnings & Limitations
 
 We can't test every possible case, though we do our best. Backups and
