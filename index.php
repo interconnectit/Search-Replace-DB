@@ -437,10 +437,6 @@ class icit_srdb_ui extends icit_srdb {
         }
 
         if ( is_dir( $path . DIRECTORY_SEPARATOR . 'tests' ) ) {
-            //is tests directory empty?
-            if ( ! ( new FilesystemIterator( $path . DIRECTORY_SEPARATOR . 'tests' ) )->valid() ) {
-                return - 1;
-            }
             if ( @rmdir( $path . DIRECTORY_SEPARATOR . 'tests' ) === false ) {
                 return - 1;
             }
