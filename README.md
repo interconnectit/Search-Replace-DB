@@ -14,6 +14,7 @@ request :)
  * Ability to do multiple search-replaces
  * Ability to exclude tables
  * Remove specific loaders for WP
+ * No longer automatically populate DB fields, this was causing security issues for users leaving the script on their site
  * Script now checks whether the correct version of PHP is used
  * Script checks if necessary modules are installed
  * Script checks if the connection is secure and gives a warning otherwise
