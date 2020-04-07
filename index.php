@@ -407,6 +407,7 @@ class icit_srdb_ui extends icit_srdb {
      *
      */
     public function delete_script( $path ) {
+        $path = rtrim($path, DIRECTORY_SEPARATOR);
         $file_list = array(
             "README.md",
             "srdb.cli.php",
