@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.0.1
+ * Fix bug on auto-delete
+
 ## Version 4.0
  * Support for continuous integration through Travis CI
  * Ability to do multiple search-replaces
