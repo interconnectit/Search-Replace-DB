@@ -62,10 +62,10 @@ class icit_srdb_ui extends icit_srdb {
 
     public function __construct() {
 
-// php 5.4 date timezone requirement, shouldn't affect anything
+        // php 5.4 date timezone requirement, shouldn't affect anything
         date_default_timezone_set( 'Europe/London' );
 
-// prevent fatals from hiding the UI
+        // prevent fatals from hiding the UI
         register_shutdown_function( array( $this, 'fatal_handler' ) );
 
         $this->response();
@@ -93,7 +93,7 @@ class icit_srdb_ui extends icit_srdb {
 
         }
 
-// always override with post data
+        // always override with post data
         if ( isset( $_POST['name'] ) ) {
             $name = $_POST['name']; // your database
             $user = $_POST['user']; // your db userid
@@ -102,43 +102,42 @@ class icit_srdb_ui extends icit_srdb {
 
             $port_input = $_POST['port'];
 
-// Make sure that the string version of absint(port) is identical to the string input.
-// This prevents expressions, decimals, spaces, etc.
+            // Make sure that the string version of absint(port) is identical to the string input.
+            // This prevents expressions, decimals, spaces, etc.
             $port_as_string = (string) $port_input ? (string) $port_input : "0";
             if ( (string) abs( (int) $port_input ) !== $port_as_string ) {
-// Mangled port number: non numeric.
+                // Mangled port number: non numeric.
                 $this->add_error( 'Port number must be a positive integer. If you are unsure, try the default port 3306.',
                     'db' );
 
-// Force a bad run by supplying nonsense.
+                // Force a bad run by supplying nonsense.
                 $port = "nonsense";
             } else {
                 $port = abs( (int) $port_input );
             }
 
-
             $charset = 'utf8'; // isset( $_POST[ 'char' ] ) ? stripcslashes( $_POST[ 'char' ] ) : '';   // your db charset
             $collate = '';
         }
 
-// Search replace details
+        // Search replace details
         $search  = isset( $_POST['search'] ) ? $_POST['search'] : '';
         $replace = isset( $_POST['replace'] ) ? $_POST['replace'] : '';
 
-// regex options
+        // regex options
         $regex   = isset( $_POST['regex'] );
         $regex_i = isset( $_POST['regex_i'] );
         $regex_m = isset( $_POST['regex_m'] );
         $regex_s = isset( $_POST['regex_s'] );
         $regex_x = isset( $_POST['regex_x'] );
 
-// Tables to scanned
+        // Tables to scanned
         $tables = isset( $_POST['tables'] ) && is_array( $_POST['tables'] ) ? $_POST['tables'] : array();
         if ( isset( $_POST['use_tables'] ) && $_POST['use_tables'] == 'all' ) {
             $tables = array();
         }
 
-// exclude / include columns
+        // exclude / include columns
         $exclude_cols = isset( $_POST['exclude_cols'] ) ? $_POST['exclude_cols'] : array();
         $include_cols = isset( $_POST['include_cols'] ) ? $_POST['include_cols'] : array();
 
@@ -148,7 +147,7 @@ class icit_srdb_ui extends icit_srdb {
             }
         }
 
-// update class vars
+        // update class vars
         $vars = array(
             'name',
             'user',
@@ -175,7 +174,7 @@ class icit_srdb_ui extends icit_srdb {
             }
         }
 
-// are doing something?
+        // are doing something?
         $show = '';
         if ( isset( $_POST['submit'] ) ) {
             if ( is_array( $_POST['submit'] ) ) {
@@ -186,10 +185,10 @@ class icit_srdb_ui extends icit_srdb {
             }
         }
 
-// is it an AJAX call
+        // is it an AJAX call
         $ajax = isset( $_POST['ajax'] );
 
-// body callback
+        // body callback
         $html = 'ui';
 
         switch ( $show ) {
@@ -215,14 +214,15 @@ class icit_srdb_ui extends icit_srdb {
                 break;
             }
             case 'liverun':
-
-// bsy-web, 20130621: Check live run was explicitly clicked and only set false then
+            {
+                // bsy-web, 20130621: Check live run was explicitly clicked and only set false then
                 $this->set( 'dry_run', false );
-
+            }
             case 'dryrun':
+            {
 
-// build regex string
-// non UI implements can just pass in complete regex string
+                // build regex string
+                // non UI implements can just pass in complete regex string
                 if ( $this->regex ) {
                     $mods = '';
                     if ( $this->regex_i ) {
@@ -240,7 +240,7 @@ class icit_srdb_ui extends icit_srdb {
                     $this->search = '/' . $this->search . '/' . $mods;
                 }
 
-// call search replace class
+                // call search replace class
                 $parent = parent::__construct( array(
                     'name'         => $this->get( 'name' ),
                     'user'         => $this->get( 'user' ),
@@ -257,10 +257,13 @@ class icit_srdb_ui extends icit_srdb {
                 ) );
 
                 break;
+            }
 
             case 'innodb':
+            {
 
-// call search replace class to alter engine
+
+                // call search replace class to alter engine
                 $parent = parent::__construct( array(
                     'name'         => $this->get( 'name' ),
                     'user'         => $this->get( 'user' ),
@@ -272,10 +275,11 @@ class icit_srdb_ui extends icit_srdb {
                 ) );
 
                 break;
+            }
 
             case 'utf8':
-
-// call search replace class to alter engine
+            {
+                // call search replace class to alter engine
                 $parent = parent::__construct( array(
                     'name'            => $this->get( 'name' ),
                     'user'            => $this->get( 'user' ),
@@ -287,10 +291,11 @@ class icit_srdb_ui extends icit_srdb {
                 ) );
 
                 break;
+            }
 
             case 'utf8mb4':
-
-// call search replace class to alter engine
+            {
+                // call search replace class to alter engine
                 $parent = parent::__construct( array(
                     'name'            => $this->get( 'name' ),
                     'user'            => $this->get( 'user' ),
@@ -302,23 +307,25 @@ class icit_srdb_ui extends icit_srdb {
                 ) );
 
                 break;
+            }
 
             case 'update':
             default:
+            {
 
-// get tables or error messages
+                // get tables or error messages
                 $this->db_setup();
 
                 if ( $this->db_valid() ) {
-// get engines
+                    // get engines
                     $this->set( 'engines', $this->get_engines() );
 
-// get tables
+                    // get tables
                     $this->set( 'all_tables', $this->get_tables() );
-
                 }
 
                 break;
+            }
         }
 
         $info = array(
@@ -326,7 +333,7 @@ class icit_srdb_ui extends icit_srdb {
             'engines'      => $this->get( 'engines' )
         );
 
-// set header again before output in case WP does it's thing
+        // set header again before output in case WP does it's thing
         header( 'HTTP/1.1 200 OK' );
         header( 'Cache-Control: no-cache, no-store, must-revalidate' ); // HTTP 1.1.
         header( 'Pragma: no-cache' ); // HTTP 1.0.
@@ -335,7 +342,7 @@ class icit_srdb_ui extends icit_srdb {
             $this->html( $html );
         } else {
 
-// return json version of results
+            // return json version of results
             header( 'Content-Type: application/json' );
 
             echo json_encode( array(
@@ -345,11 +352,8 @@ class icit_srdb_ui extends icit_srdb {
             ) );
 
             exit;
-
         }
-
     }
-
 
     public function exceptions( $exception ) {
         $this->add_error( '<p class="exception">' . $exception->getMessage() . '</p>' );
@@ -407,7 +411,7 @@ class icit_srdb_ui extends icit_srdb {
      *
      */
     public function delete_script( $path ) {
-        $path = rtrim($path, DIRECTORY_SEPARATOR);
+        $path      = rtrim( $path, DIRECTORY_SEPARATOR );
         $file_list = array(
             "README.md",
             "srdb.cli.php",
@@ -426,8 +430,8 @@ class icit_srdb_ui extends icit_srdb {
 
         foreach ( $file_list as $file ) {
             if ( is_file( $path . DIRECTORY_SEPARATOR . $file ) ) {
-                if ( unlink( $path . DIRECTORY_SEPARATOR . $file ) === false ) {
-                    return -1;
+                if ( @unlink( $path . DIRECTORY_SEPARATOR . $file ) === false ) {
+                    return - 1;
                 }
             }
         }
@@ -435,10 +439,10 @@ class icit_srdb_ui extends icit_srdb {
         if ( is_dir( $path . DIRECTORY_SEPARATOR . 'tests' ) ) {
             //is tests directory empty?
             if ( ! ( new FilesystemIterator( $path . DIRECTORY_SEPARATOR . 'tests' ) )->valid() ) {
-                return -1;
+                return - 1;
             }
-            if ( rmdir( $path . DIRECTORY_SEPARATOR . 'tests' ) === false ) {
-                return -1;
+            if ( @rmdir( $path . DIRECTORY_SEPARATOR . 'tests' ) === false ) {
+                return - 1;
             }
         }
 
@@ -513,7 +517,7 @@ class icit_srdb_ui extends icit_srdb {
 
         $search  = $this->get( 'search' );
         $replace = $this->get( 'replace' );
-// Calc the time taken.
+        // Calc the time taken.
         $time = array_sum( explode( ' ', $report['end'] ) ) - array_sum( explode( ' ', $report['start'] ) );
         if ( $time < 0 ) {
             $time = $time * - 1;
@@ -641,7 +645,7 @@ class icit_srdb_ui extends icit_srdb {
             <?php
         }
 
-// Warn if we're running in safe mode as we'll probably time out.
+        // Warn if we're running in safe mode as we'll probably time out.
         if ( ini_get( 'safe_mode' ) ) {
             ?>
             <div class="special-errors">
@@ -654,8 +658,7 @@ class icit_srdb_ui extends icit_srdb {
         ?>
 
         <?php
-
-// templates/ui.php
+        // templates/ui.php
         ?>
         <form action="" method="post">
 
@@ -955,7 +958,7 @@ class icit_srdb_ui extends icit_srdb {
     }
 
     public function deleted() {
-// templates/delete.php
+        // templates/delete.php
         ?>
         <!-- 1. branding -->
         <section class="row row-branding">
@@ -1053,7 +1056,7 @@ class icit_srdb_ui extends icit_srdb {
         $classes   = array( 'no-js' );
         $classes[] = $this->regex ? 'regex-on' : 'regex-off';
         $classes[] = 'multisearch-off';
-// templates/html.php
+        // templates/html.php
         ?>
         <!DOCTYPE html>
         <html class="<?php echo implode( ' ', $classes ); ?>">
