@@ -979,7 +979,7 @@ class icit_srdb_ui extends icit_srdb {
             <form action="http://interconnectit.us2.list-manage.com/subscribe/post" method="POST"
                   class="fields fields-small">
                 <input type="hidden" name="u" value="08ec797202866aded7b2619b2">
-                <input type="hidden" name="id" value="538abe0a97">
+                <input type="hidden" name="id" value="aa9c21f993">
 
                 <div id="mergeTable" class="mergeTable">
 
