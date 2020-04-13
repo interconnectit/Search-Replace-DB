@@ -158,7 +158,7 @@ if ($missing_arg) {
 // new args array
 $args = array(
     'verbose' => true,
-    'ssl-check' => true,
+    'ssl_check' => true,
     'dry_run' => false
 );
 

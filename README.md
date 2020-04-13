@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/interconnectit/Search-Replace-DB.svg?branch=4.0)](https://travis-ci.org/interconnectit/Search-Replace-DB)
 
-# Search Replace DB - v4.0.1
+# Search Replace DB - v4.1
 
 This script was made to aid the process of migrating PHP and MySQL
 based websites. Works with most common CMSes.
@@ -21,6 +21,7 @@ request :)
  * Bug fixes
  * UI Tweaks
  * Password is not mandatory in CLI
+ * Ability to connect using SSL, command line only feature
 
 ## Warnings & Limitations
 
@@ -55,95 +56,96 @@ To install the script, please place the files inside your sites public folder an
 To invoke the script, navigate in your shell to the directory to where
 you installed Search Replace DB.
 
-
 Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
 --help` for usage information:
 
+```
+  -h, --host
+    Required. The hostname of the database server.
 
-	-h, --host
+  -n, --name
+    Required. Database name.
 
-		Required. The hostname of the database server.
+  -u, --user
+    Required. Database user.
 
-	-n, --name
+  -p, --pass
+    Database user's password.
 
-		Required. Database name.
+  -P, --port
+    Optional. Port on database server to connect to. The default is
+    3306. (MySQL default port).
 
-	-u, --user
+  -s, --search
+    String to search for or `preg_replace()` style regular
+    expression.
 
-		Required. Database user.
+  -r, --replace
+    None empty string to replace search with or `preg_replace()`
+    style replacement.
 
-	-p, --pass
+  -t, --tables
+    If set only runs the script on the specified table, comma
+    separate for multiple values.
 
-		Database user's password.
+  -w, --exclude-tables
+    If set excluded the specified tables, comma separate for multuple
+    values.
 
-	--port
+  -i, --include-cols
+    If set only runs the script on the specified columns, comma
+    separate for multiple values.
 
-		Optional. Port on database server to connect to.
-		The default is 3306. (MySQL default port).
+  -x, --exclude-cols
+    If set excludes the specified columns, comma separate for
+    multiple values.
 
-	-s, --search
+  -g, --regex [no value]
+    Treats value for -s or --search as a regular expression and -r or
+    --replace as a regular expression replacement.
 
-		String to search for, `preg_replace()` style regular
-		expression, or a JSON array of values to replace.
+  -l, --pagesize
+    How rows to fetch at a time from a table.
 
-	-r, --replace
+  -z, --dry-run [no value]
+    Prevents any updates happening so you can preview the number of
+    changes to be made
 
-		None empty string to replace search with,
-		`preg_replace()` style replacement, or a JSON array of values to replace.
+  -e, --alter-engine
+    Changes the database table to the specified database engine eg.
+    InnoDB or MyISAM. If specified search/replace arguments are
+    ignored. They will not be run simultaneously.
 
-	-t, --tables
+  -a, --alter-collation
+    Changes the database table to the specified collation eg.
+    utf8_unicode_ci. If specified search/replace arguments are
+    ignored. They will not be run simultaneously.
 
-		If set only runs the script on the specified table, comma
-		separate for multiple values.
+  -v, --verbose [true|false]
+    Defaults to true, can be set to false to run script silently.
 
-	-w, --exclude tables
-	    If set runs the script on all tables except for the specified ones,
-	    comma seperate for multiple values
+  --ssl-key
+    Define the path to the SSL KEY file.
 
-	-i, --include-cols
+  --ssl-cert
+    Define the path to the SSL certificate file.
 
-		If set only runs the script on the specified columns, comma
-		separate for multiple values.
+  --ssl-ca
+    Define the path to the certificate authority file.
 
-	-x, --exclude-cols
+  --ssl-ca-dir
+    Define the path to a directory that contains trusted SSL CA
+    certificates in PEM format.
 
-		If set excludes the specified columns, comma separate for
-		multiple values.
+  --ssl-cipher
+    Define the cipher to use for SSL.
 
-	-g, --regex [no value]
+  --ssl-check [true|false]
+    Check the SSL certificate, default to True.
 
-		Treats value for -s or --search as a regular expression and
-		-r or --replace as a regular expression replacement.
-		The value in -s needs to be surrounded by a delimiter such as "/" or "#" which needs to go before or after the string.
-
-	-l, --pagesize
-
-		How many rows to fetch at a time from a table.
-
-	-z, --dry-run [no value]
-
-		Prevents any updates happening so you can preview the number
-		of changes to be made
-
-	-e, --alter-engine
-
-		Changes the database table to the specified database engine
-		eg. InnoDB or MyISAM. If specified search/replace arguments
-		are ignored. They will not be run simultaneously.
-
-	-a, --alter-collation
-
-		Changes the database table to the specified collation
-		eg. utf8_unicode_ci. If specified search/replace arguments
-		are ignored. They will not be run simultaneously.
-
-	-v, --verbose [true|false]
-
-		Defaults to true, can be set to false to run script silently.
-
-	--help
-
-		Displays this help message ;)
+  --help
+    Displays this help message ;)
+```
 
 ### Example cli commmands:
 

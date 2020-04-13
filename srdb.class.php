@@ -221,12 +221,12 @@ class icit_srdb {
             'alter_engine'    => false,
             'alter_collation' => false,
             'verbose'         => false,
-            'ssl-key'         => false,
-            'ssl-cert'        => false,
-            'ssl-ca'          => false,
-            'ssl-check'       => true,
-            'ssl-ca-dir'      => null,
-            'ssl-cipher'      => null,
+            'ssl_key'         => false,
+            'ssl_cert'        => false,
+            'ssl_ca'          => false,
+            'ssl_check'       => true,
+            'ssl_ca_dir'      => null,
+            'ssl_cipher'      => null,
         ), $args );
 
         // handle exceptions
@@ -489,28 +489,29 @@ class icit_srdb {
 
         // switch off PDO
         $this->set( 'use_pdo', false );
-
-        $connection = @mysqli_connect( $this->host, $this->user, $this->pass, $this->name, $this->port );
-
-        // unset if not available
-        if ( ! $connection ) {
-            $this->add_error( mysqli_connect_error(), 'db' );
-            $connection = false;
+        $connection = mysqli_init();
+        if(PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3){
+            mysqli_options($connection,MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->get('ssl_check'));
         }
 
-        if($this->get('ssl-key') || $this->get('ssl-cert') || $this->get('ssl-ca')){
+        if($this->get('ssl_key') || $this->get('ssl_cert') || $this->get('ssl_ca')){
             $status = mysqli_ssl_set(
                 $connection,
-                $this->get('ssl-key'),
-                $this->get('ssl-cert'),
-                $this->get('ssl-ca'),
-                $this->get('ssl-ca-dir'),
-                $this->get('ssl-cipher')
+                $this->get('ssl_key'),
+                $this->get('ssl_cert'),
+                $this->get('ssl_ca'),
+                $this->get('ssl_ca_dir'),
+                $this->get('ssl_cipher')
             );
 
             if($status === false){
                 $this->add_error('Cannot use SSL using mysqli', 'db');
             }
+        }
+
+        // unset if not available
+        if ( mysqli_real_connect($connection, $this->host, $this->user, $this->pass, $this->name, $this->port ) === false ) {
+            $this->add_error( mysqli_connect_error(), 'db' );
         }
 
         return $connection;
@@ -526,11 +527,11 @@ class icit_srdb {
 
         try {
             $params_map = array(
-                'ssl-key' => PDO::MYSQL_ATTR_SSL_KEY,
-                'ssl-cert' =>PDO::MYSQL_ATTR_SSL_CERT,
-                'ssl-ca' => PDO::MYSQL_ATTR_SSL_CA,
-                'ssl-ca-dir' => PDO::MYSQL_ATTR_SSL_CAPATH,
-                'ssl-cipher' => PDO::MYSQL_ATTR_SSL_CIPHER
+                'ssl_key' => PDO::MYSQL_ATTR_SSL_KEY,
+                'ssl_cert' =>PDO::MYSQL_ATTR_SSL_CERT,
+                'ssl_ca' => PDO::MYSQL_ATTR_SSL_CA,
+                'ssl_ca_dir' => PDO::MYSQL_ATTR_SSL_CAPATH,
+                'ssl_cipher' => PDO::MYSQL_ATTR_SSL_CIPHER
             );
 
             $params = array();
@@ -542,7 +543,7 @@ class icit_srdb {
             }
 
             if(PHP_MAJOR_VERSION >= 7 && !empty($params)){
-                $params[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $this->get('ssl-check');
+                $params[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $this->get('ssl_check');
             }
 
             $connection = new PDO(
