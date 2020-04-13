@@ -318,7 +318,7 @@ class icit_srdb {
         }
 
         // store report
-        $this->set( 'report', $report );
+        $this->report = $report;
 
         return $report;
     }
@@ -393,7 +393,7 @@ class icit_srdb {
 
     public function log( $type = '' ) {
         $args = array_slice( func_get_args(), 1 );
-        if ( $this->get( 'verbose' ) ) {
+        if ( $this->verbose ) {
             echo "{$type}: ";
             print_r( $args );
             echo "\n";
@@ -410,12 +410,6 @@ class icit_srdb {
         $this->errors[ $this->error_type ][] = $error;
         $this->log( 'error', $this->error_type, $error );
     }
-
-
-    public function use_pdo() {
-        return $this->get( 'use_pdo' );
-    }
-
 
     /**
      * Setup connection, populate tables array
@@ -453,7 +447,7 @@ class icit_srdb {
 
 
         // connect
-        $this->set( 'db', $this->connect( $connection_type ) );
+        $this->db = $this->connect( $connection_type );
 
     }
 
@@ -463,7 +457,7 @@ class icit_srdb {
      *
      * @param string $type
      *
-     * @return callback
+     * @return PDO|mysqli|null
      */
     public function connect( $type = '' ) {
         if ( $type == 'mysqli' ) {
@@ -483,12 +477,12 @@ class icit_srdb {
     /**
      * Creates the database connection using newer mysqli functions
      *
-     * @return resource|bool
+     * @return mysqli
      */
     public function connect_mysqli() {
 
         // switch off PDO
-        $this->set( 'use_pdo', false );
+        $this->use_pdo = false;
         $connection = mysqli_init();
         if(PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3){
             mysqli_options($connection,MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->get('ssl_check'));
@@ -691,7 +685,7 @@ class icit_srdb {
 
 
     public function db_query( $query ) {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             return $this->db->query( $query );
         } else {
             return mysqli_query( $this->db, $query );
@@ -699,7 +693,7 @@ class icit_srdb {
     }
 
     public function db_update( $query ) {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             return $this->db->exec( $query );
         } else {
             return mysqli_query( $this->db, $query );
@@ -707,7 +701,7 @@ class icit_srdb {
     }
 
     public function db_error() {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             $error_info = $this->db->errorInfo();
 
             return ! empty( $error_info ) && is_array( $error_info ) ? array_pop( $error_info ) : 'Unknown error';
@@ -722,7 +716,7 @@ class icit_srdb {
      * @return array|null
      */
     public function db_fetch( $data ) {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             return $data->fetch();
         } else {
             return mysqli_fetch_array( $data );
@@ -730,7 +724,7 @@ class icit_srdb {
     }
 
     public function db_escape( $string ) {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             return $this->db->quote( $string );
         } else {
             return "'" . mysqli_real_escape_string( $this->db, $string ) . "'";
@@ -738,7 +732,7 @@ class icit_srdb {
     }
 
     public function db_free_result( $data ) {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             return $data->closeCursor();
         } else {
             return mysqli_free_result( $data );
@@ -747,7 +741,7 @@ class icit_srdb {
 
     public function db_set_charset( $charset = '' ) {
         if ( ! empty( $charset ) ) {
-            if ( ! $this->use_pdo() && function_exists( 'mysqli_set_charset' ) ) {
+            if ( ! $this->use_pdo && function_exists( 'mysqli_set_charset' ) ) {
                 mysqli_set_charset( $this->db, $charset );
             } else {
                 $this->db_query( 'SET NAMES ' . $charset );
@@ -756,7 +750,7 @@ class icit_srdb {
     }
 
     public function db_close() {
-        if ( $this->use_pdo() ) {
+        if ( $this->use_pdo ) {
             unset( $this->db );
         } else {
             mysqli_close( $this->db );
@@ -838,7 +832,6 @@ class icit_srdb {
             } else {
                 if ( is_string( $data ) ) {
                     $data = $this->str_replace( $from, $to, $data );
-
                 }
             }
 
@@ -978,7 +971,7 @@ class icit_srdb {
                 $rows_result = $this->db_fetch( $row_count );
                 $row_count   = $rows_result[0];
 
-                $page_size = $this->get( 'page_size' );
+                $page_size = $this->page_size;
                 $pages     = ceil( $row_count / $page_size );
 
                 for ( $page = 0; $page < $pages; $page ++ ) {
@@ -1030,7 +1023,7 @@ class icit_srdb {
                                 $new_table_report['change'] ++;
 
                                 // log first x changes
-                                if ( $new_table_report['change'] <= $this->get( 'report_change_num' ) ) {
+                                if ( $new_table_report['change'] <= $this->report_change_num ) {
                                     $new_table_report['changes'][] = array(
                                         'row'    => $new_table_report['rows'],
                                         'column' => $column,
@@ -1125,7 +1118,7 @@ class icit_srdb {
         $report = false;
 
         if ( empty( $this->engines ) ) {
-            $this->set( 'engines', $this->get_engines() );
+            $this->engines = $this->get_engines();
         }
 
         if ( in_array( $engine, $this->get( 'engines' ) ) ) {
