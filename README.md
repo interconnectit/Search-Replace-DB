@@ -124,6 +124,9 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
   -v, --verbose [true|false]
     Defaults to true, can be set to false to run script silently.
 
+  --debug [true|false]
+    Defaults to false, prints more verbose errors.
+
   --ssl-key
     Define the path to the SSL KEY file.
 
