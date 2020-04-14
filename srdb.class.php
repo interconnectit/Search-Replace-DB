@@ -227,13 +227,16 @@ class icit_srdb {
             'ssl_check'       => true,
             'ssl_ca_dir'      => null,
             'ssl_cipher'      => null,
+            'debug'           => false
         ), $args );
 
         // handle exceptions
         set_exception_handler( array( $this, 'exceptions' ) );
 
         // handle errors
-        set_error_handler( array( $this, 'error_handler' ), E_ERROR | E_WARNING );
+        if ( $args['debug'] === false ) {
+            set_error_handler( array( $this, 'error_handler' ), E_ERROR | E_WARNING );
+        }
 
         // Setting this so that mb_split works correctly.
         // BEAR IN MIND that this affects the handling of strings INTERNALLY rather than
@@ -312,9 +315,7 @@ class icit_srdb {
             }
 
         } else {
-
             $report = $this->report;
-
         }
 
         // store report
@@ -351,7 +352,6 @@ class icit_srdb {
     public function exceptions( $exception ) {
         echo $exception->getMessage() . "\n";
     }
-
 
     /**
      * Custom error handler
@@ -483,28 +483,33 @@ class icit_srdb {
 
         // switch off PDO
         $this->use_pdo = false;
-        $connection = mysqli_init();
-        if(PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3){
-            mysqli_options($connection,MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->get('ssl_check'));
+        $connection    = mysqli_init();
+        if ( PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3 ) {
+            mysqli_options( $connection, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->get( 'ssl_check' ) );
         }
 
-        if($this->get('ssl_key') || $this->get('ssl_cert') || $this->get('ssl_ca')){
+        if ( $this->get( 'ssl_key' ) || $this->get( 'ssl_cert' ) || $this->get( 'ssl_ca' ) ) {
             $status = mysqli_ssl_set(
                 $connection,
-                $this->get('ssl_key'),
-                $this->get('ssl_cert'),
-                $this->get('ssl_ca'),
-                $this->get('ssl_ca_dir'),
-                $this->get('ssl_cipher')
+                $this->get( 'ssl_key' ),
+                $this->get( 'ssl_cert' ),
+                $this->get( 'ssl_ca' ),
+                $this->get( 'ssl_ca_dir' ),
+                $this->get( 'ssl_cipher' )
             );
 
-            if($status === false){
-                $this->add_error('Cannot use SSL using mysqli', 'db');
+            if ( $status === false ) {
+                $this->add_error( 'Cannot use SSL using mysqli', 'db' );
             }
         }
 
+        if ( $this->get( 'debug' ) ) {
+            mysqli_report( MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT );
+        }
+
         // unset if not available
-        if ( mysqli_real_connect($connection, $this->host, $this->user, $this->pass, $this->name, $this->port ) === false ) {
+        if ( mysqli_real_connect( $connection, $this->host, $this->user, $this->pass, $this->name,
+                $this->port ) === false ) {
             $this->add_error( mysqli_connect_error(), 'db' );
         }
 
@@ -521,23 +526,27 @@ class icit_srdb {
 
         try {
             $params_map = array(
-                'ssl_key' => PDO::MYSQL_ATTR_SSL_KEY,
-                'ssl_cert' =>PDO::MYSQL_ATTR_SSL_CERT,
-                'ssl_ca' => PDO::MYSQL_ATTR_SSL_CA,
+                'ssl_key'    => PDO::MYSQL_ATTR_SSL_KEY,
+                'ssl_cert'   => PDO::MYSQL_ATTR_SSL_CERT,
+                'ssl_ca'     => PDO::MYSQL_ATTR_SSL_CA,
                 'ssl_ca_dir' => PDO::MYSQL_ATTR_SSL_CAPATH,
                 'ssl_cipher' => PDO::MYSQL_ATTR_SSL_CIPHER
             );
 
             $params = array();
 
-            foreach ($params_map as $property => $pdo_param){
-                if($this->get($property)){
-                    $params[$pdo_param] = $this->get($property);
+            foreach ( $params_map as $property => $pdo_param ) {
+                if ( $this->get( $property ) ) {
+                    $params[ $pdo_param ] = $this->get( $property );
                 }
             }
 
-            if(PHP_MAJOR_VERSION >= 7 && !empty($params)){
-                $params[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $this->get('ssl_check');
+            if ( PHP_MAJOR_VERSION >= 7 && ! empty( $params ) ) {
+                $params[ PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT ] = $this->get( 'ssl_check' );
+            }
+
+            if ( $this->get( 'debug' ) ) {
+                $params[ PDO::ATTR_ERRMODE ] = PDO::ERRMODE_EXCEPTION;
             }
 
             $connection = new PDO(
@@ -546,8 +555,12 @@ class icit_srdb {
                 $this->pass,
                 $params
             );
-        } catch ( PDOException $e ) {
-            $this->add_error( $e->getMessage(), 'db' );
+
+        } catch ( PDOException $exception ) {
+            if ( $this->get( 'debug' ) ) {
+                throw $exception;
+            }
+            $this->add_error( $exception->getMessage(), 'db' );
             $connection = false;
         }
 
@@ -818,10 +831,8 @@ class icit_srdb {
 
                 $data = $_tmp;
                 unset( $_tmp );
-            } // Submitted by Tina Matter
-            elseif ( is_object( $data ) && ! is_a( $data, '__PHP_Incomplete_Class' ) ) {
-                // $data_class = get_class( $data );
-                $_tmp  = $data; // new $data_class( );
+            } elseif ( is_object( $data ) && ! is_a( $data, '__PHP_Incomplete_Class' ) ) {
+                $_tmp  = $data;
                 $props = get_object_vars( $data );
                 foreach ( $props as $key => $value ) {
                     $_tmp->$key = $this->recursive_unserialize_replace( $from, $to, $value, false );

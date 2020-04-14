@@ -1,7 +1,8 @@
 # Changelog
 
 ## Version 4.1
- *  Ability to connect using SSL, command line only feature
+ * Ability to connect using SSL, command line only feature
+ * New debug option for printing message errors
 
 ## Version 4.0.1
  * Fix bug on auto-delete
