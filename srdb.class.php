@@ -126,6 +126,12 @@ class icit_srdb {
     public $port = 0;
     public $charset = 'utf8';
     public $collate = '';
+    public $ssl_key = false;
+    public $ssl_cert = false;
+    public $ssl_ca = false;
+    public $ssl_ca_dir = null;
+    public $ssl_cipher = null;
+    public $debug = false;
 
 
     /**
