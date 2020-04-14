@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 4.1
+ *  Ability to connect using SSL, command line only feature
+
 ## Version 4.0.1
  * Fix bug on auto-delete
 
@@ -53,15 +56,15 @@
  * Removed a dead param from icit_srdb_replacer
 
 ## Version 2.0.0
- * returned to using unserialize function to check if string is serialized or not
- * marked is_serialized_string function as deprecated
- * changed form order to improve usability and make use on multisites a bit less scary
- * changed to version 2, as really should have done when the UI was introduced
- * added a recursive array walker to deal with serialized strings being stored in serialized strings. Yes, really.
- * changes by James R Whitehead (kudos for recursive walker) and David Coveney 2011-08-26
+ * Returned to using unserialize function to check if string is serialized or not
+ * Marked is_serialized_string function as deprecated
+ * Changed form order to improve usability and make use on multisites a bit less scary
+ * Changed to version 2, as really should have done when the UI was introduced
+ * Added a recursive array walker to deal with serialized strings being stored in serialized strings. Yes, really.
+ * Changes by James R Whitehead (kudos for recursive walker) and David Coveney 2011-08-26
 
 ## Version 1.0.2
- * typos corrected, button text tweak - David Coveney / Robert O'Rourke
+ * Typos corrected, button text tweak - David Coveney / Robert O'Rourke
 
 ## Version 1.0.1
- * styling and form added by James R Whitehead.
+ * Styling and form added by James R Whitehead.

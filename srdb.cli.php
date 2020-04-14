@@ -32,31 +32,38 @@ date_default_timezone_set('Europe/London');
 require_once(realpath(dirname(__FILE__)) . '/srdb.class.php');
 
 $opts = array(
-    'h:' => 'host:',
-    'n:' => 'name:',
-    'u:' => 'user:',
-    'p:' => 'pass:',
-    'c:' => 'char:',
-    's:' => 'search:',
-    'r:' => 'replace:',
-    't:' => 'tables:',
-    'w:' => 'exclude-tables:',
-    'i:' => 'include-cols:',
-    'x:' => 'exclude-cols:',
-    'g' => 'regex',
-    'l:' => 'pagesize:',
-    'z' => 'dry-run',
-    'e:' => 'alter-engine:',
-    'a:' => 'alter-collation:',
-    'v:' => 'verbose:',
-    'port:',
-    'help'
+    ['h:', 'host:', 'Required. The hostname of the database server.',],
+    ['n:', 'name:', 'Required. Database name.',],
+    ['u:', 'user:', 'Required. Database user.',],
+    ['p:', 'pass:', 'Database user\'s password.',],
+    ['P:', 'port:', 'Optional. Port on database server to connect to. The default is 3306. (MySQL default port).',],
+    ['s:', 'search:', 'String to search for or `preg_replace()` style regular expression.',],
+    ['r:', 'replace:', 'None empty string to replace search with or `preg_replace()` style replacement.',],
+    ['t:', 'tables:', 'If set only runs the script on the specified table, comma separate for multiple values.',],
+    ['w:', 'exclude-tables:', 'If set excluded the specified tables, comma separate for multuple values.',],
+    ['i:', 'include-cols:', 'If set only runs the script on the specified columns, comma separate for multiple values.',],
+    ['x:', 'exclude-cols:', 'If set excludes the specified columns, comma separate for multiple values.',],
+    ['g', 'regex', 'Treats value for -s or --search as a regular expression and -r or --replace as a regular expression replacement.', '[no value]'],
+    ['l:', 'pagesize:', 'How rows to fetch at a time from a table.',],
+    ['z', 'dry-run', 'Prevents any updates happening so you can preview the number of changes to be made','[no value]'],
+    ['e:', 'alter-engine:', 'Changes the database table to the specified database engine eg. InnoDB or MyISAM. If specified search/replace arguments are ignored. They will not be run simultaneously.',],
+    ['a:', 'alter-collation:', 'Changes the database table to the specified collation eg. utf8_unicode_ci. If specified search/replace arguments are ignored. They will not be run simultaneously.',],
+    ['v:', 'verbose:', 'Defaults to true, can be set to false to run script silently.','[true|false]'],
+
+    ['', 'ssl-key:', 'Define the path to the SSL KEY file.',],
+    ['', 'ssl-cert:', 'Define the path to the SSL certificate file.',],
+    ['', 'ssl-ca:', 'Define the path to the certificate authority file.',],
+    ['', 'ssl-ca-dir:', 'Define the path to a directory that contains trusted SSL CA certificates in PEM format.',],
+    ['', 'ssl-cipher:', 'Define the cipher to use for SSL.',],
+    ['', 'ssl-check:', 'Check the SSL certificate, default to True.','[true|false]'],
+
+    ['', 'help', 'Displays this help message ;)',],
 );
 
 $required = array(
-    'h:',
-    'n:',
-    'u:'
+    'h' => 'host',
+    'n' => 'name',
+    'u' => 'user'
 );
 
 function strip_colons($string)
@@ -68,10 +75,10 @@ function strip_colons($string)
 $arg_count = $_SERVER['argc'];
 $args_array = $_SERVER['argv'];
 
-$short_opts = array_keys($opts);
+$short_opts = array_filter(array_column($opts, 0));
 $short_opts_normal = array_map('strip_colons', $short_opts);
 
-$long_opts = array_values($opts);
+$long_opts =  array_filter(array_column($opts, 1));
 $long_opts_normal = array_map('strip_colons', $long_opts);
 
 // store array of options and values
@@ -81,7 +88,7 @@ if (isset($options['help'])) {
     echo "
 #####################################################################
 
-interconnect/it Safe Search & Replace tool
+Interconnect/it Safe Search & Replace tool
 
 #####################################################################
 
@@ -94,54 +101,24 @@ Github: https://github.com/interconnectit/search-replace-db
 Argument values are strings unless otherwise specified.
 
 ARGS
-  -h, --host
-    Required. The hostname of the database server.
-  -n, --name
-    Required. Database name.
-  -u, --user
-    Required. Database user.
-  -p, --pass
-    Required. Database user's password.
-  --port
-    Optional. Port on database server to connect to.
-    The default is 3306. (MySQL default port).
-  -s, --search
-    String to search for or `preg_replace()` style
-    regular expression.
-  -r, --replace
-    None empty string to replace search with or
-    `preg_replace()` style replacement.
-  -t, --tables
-    If set only runs the script on the specified table, comma
-    separate for multiple values.
-  -i, --include-cols
-    If set only runs the script on the specified columns, comma
-    separate for multiple values.
-  -x, --exclude-cols
-    If set excludes the specified columns, comma separate for
-    multiple values.
-  -g, --regex [no value]
-    Treats value for -s or --search as a regular expression and
-    -r or --replace as a regular expression replacement.
-  -l, --pagesize
-    How rows to fetch at a time from a table.
-  -z, --dry-run [no value]
-    Prevents any updates happening so you can preview the number
-    of changes to be made
-  -e, --alter-engine
-    Changes the database table to the specified database engine
-    eg. InnoDB or MyISAM. If specified search/replace arguments
-    are ignored. They will not be run simultaneously.
-  -a, --alter-collation
-    Changes the database table to the specified collation
-    eg. utf8_unicode_ci. If specified search/replace arguments
-    are ignored. They will not be run simultaneously.
-  -v, --verbose [true|false]
-    Defaults to true, can be set to false to run script silently.
-  --help
-    Displays this help message ;)
 
-Search-Replace-DB  Copyright © 2020  Interconnect IT Limited
+";
+
+    foreach ($opts as $argument){
+        echo '  ';
+        if($argument[0])
+            echo '-'.strip_colons($argument[0]) . ', ';
+        if($argument[1])
+            echo '--'.strip_colons($argument[1]) . ' ';
+        if(isset($argument[3]))
+            echo $argument[3];
+        echo "\n";
+        if($argument[2])
+            echo '    '.wordwrap($argument[2], 65, "\n    ");
+        echo "\n\n";
+    }
+
+echo "\nSearch-Replace-DB  Copyright © 2020  Interconnect IT Limited
 This program comes with ABSOLUTELY NO WARRANTY;
 This is free software, and you are welcome to redistribute it
 under certain conditions; see README for details.
@@ -164,9 +141,8 @@ if (!extension_loaded("mbstring")) {
 }
 
 // check required args are passed
-foreach ($required as $key) {
-    $short_opt = strip_colons($key);
-    $long_opt = strip_colons($opts[$key]);
+foreach ($required as $short_opt => $long_opt) {
+
     if (!isset($options[$short_opt]) && !isset($options[$long_opt])) {
         fwrite(STDERR, "Error: Missing argument, -{$short_opt} or --{$long_opt} is required.\n");
         $missing_arg = true;
@@ -182,6 +158,7 @@ if ($missing_arg) {
 // new args array
 $args = array(
     'verbose' => true,
+    'ssl_check' => true,
     'dry_run' => false
 );
 
@@ -203,6 +180,7 @@ foreach ($options as $key => $value) {
 
     switch ($key) {
         // boolean options.
+        case 'ssl-check':
         case 'verbose':
             $value = (boolean)filter_var($value, FILTER_VALIDATE_BOOLEAN);
             break;
