@@ -1,5 +1,8 @@
 # Changelog
 
+# Version 4.1.1
+ * Class autoloader in composer.json
+
 ## Version 4.1
  * Ability to connect using SSL, command line only feature
  * New debug option for printing message errors
