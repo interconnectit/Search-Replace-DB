@@ -21,5 +21,8 @@
         "test": [
             "phpunit"
         ]
+    },
+    "autoload": {
+        "files": [ "srdb.class.php" ]
     }
 }
