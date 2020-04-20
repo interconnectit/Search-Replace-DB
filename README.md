@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/interconnectit/Search-Replace-DB.svg?branch=4.0)](https://travis-ci.org/interconnectit/Search-Replace-DB)
 
-# Search Replace DB - v4.1
+# Search Replace DB - v4.1.1
 
 This script was made to aid the process of migrating PHP and MySQL
 based websites. Works with most common CMSes.

@@ -1288,7 +1288,7 @@ class icit_srdb {
      * @return string
      */
     public function str_replace( $search, $replace, $string, &$count = 0 ) {
-        if ( $this->get( 'regex' ) ) {
+        if ( $this->regex ) {
             return preg_replace( $search, $replace, $string, - 1, $count );
         } elseif ( function_exists( 'mb_split' ) ) {
             return self::mb_str_replace( $search, $replace, $string, $count );
