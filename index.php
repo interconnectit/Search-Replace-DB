@@ -60,6 +60,24 @@ class icit_srdb_ui extends icit_srdb {
      */
     public $path;
 
+    public $name;
+    public $user;
+    public $pass;
+    public $host;
+    public $port;
+    public $charset;
+    public $collate;
+    public $tables;
+    public $search;
+    public $replace;
+    public $exclude_cols;
+    public $include_cols;
+    public $regex;
+    public $regex_i;
+    public $regex_m;
+    public $regex_s;
+    public $regex_x;
+
     public function __construct() {
 
         // php 5.4 date timezone requirement, shouldn't affect anything
@@ -95,10 +113,10 @@ class icit_srdb_ui extends icit_srdb {
 
         // always override with post data
         if ( isset( $_POST['name'] ) ) {
-            $name = $_POST['name']; // your database
-            $user = $_POST['user']; // your db userid
-            $pass = $_POST['pass']; // your db password
-            $host = $_POST['host']; // normally localhost, but not necessarily.
+            $this->name = $_POST['name']; // your database
+            $this->user = $_POST['user']; // your db userid
+            $this->pass = $_POST['pass']; // your db password
+            $this->host = $_POST['host']; // normally localhost, but not necessarily.
 
             $port_input = $_POST['port'];
 
@@ -111,66 +129,39 @@ class icit_srdb_ui extends icit_srdb {
                     'db' );
 
                 // Force a bad run by supplying nonsense.
-                $port = "nonsense";
+                $this->port = "nonsense";
             } else {
-                $port = abs( (int) $port_input );
+                $this->port = abs( (int) $port_input );
             }
 
-            $charset = 'utf8'; // isset( $_POST[ 'char' ] ) ? stripcslashes( $_POST[ 'char' ] ) : '';   // your db charset
-            $collate = '';
+            $this->charset = 'utf8';
+            $this->collate = '';
         }
 
         // Search replace details
-        $search  = isset( $_POST['search'] ) ? $_POST['search'] : '';
-        $replace = isset( $_POST['replace'] ) ? $_POST['replace'] : '';
+        $this->search  = isset( $_POST['search'] ) ? $_POST['search'] : '';
+        $this->replace = isset( $_POST['replace'] ) ? $_POST['replace'] : '';
 
         // regex options
-        $regex   = isset( $_POST['regex'] );
-        $regex_i = isset( $_POST['regex_i'] );
-        $regex_m = isset( $_POST['regex_m'] );
-        $regex_s = isset( $_POST['regex_s'] );
-        $regex_x = isset( $_POST['regex_x'] );
+        $this->regex   = isset( $_POST['regex'] );
+        $this->regex_i = isset( $_POST['regex_i'] );
+        $this->regex_m = isset( $_POST['regex_m'] );
+        $this->regex_s = isset( $_POST['regex_s'] );
+        $this->regex_x = isset( $_POST['regex_x'] );
 
         // Tables to scanned
-        $tables = isset( $_POST['tables'] ) && is_array( $_POST['tables'] ) ? $_POST['tables'] : array();
+        $this->tables = isset( $_POST['tables'] ) && is_array( $_POST['tables'] ) ? $_POST['tables'] : array();
         if ( isset( $_POST['use_tables'] ) && $_POST['use_tables'] == 'all' ) {
-            $tables = array();
+            $this->tables = array();
         }
 
         // exclude / include columns
-        $exclude_cols = isset( $_POST['exclude_cols'] ) ? $_POST['exclude_cols'] : array();
-        $include_cols = isset( $_POST['include_cols'] ) ? $_POST['include_cols'] : array();
+        $this->exclude_cols = isset( $_POST['exclude_cols'] ) ? $_POST['exclude_cols'] : array();
+        $this->include_cols = isset( $_POST['include_cols'] ) ? $_POST['include_cols'] : array();
 
         foreach ( array( 'exclude_cols', 'include_cols' ) as $maybe_string_arg ) {
             if ( is_string( $$maybe_string_arg ) ) {
                 $$maybe_string_arg = array_filter( array_map( 'trim', explode( ',', $$maybe_string_arg ) ) );
-            }
-        }
-
-        // update class vars
-        $vars = array(
-            'name',
-            'user',
-            'pass',
-            'host',
-            'port',
-            'charset',
-            'collate',
-            'tables',
-            'search',
-            'replace',
-            'exclude_cols',
-            'include_cols',
-            'regex',
-            'regex_i',
-            'regex_m',
-            'regex_s',
-            'regex_x'
-        );
-
-        foreach ( $vars as $var ) {
-            if ( isset( $$var ) ) {
-                $this->set( $var, $$var );
             }
         }
 
@@ -216,7 +207,7 @@ class icit_srdb_ui extends icit_srdb {
             case 'liverun':
             {
                 // bsy-web, 20130621: Check live run was explicitly clicked and only set false then
-                $this->set( 'dry_run', false );
+                $this->dry_run = false;
             }
             case 'dryrun':
             {
@@ -242,18 +233,18 @@ class icit_srdb_ui extends icit_srdb {
 
                 // call search replace class
                 $parent = parent::__construct( array(
-                    'name'         => $this->get( 'name' ),
-                    'user'         => $this->get( 'user' ),
-                    'pass'         => $this->get( 'pass' ),
-                    'host'         => $this->get( 'host' ),
-                    'port'         => $this->get( 'port' ),
-                    'search'       => $this->get( 'search' ),
-                    'replace'      => $this->get( 'replace' ),
-                    'tables'       => $this->get( 'tables' ),
-                    'dry_run'      => $this->get( 'dry_run' ),
-                    'regex'        => $this->get( 'regex' ),
-                    'exclude_cols' => $this->get( 'exclude_cols' ),
-                    'include_cols' => $this->get( 'include_cols' )
+                    'name'         => $this->name,
+                    'user'         => $this->user,
+                    'pass'         => $this->pass,
+                    'host'         => $this->host,
+                    'port'         => $this->port,
+                    'search'       => $this->search,
+                    'replace'      => $this->replace,
+                    'tables'       => $this->tables,
+                    'dry_run'      => $this->dry_run,
+                    'regex'        => $this->regex,
+                    'exclude_cols' => $this->exclude_cols,
+                    'include_cols' => $this->include_cols
                 ) );
 
                 break;
@@ -265,12 +256,12 @@ class icit_srdb_ui extends icit_srdb {
 
                 // call search replace class to alter engine
                 $parent = parent::__construct( array(
-                    'name'         => $this->get( 'name' ),
-                    'user'         => $this->get( 'user' ),
-                    'pass'         => $this->get( 'pass' ),
-                    'host'         => $this->get( 'host' ),
-                    'port'         => $this->get( 'port' ),
-                    'tables'       => $this->get( 'tables' ),
+                    'name'         => $this->name,
+                    'user'         => $this->user,
+                    'pass'         => $this->pass,
+                    'host'         => $this->host,
+                    'port'         => $this->port,
+                    'tables'       => $this->tables,
                     'alter_engine' => 'InnoDB',
                 ) );
 
@@ -281,12 +272,12 @@ class icit_srdb_ui extends icit_srdb {
             {
                 // call search replace class to alter engine
                 $parent = parent::__construct( array(
-                    'name'            => $this->get( 'name' ),
-                    'user'            => $this->get( 'user' ),
-                    'pass'            => $this->get( 'pass' ),
-                    'host'            => $this->get( 'host' ),
-                    'port'            => $this->get( 'port' ),
-                    'tables'          => $this->get( 'tables' ),
+                    'name'            => $this->name,
+                    'user'            => $this->user,
+                    'pass'            => $this->pass,
+                    'host'            => $this->host,
+                    'port'            => $this->port,
+                    'tables'          => $this->tables,
                     'alter_collation' => 'utf8_unicode_ci',
                 ) );
 
@@ -297,12 +288,12 @@ class icit_srdb_ui extends icit_srdb {
             {
                 // call search replace class to alter engine
                 $parent = parent::__construct( array(
-                    'name'            => $this->get( 'name' ),
-                    'user'            => $this->get( 'user' ),
-                    'pass'            => $this->get( 'pass' ),
-                    'host'            => $this->get( 'host' ),
-                    'port'            => $this->get( 'port' ),
-                    'tables'          => $this->get( 'tables' ),
+                    'name'            => $this->name,
+                    'user'            => $this->user,
+                    'pass'            => $this->pass,
+                    'host'            => $this->host,
+                    'port'            => $this->port,
+                    'tables'          => $this->tables,
                     'alter_collation' => 'utf8mb4_unicode_ci',
                 ) );
 
@@ -318,10 +309,10 @@ class icit_srdb_ui extends icit_srdb {
 
                 if ( $this->db_valid() ) {
                     // get engines
-                    $this->set( 'engines', $this->get_engines() );
+                    $this->engines = $this->get_engines();
 
                     // get tables
-                    $this->set( 'all_tables', $this->get_tables() );
+                    $this->all_tables = $this->get_tables();
                 }
 
                 break;
@@ -330,7 +321,7 @@ class icit_srdb_ui extends icit_srdb {
 
         $info = array(
             'table_select' => $this->table_select( false ),
-            'engines'      => $this->get( 'engines' )
+            'engines'      => $this->engines
         );
 
         // set header again before output in case WP does it's thing
@@ -346,8 +337,8 @@ class icit_srdb_ui extends icit_srdb {
             header( 'Content-Type: application/json' );
 
             echo json_encode( array(
-                'errors' => $this->get( 'errors' ),
-                'report' => $this->get( 'report' ),
+                'errors' => $this->errors,
+                'report' => $this->report,
                 'info'   => $info
             ) );
 
@@ -504,15 +495,15 @@ class icit_srdb_ui extends icit_srdb {
 
     public function get_report( $table = null ) {
 
-        $report = $this->get( 'report' );
+        $report = $this->report;
         if ( empty( $report ) ) {
             return;
         }
         $report  = $report[0];
-        $dry_run = $this->get( 'dry_run' );
+        $dry_run = $this->dry_run;
 
-        $search  = $this->get( 'search' );
-        $replace = $this->get( 'replace' );
+        $search  = $this->search;
+        $replace = $this->replace;
         // Calc the time taken.
         $time = array_sum( explode( ' ', $report['end'] ) ) - array_sum( explode( ' ', $report['start'] ) );
         if ( $time < 0 ) {
@@ -818,20 +809,20 @@ class icit_srdb_ui extends icit_srdb {
                     <div class="field field-advanced field-medium">
                         <label for="exclude_cols">columns to exclude (optional, comma separated)</label>
                         <input id="exclude_cols" type="text" name="exclude_cols"
-                               value="<?php $this->esc_html_attr( implode( ',', $this->get( 'exclude_cols' ) ) ) ?>"
+                               value="<?php $this->esc_html_attr( implode( ',', $this->exclude_cols ) ) ?>"
                                placeholder="eg. guid"/>
                     </div>
                     <div class="field field-advanced field-medium">
                         <label for="include_cols">columns to include only (optional, comma separated)</label>
                         <input id="include_cols" type="text" name="include_cols"
-                               value="<?php $this->esc_html_attr( implode( ',', $this->get( 'include_cols' ) ) ) ?>"
+                               value="<?php $this->esc_html_attr( implode( ',', $this->include_cols ) ) ?>"
                                placeholder="eg. post_content, post_excerpt"/>
                     </div>
 
                 </div>
                 <div class="fields">
             <span class="submit-group">
-                <?php if ( in_array( 'InnoDB', $this->get( 'engines' ) ) ) { ?>
+                <?php if ( in_array( 'InnoDB', $this->engines ) ) { ?>
                     <input type="submit" name="submit[innodb]"
                            value="convert to innodb" <?php if ( ! $this->db_valid() ) {
                         echo 'disabled="disabled"';
