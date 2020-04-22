@@ -279,10 +279,8 @@ class icit_srdb {
             return;
         }
 
-        var_dump($args['search'], true);die;
         // set class vars
         foreach ( $args as $name => $value ) {
-            error_log(print_r($args, true));
             if ( is_string( $value ) ) {
                 $value = stripcslashes( $value );
             }
