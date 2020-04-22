@@ -257,8 +257,11 @@ class icit_srdb {
             ini_set( 'unserialize_callback_func', 'object_serializer' );
 
             if ( is_string( $args[ $maybe_string_arg ] ) ) {
-                $args[ $maybe_string_arg ] = array_filter( array_map( 'trim',
-                    explode( ',', $args[ $maybe_string_arg ] ) ) );
+                $args[ $maybe_string_arg ] = array_filter(
+                    array_map( 'trim',
+                        explode( ',', $args[ $maybe_string_arg ] )
+                    )
+                );
             }
         }
 
@@ -491,17 +494,17 @@ class icit_srdb {
         $this->use_pdo = false;
         $connection    = mysqli_init();
         if ( PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3 ) {
-            mysqli_options( $connection, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->get( 'ssl_check' ) );
+            mysqli_options( $connection, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->ssl_check );
         }
 
-        if ( $this->get( 'ssl_key' ) || $this->get( 'ssl_cert' ) || $this->get( 'ssl_ca' ) ) {
+        if ( $this->ssl_key || $this->ssl_cert || $this->ssl_ca ) {
             $status = mysqli_ssl_set(
                 $connection,
-                $this->get( 'ssl_key' ),
-                $this->get( 'ssl_cert' ),
-                $this->get( 'ssl_ca' ),
-                $this->get( 'ssl_ca_dir' ),
-                $this->get( 'ssl_cipher' )
+                $this->ssl_key,
+                $this->ssl_cert,
+                $this->ssl_ca,
+                $this->ssl_ca_dir,
+                $this->ssl_cipher
             );
 
             if ( $status === false ) {
@@ -509,7 +512,7 @@ class icit_srdb {
             }
         }
 
-        if ( $this->get( 'debug' ) ) {
+        if ( $this->debug ) {
             mysqli_report( MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT );
         }
 
@@ -548,10 +551,10 @@ class icit_srdb {
             }
 
             if ( PHP_MAJOR_VERSION >= 7 && ! empty( $params ) ) {
-                $params[ PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT ] = $this->get( 'ssl_check' );
+                $params[ PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT ] = $this->ssl_check;
             }
 
-            if ( $this->get( 'debug' ) ) {
+            if ( $this->debug ) {
                 $params[ PDO::ATTR_ERRMODE ] = PDO::ERRMODE_EXCEPTION;
             }
 
@@ -563,7 +566,7 @@ class icit_srdb {
             );
 
         } catch ( PDOException $exception ) {
-            if ( $this->get( 'debug' ) ) {
+            if ( $this->debug ) {
                 throw $exception;
             }
             $this->add_error( $exception->getMessage(), 'db' );
@@ -629,7 +632,7 @@ class icit_srdb {
         } else {
 
             // set the character set
-            //$this->db_set_charset( $this->get( 'charset' ) );
+            //$this->db_set_charset( $this->charset );
 
             while ( $table = $this->db_fetch( $all_tables_mysql ) ) {
                 // ignore views
@@ -927,9 +930,9 @@ class icit_srdb {
             'errors'  => array(),
         );
 
-        $dry_run = $this->get( 'dry_run' );
-        $errors  = $this->get( 'errors' );
-        if ( $this->get( 'dry_run' ) and ! ( in_array( 'The dry-run option was selected. No replacements will be made.',
+        $dry_run = $this->dry_run;
+        $errors  = $this->errors;
+        if ( $this->dry_run and ! ( in_array( 'The dry-run option was selected. No replacements will be made.',
                 $errors['results'] ) ) )    // Report this as a search-only run.
         {
             $this->add_error( 'The dry-run option was selected. No replacements will be made.', 'results' );
@@ -1138,7 +1141,7 @@ class icit_srdb {
             $this->engines = $this->get_engines();
         }
 
-        if ( in_array( $engine, $this->get( 'engines' ) ) ) {
+        if ( in_array( $engine, $this->engines ) ) {
 
             $report = array( 'engine' => $engine, 'converted' => array() );
 
