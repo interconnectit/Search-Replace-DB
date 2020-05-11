@@ -80,6 +80,8 @@ $opts = array(
     [ '', 'ssl-cipher:', 'Define the cipher to use for SSL.', ],
     [ '', 'ssl-check:', 'Check the SSL certificate, default to True.', '[true|false]' ],
 
+    [ '', 'allow-old-php:', 'Suppress the check for PHP version, use it at your own risk!', '[true|false]' ],
+
     [ '', 'help', 'Displays this help message ;)', ],
 );
 
@@ -156,12 +158,6 @@ under certain conditions; see README for details.
 // missing field flag, show all missing instead of 1 at a time
 $missing_arg = false;
 
-if ( version_compare( PHP_VERSION, '7.3' ) < 0 ) {
-    fwrite( STDERR,
-        "This script has been tested using PHP7.3 +, whereas your version is: " . PHP_VERSION . ". Although this script may work with older versions you do so at your own risk. Please update php and try again. \n" );
-    exit( 1 );
-}
-
 if ( ! extension_loaded( "mbstring" ) ) {
     fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
     exit ( 1 );
@@ -184,10 +180,11 @@ if ( $missing_arg ) {
 
 // new args array
 $args = array(
-    'verbose'   => true,
-    'ssl_check' => true,
-    'dry_run'   => false,
-    'debug'     => false
+    'verbose'       => true,
+    'ssl_check'     => true,
+    'dry_run'       => false,
+    'debug'         => false,
+    'allow_old_php' => false
 );
 
 // create $args array
@@ -212,6 +209,7 @@ foreach ( $options as $key => $value ) {
         // boolean options.
         case 'debug':
         case 'ssl-check':
+        case 'allow-old-php':
         case 'verbose':
             $value = (boolean) filter_var( $value, FILTER_VALIDATE_BOOLEAN );
             break;
@@ -221,6 +219,14 @@ foreach ( $options as $key => $value ) {
     $key = str_replace( '-', '_', $key );
 
     $args[ $key ] = $value;
+}
+
+if ( $args['allow_old_php'] === false ) {
+    if ( version_compare( PHP_VERSION, '7.3' ) < 0 ) {
+        fwrite( STDERR,
+            "This script has been tested using PHP7.3 +, whereas your version is: " . PHP_VERSION . ". Although this script may work with older versions you do so at your own risk. Please update php and try again. \n" );
+        exit( 1 );
+    }
 }
 
 // modify the log output
