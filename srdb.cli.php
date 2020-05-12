@@ -80,7 +80,7 @@ $opts = array(
     [ '', 'ssl-cipher:', 'Define the cipher to use for SSL.', ],
     [ '', 'ssl-check:', 'Check the SSL certificate, default to True.', '[true|false]' ],
 
-    [ '', 'allow-old-php:', 'Suppress the check for PHP version, use it at your own risk!', '[true|false]' ],
+    [ '', 'allow-old-php', 'Suppress the check for PHP version, use it at your own risk!' ],
 
     [ '', 'help', 'Displays this help message ;)', ],
 );
@@ -187,6 +187,10 @@ $args = array(
     'allow_old_php' => false
 );
 
+if ( isset( $options['allow-old-php'] ) ) {
+    $args['allow_old_php'] = true;
+}
+
 // create $args array
 foreach ( $options as $key => $value ) {
 
@@ -209,7 +213,6 @@ foreach ( $options as $key => $value ) {
         // boolean options.
         case 'debug':
         case 'ssl-check':
-        case 'allow-old-php':
         case 'verbose':
             $value = (boolean) filter_var( $value, FILTER_VALIDATE_BOOLEAN );
             break;
