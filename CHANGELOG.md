@@ -1,5 +1,8 @@
 # Changelog
 
+# Version 4.1.2
+ * Now you can suppress the checks for PHP and be able to run this tool in an old setup
+
 # Version 4.1.1
  * Class autoloader in composer.json
 
