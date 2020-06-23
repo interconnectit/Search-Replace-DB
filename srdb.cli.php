@@ -1,4 +1,4 @@
-#!/usr/bin/env php -q
+#!/usr/bin/env -S php -q
 <?php
 /*
  * This file is part of Search-Replace-DB.
