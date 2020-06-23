@@ -199,7 +199,7 @@ foreach ( $options as $key => $value ) {
         $key = $long_opts_normal[ $is_short ];
     }
 
-    if ( in_array( $key, [ 'search', 'replace' ] ) && is_array( $jsonVal = json_decode( $value, true ) ) ) {
+    if ( in_array( $key, [ 'search', 'replace' ] ) && is_array( $jsonVal = @json_decode( $value, true ) ) ) {
         $args[ $key ] = $jsonVal;
         continue;
     }
