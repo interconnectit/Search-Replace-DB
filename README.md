@@ -163,6 +163,29 @@ php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "http://www.yourdo
 php srdb.cli.php -h dbhost -n dbname -u root -p "password" -s "search" -r "replace"
 ```
 
+### Using Docker
+
+Pre-requisites:
+- Docker
+- Docker-compose
+
+You can start the program on your local environment using docker-compose. This command will a container on port 8080. You can then access it by using `http://localhost:8080`.
+```
+docker-compose up -d
+```
+
+#### Launching CLI Commands using Docker
+
+After docker container was launched, you can then get into the container and execute the cli scripts inside the container, using the following commands:
+```
+# enter the container
+docker-compose exec php bash
+
+# example of cli script to execute once inside the container
+php srdb.cli.php -h dbhost -n dbname -u root -p "" -s "http://www.yourdomain.com" -r "http://newdomain.com"
+```
+
+
 ## Troubleshooting
 
 ### Nothing works after the search/replace operation!

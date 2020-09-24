@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  php:
+    build: ./
+    working_dir: /app
+    command: "php -S 0.0.0.0:8080"
+    ports:
+        - 8080:8080
+    volumes:
+        - ${PWD}:/app 
