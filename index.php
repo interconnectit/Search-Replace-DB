@@ -231,7 +231,14 @@ class icit_srdb_ui extends icit_srdb {
                     if ( $this->regex_x ) {
                         $mods .= 'x';
                     }
-                    $this->search = '/' . $this->search . '/' . $mods;
+
+                    if(is_array($this->search)){
+                        foreach ($this->search as $searchKey => $searchString){
+                            $this->search[$searchKey] = '/' . $searchString . '/' . $mods;
+                        }
+                    }else{
+                        $this->search = '/' . $this->search . '/' . $mods;
+                    }
                 }
 
                 // call search replace class
