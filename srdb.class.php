@@ -861,6 +861,8 @@ class icit_srdb {
                 return serialize( $data );
             }
 
+        } catch ( Error $error ) {
+            $this->add_error( $error->getMessage(), 'results');
         } catch ( Exception $error ) {
             $this->add_error( $error->getMessage() . ':: This is usually caused by a plugin storing classes as a
 		    serialised string which other PHP classes can\'t then access. It is not possible to unserialise this data
