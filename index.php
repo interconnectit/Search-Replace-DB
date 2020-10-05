@@ -2,7 +2,7 @@
 
 /**
  *
- * Safe Search and Replace on Database with Serialized Data v4.1.2
+ * Safe Search and Replace on Database with Serialized Data v4.1.3
  * Copyright © 2020  Interconnect IT Limited
  *
  * This script is to solve the problem of doing database search and replace when
@@ -231,7 +231,14 @@ class icit_srdb_ui extends icit_srdb {
                     if ( $this->regex_x ) {
                         $mods .= 'x';
                     }
-                    $this->search = '/' . $this->search . '/' . $mods;
+
+                    if(is_array($this->search)){
+                        foreach ($this->search as $searchKey => $searchString){
+                            $this->search[$searchKey] = '/' . $searchString . '/' . $mods;
+                        }
+                    }else{
+                        $this->search = '/' . $this->search . '/' . $mods;
+                    }
                 }
 
                 // call search replace class
@@ -912,7 +919,7 @@ class icit_srdb_ui extends icit_srdb {
 
             <h1 class="branding">interconnect/it</h1>
 
-            <h2>Safe Search and Replace on Database with Serialized Data v4.1.2</h2>
+            <h2>Safe Search and Replace on Database with Serialized Data v4.1.3</h2>
 
             <p>This developer/sysadmin tool carries out search/replace functions on MySQL DBs and can handle serialised
                 PHP Arrays and Objects.</p>

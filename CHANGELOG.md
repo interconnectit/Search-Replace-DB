@@ -1,5 +1,8 @@
 # Changelog
 
+# Version 4.1.3
+ * Fix regex search/replace using WebUI
+
 # Version 4.1.2
  * Now you can suppress the checks for PHP and be able to run this tool in an old setup
 

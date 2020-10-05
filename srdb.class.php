@@ -131,6 +131,8 @@ class icit_srdb {
     public $ssl_ca = false;
     public $ssl_ca_dir = null;
     public $ssl_cipher = null;
+    public $ssl_check = true;
+
     public $debug = false;
 
 
@@ -280,14 +282,14 @@ class icit_srdb {
         }
 
         // set class vars
-        foreach ( $args as $name => $value ) {
+        foreach ( $args as $property => $value ) {
             if ( is_string( $value ) ) {
                 $value = stripcslashes( $value );
             }
             if ( is_array( $value ) ) {
                 $value = array_map( 'stripcslashes', $value );
             }
-            $this->set( $name, $value );
+            $this->$property = $value;
         }
 
         // only for non cli call, cli set no timeout, no memory limit
@@ -545,8 +547,8 @@ class icit_srdb {
             $params = array();
 
             foreach ( $params_map as $property => $pdo_param ) {
-                if ( $this->get( $property ) ) {
-                    $params[ $pdo_param ] = $this->get( $property );
+                if ( $this->$property ) {
+                    $params[ $pdo_param ] = $this->$property;
                 }
             }
 
