@@ -36,6 +36,7 @@ $opts = array(
     [ 'n:', 'name:', 'Required. Database name.', ],
     [ 'u:', 'user:', 'Required. Database user.', ],
     [ 'p:', 'pass:', 'Database user\'s password.', ],
+    [ '', 'pass-input', 'Input the user\'s password manually', ],
     [ 'P:', 'port:', 'Optional. Port on database server to connect to. The default is 3306. (MySQL default port).', ],
     [ 's:', 'search:', 'String to search for or `preg_replace()` style regular expression.', ],
     [ 'r:', 'replace:', 'None empty string to replace search with or `preg_replace()` style replacement.', ],
@@ -191,6 +192,13 @@ if ( isset( $options['allow-old-php'] ) ) {
     $args['allow_old_php'] = true;
 }
 
+if ( isset( $options['pass-input'] ) ) {
+    fwrite(STDOUT, "Please enter the database password: ");
+    $password = getPassword(true);
+    fwrite(STDOUT, "\n\n");
+    $options[ 'p' ] = $password;
+}
+
 // create $args array
 foreach ( $options as $key => $value ) {
 
@@ -313,4 +321,40 @@ if ( $report && ( ( isset( $args['dry_run'] ) && $args['dry_run'] ) || empty( $r
     echo "And we're done!\n";
 } else {
     echo "Check the output for errors. You may need to ensure verbose output is on by using -v or --verbose.\n";
+}
+
+function getPassword($stars = false)
+{
+    // Get current style
+    $oldStyle = shell_exec('stty -g');
+
+    if ($stars === false) {
+        shell_exec('stty -echo');
+        $password = rtrim(fgets(STDIN), "\n");
+    } else {
+        shell_exec('stty -icanon -echo min 1 time 0');
+
+        $password = '';
+        while (true) {
+            $char = fgetc(STDIN);
+
+            if ($char === "\n") {
+                break;
+            } else if (ord($char) === 127) {
+                if (strlen($password) > 0) {
+                    fwrite(STDOUT, "\x08 \x08");
+                    $password = substr($password, 0, -1);
+                }
+            } else {
+                fwrite(STDOUT, "*");
+                $password .= $char;
+            }
+        }
+    }
+
+    // Reset old style
+    shell_exec('stty ' . $oldStyle);
+
+    // Return the password
+    return $password;
 }
