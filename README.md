@@ -49,7 +49,7 @@ contributing or branching.
 6. Choose the `Do a safe test run` button to do a dry run without searching/replacing.
 
 ## Installation
-To install the script, please place the files inside your sites public folder and head to yourWebsiteUrl/search-replace-db
+To install the script, please place the files inside your sites public folder and head to yourWebsiteUrl/Search-Replace-DB
 
 ### CLI script
 
