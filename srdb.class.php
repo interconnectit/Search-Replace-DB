@@ -1343,5 +1343,14 @@ class icit_srdb {
  * @return void
  */
 function object_serializer( $class_name ) {
-    eval( "class {$class_name} extends ArrayObject {}" );
+    $namespace = "";
+
+    if (strpos($class_name, '\\') !== false) {
+        $namespace = preg_replace("/\\\\[^\\\\]*$/", "", $class_name);
+        $class_name = str_replace($namespace."\\", "", $class_name);
+
+        $namespace = "namespace $namespace;";
+    }
+
+    eval( $namespace . "class {$class_name} extends \ArrayObject {}" );
 }
