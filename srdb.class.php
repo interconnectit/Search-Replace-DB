@@ -225,7 +225,7 @@ class icit_srdb {
             'include_cols'    => array(),
             'dry_run'         => true,
             'regex'           => false,
-            'pagesize'        => 50000,
+            'page_size'       => 500,
             'alter_engine'    => false,
             'alter_collation' => false,
             'verbose'         => false,
