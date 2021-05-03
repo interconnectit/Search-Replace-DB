@@ -53,7 +53,7 @@ $opts = array(
         'Treats value for -s or --search as a regular expression and -r or --replace as a regular expression replacement.',
         '[no value]'
     ],
-    [ 'l:', 'pagesize:', 'How rows to fetch at a time from a table.', ],
+    [ 'l:', 'page-size:', 'How rows to fetch at a time from a table.', ],
     [
         'z',
         'dry-run',
