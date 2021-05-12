@@ -1329,11 +1329,14 @@ class icit_srdb_ui extends icit_srdb {
                 .fields-large input[type="text"],
                 .fields-large input[type="password"] {
                     width: 100%;
+                    min-width: 19em;
                 }
 
                 .label-text {
-                    display: block;
+                    display: inline-block;
                     font-weight: bold;
+                    width: 3em;
+                    
                 }
 
                 .run-script {
@@ -1358,10 +1361,6 @@ class icit_srdb_ui extends icit_srdb {
                 }
 
                 @media only screen and (min-width: 1110px) {
-                    .label-text {
-                        display: inline;
-                    }
-
                     .fields-large label {
                         margin: 0;
                         text-align: left;
@@ -1435,7 +1434,15 @@ class icit_srdb_ui extends icit_srdb {
                         width: 20%;
                     }
                 }
-
+                
+                div.field.field-short {
+					min-width:19em;
+				}
+				div.field.field-short:nth-of-type(5) {
+					min-width:0;
+					width:6em;
+				}
+                
                 .description {
                     font-size: 1.8rem;
                     font-style: italic;
