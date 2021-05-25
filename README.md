@@ -84,6 +84,10 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
     None empty string to replace search with or `preg_replace()`
     style replacement.
 
+  -f, --file
+    File that contains touples of search/replace strings/patterns
+    separated by new lines: search1\nreplace1\nsearch2\nreplace2
+
   -t, --tables
     If set only runs the script on the specified table, comma
     separate for multiple values.
