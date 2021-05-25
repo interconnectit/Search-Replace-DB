@@ -39,6 +39,11 @@ $opts = array(
     [ 'P:', 'port:', 'Optional. Port on database server to connect to. The default is 3306. (MySQL default port).', ],
     [ 's:', 'search:', 'String to search for or `preg_replace()` style regular expression.', ],
     [ 'r:', 'replace:', 'None empty string to replace search with or `preg_replace()` style replacement.', ],
+    [ 
+        'f:', 
+        'file:', 
+        'File with strings or regular expressions along with their intended replacements, separated by line endings.', 
+    ],
     [ 't:', 'tables:', 'If set only runs the script on the specified table, comma separate for multiple values.', ],
     [ 'w:', 'exclude-tables:', 'If set excluded the specified tables, comma separate for multuple values.', ],
     [
@@ -246,15 +251,12 @@ class icit_srdb_cli extends icit_srdb {
                 $output .= "$error_type: $error";
                 break;
             case 'search_replace_table_start':
-                list( $table, $search, $replace ) = $args;
+                list( $table, $searchReplaceTuples ) = $args;
 
-                if ( is_array( $search ) ) {
-                    $search = implode( ' or ', $search );
-                }
-                if ( is_array( $replace ) ) {
-                    $replace = implode( ' or ', $replace );
-                }
-                $output .= "{$table}: replacing {$search} with {$replace}";
+                $output .= "{$table}: replacing " . implode( ', ', array_map( 
+                    function ( $searchReplaceTuple ) { return implode( ' => ', $searchReplaceTuple ); }, 
+                    $searchReplaceTuples 
+                ));
 
                 break;
             case 'search_replace_table_end':
@@ -266,20 +268,18 @@ class icit_srdb_cli extends icit_srdb {
                 $output .= "{$table}: {$report['rows']} rows, {$report['change']} changes found, {$report['updates']} updates made in {$time} seconds";
                 break;
             case 'search_replace_end':
-                list( $search, $replace, $report ) = $args;
-                if ( is_array( $search ) ) {
-                    $search = implode( ' or ', $search );
-                }
-                if ( is_array( $replace ) ) {
-                    $replace = implode( ' or ', $replace );
-                }
+                list( $searchReplaceTuples, $report ) = $args;
+
                 $time = number_format( floatval( $report['end'] ) - floatval( $report['start'] ), 8 );
                 if ( $time < 0 ) {
                     $time = $time * - 1;
                 }
                 $dry_run_string = $this->dry_run ? "would have been" : "were";
-                $output         .= "
-Replacing {$search} with {$replace} on {$report['tables']} tables with {$report['rows']} rows
+
+                $output .= "Replacing " . implode( ', ', array_map( 
+                        function ($searchReplaceTuple) { return implode(' => ', $searchReplaceTuple); }, 
+                        $searchReplaceTuples 
+                    )) . " on {$report['tables']} tables with {$report['rows']} rows
 {$report['change']} changes {$dry_run_string} made
 {$report['updates']} updates were actually made
 It took {$time} seconds";

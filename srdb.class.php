@@ -76,6 +76,11 @@ class icit_srdb {
     public $replace = false;
 
     /**
+     * @var string Path to file containing tuples of search => replace
+     */
+    public $file = false;
+
+    /**
      * @var bool Use regular expressions to perform search and replace
      */
     public $regex = false;
@@ -219,6 +224,7 @@ class icit_srdb {
             'port'            => 3306,
             'search'          => '',
             'replace'         => '',
+            'file'            => '',
             'tables'          => array(),
             'exclude_tables'  => array(),
             'exclude_cols'    => array(),
@@ -314,15 +320,16 @@ class icit_srdb {
             } // update collation
             elseif ( $this->alter_collation ) {
                 $report = $this->update_collation( $this->alter_collation, $this->tables );
-            } elseif ( is_array( $this->search ) ) {
-                $report = array();
-                for ( $i = 0; $i < count( $this->search ); $i ++ ) {
-                    $report[ $i ] = $this->replacer( $this->search[ $i ], $this->replace[ $i ], $this->tables,
-                        $this->exclude_tables );
-                }
+            } elseif ( $this->file ) {
+                $searchReplaceTuples = $this->parseTuplesFromFile( $this->file );
 
+                $report = $this->replacer( $searchReplaceTuples, $this->tables, $this->exclude_tables );
+            } elseif ( is_array( $this->search ) ) {
+                $searchReplaceTuples = $this->parseTuplesFromArray( $this->search, $this->replace );
+
+                $report = $this->replacer( $searchReplaceTuples, $this->tables, $this->exclude_tables );
             } else {
-                $report = $this->replacer( $this->search, $this->replace, $this->tables, $this->exclude_tables );
+                $report = $this->replacer( [ $this->search, $this->replace ], $this->tables, $this->exclude_tables );
             }
 
         } else {
@@ -898,21 +905,12 @@ class icit_srdb {
      * We split large tables into 50,000 row blocks when dealing with them to save
      * on memmory consumption.
      *
-     * @param string $search What we want to replace
-     * @param string $replace What we want to replace it with.
+     * @param array $searchReplaceTuples Array of Tuples of What we want to replace and What we want to replace it with.
      * @param array $tables The tables we want to look at.
      *
      * @return array|bool    Collection of information gathered during the run.
      */
-    public function replacer( $search = '', $replace = '', $tables = array(), $exclude_tables = array() ) {
-        $search = (string) $search;
-        // check we have a search string, bail if not
-        if ( '' === $search ) {
-            $this->add_error( 'Search string is empty', 'search' );
-
-            return false;
-        }
-
+    public function replacer( $searchReplaceTuples, $tables = array(), $exclude_tables = array() ) {
         $report = array(
             'tables'        => 0,
             'rows'          => 0,
@@ -988,7 +986,7 @@ class icit_srdb {
                 $new_table_report          = $table_report;
                 $new_table_report['start'] = microtime( true );
 
-                $this->log( 'search_replace_table_start', $table, $search, $replace );
+                $this->log( 'search_replace_table_start', $table, $searchReplaceTuples );
 
                 // Count the number of rows we have in the table if large we'll split into blocks, This is a mod from Simon Wheatley
                 $row_count   = $this->db_query( "SELECT COUNT(*) FROM `{$table}`" );
@@ -1036,15 +1034,31 @@ class icit_srdb {
                             if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) ) {
                                 continue;
                             }
+                            
+                            foreach ( $searchReplaceTuples as $searchReplaceTuple ) {
+                                $search = (string) $searchReplaceTuple[0];
+                                $replace = (string) $searchReplaceTuple[1];
 
-                            // Run a search replace on the data that'll respect the serialisation.
-                            $edited_data = $this->recursive_unserialize_replace( $search, $replace, $data_to_fix );
+                                // check we have a search string, bail if not
+                                if ( '' === $search ) {
+                                    $this->add_error( 'Search string is empty', 'search' );
+                        
+                                    return false;
+                                }
+
+                                $previous_data = $edited_data;
+
+                                // Run a search replace on the data that'll respect the serialisation.
+                                $edited_data = $this->recursive_unserialize_replace( $search, $replace, $edited_data );
+                                
+                                if ( $previous_data !== $edited_data ) {
+                                    $report['change'] ++;
+                                    $new_table_report['change'] ++;
+                                }
+                            }
 
                             // Something was changed
                             if ( $edited_data != $data_to_fix ) {
-
-                                $report['change'] ++;
-                                $new_table_report['change'] ++;
 
                                 // log first x changes
                                 if ( $new_table_report['change'] <= $this->report_change_num ) {
@@ -1103,7 +1117,7 @@ class icit_srdb {
 
         $report['end'] = microtime( true );
 
-        $this->log( 'search_replace_end', $search, $replace, $report );
+        $this->log( 'search_replace_end', $searchReplaceTuples, $report );
 
         return $report;
     }
@@ -1331,7 +1345,60 @@ class icit_srdb {
         return $string;
     }
 
+    /**
+     * Parses the file containing search/replacement tuples separated by new lines
+     * to an array
+     *
+     * @param string $filePath
+     *
+     * @return array
+     */
+    public function parseTuplesFromFile( $filePath )
+    {
+        if (!is_file( $filePath ) || !is_readable( $filePath )) {
+            $this->add_error( 'The file path provided is either not a file or it is not readable.' );
 
+            return [];
+        }
+
+        $fileContent = file_get_contents( $filePath );
+        $expandedContent = preg_split("/\R/", $fileContent);
+        
+        if (count( $expandedContent ) % 2 === 1) {
+            $this->add_error( 'The file provided does not contain pairs of search and replacement' 
+                . ' tuples separated by new lines, the number of lines in the file is odd.' );
+
+            return [];
+        }
+
+        $result = [];
+        for ( $i = 0; $i < count( $expandedContent ); $i += 2 ) {
+            if ( empty( $expandedContent[ $i ] ) ) {
+                $this->add_error( 'The file provided contains an empty line where it should be a search string' );
+
+                return [];
+            }
+
+            $result []= [ $expandedContent[ $i ], $expandedContent[ $i + 1 ] ];
+        }
+
+        return $result;
+    }
+
+    public function parseTuplesFromArray( $searchArray, $replaceArrayOrString )
+    {
+        $result = [];
+
+        foreach ( $searchArray as $i => $search ) {
+            if ( is_array( $replaceArrayOrString ) ) {
+                $result []= [ $search, $replaceArrayOrString[ $i ] ];
+            } else {
+                $result []= [ $search, $replaceArrayOrString ];
+            }
+        }
+
+        return $result;
+    }
 }
 
 
