@@ -911,6 +911,10 @@ class icit_srdb {
      * @return array|bool    Collection of information gathered during the run.
      */
     public function replacer( $searchReplaceTuples, $tables = array(), $exclude_tables = array() ) {
+        if ( empty ( $searchReplaceTuples ) ) {
+            return false;
+        }
+
         $report = array(
             'tables'        => 0,
             'rows'          => 0,
