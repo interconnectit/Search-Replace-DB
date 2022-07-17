@@ -76,6 +76,12 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
     Optional. Port on database server to connect to. The default is
     3306. (MySQL default port).
 
+  --my-ini-file
+    Reads MySQL configuration ini file provided as argument to
+    extract connection parameters (host, user, password, database)
+    from the [client] section. Will not override --host, --name,
+    --user ou --password if provided as CLI argument.
+
   -s, --search
     String to search for or `preg_replace()` style regular
     expression.
