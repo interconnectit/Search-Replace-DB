@@ -37,6 +37,7 @@ $opts = array(
     [ 'u:', 'user:', 'Required. Database user.', ],
     [ 'p:', 'pass:', 'Database user\'s password.', ],
     [ 'P:', 'port:', 'Optional. Port on database server to connect to. The default is 3306. (MySQL default port).', ],
+    [ '', 'my-ini-file:', 'Reads MySQL configuration ini file provided as argument to extract connection parameters (host, user, password, database) from the [client] section. Will not override --host, --name, --user ou --password if provided as CLI argument.'],
     [ 's:', 'search:', 'String to search for or `preg_replace()` style regular expression.', ],
     [ 'r:', 'replace:', 'None empty string to replace search with or `preg_replace()` style replacement.', ],
     [ 't:', 'tables:', 'If set only runs the script on the specified table, comma separate for multiple values.', ],
@@ -161,6 +162,42 @@ $missing_arg = false;
 if ( ! extension_loaded( "mbstring" ) ) {
     fwrite( STDERR, "This script requires mbstring. Please install mbstring and try again.\n" );
     exit ( 1 );
+}
+
+// if --my-ini-file used, populate missing connection info from provided INI file
+if ( isset( $options['my-ini-file'] ) ) {
+
+    if ( ! file_exists( $options['my-ini-file'] ) ) {
+        fwrite( STDERR, "Error: --my-ini-file: file '{$options['my-ini-file']}' not found.\n" );
+        exit ( 1 );
+    }
+
+    $my_ini_conf = parse_ini_file( $options['my-ini-file'], true );
+
+    if ( $my_ini_conf === FALSE ) {
+        fwrite( STDERR, "Error: --my-ini-file: Unable to parse '{$options['my-ini-file']}'.\n" );
+        exit ( 1 );
+    }
+
+    if ( ! array_key_exists( 'client', $my_ini_conf ) ) {
+        fwrite( STDERR, "Error: --my-ini-file: '{$options['my-ini-file']}' is missing [client] section.\n" );
+        exit ( 1 );
+    }
+
+    $my_ini_conf = $my_ini_conf['client'];
+
+    foreach ( [
+        'user' => ['user', 'u'],
+        'password' => ['pass', 'p'],
+        'database' => ['name', 'n'],
+        'host' => ['host', 'h']
+    ] as $key => $optnames ) {
+
+        if ( ! isset( $options[$optnames[0]] ) && ! isset( $options[$optnames[1]] ) && isset( $my_ini_conf[$key] ) ) {
+            $options[$optnames[0]] = $my_ini_conf[$key];
+        }
+
+    }
 }
 
 // check required args are passed
