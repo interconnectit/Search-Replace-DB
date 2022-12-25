@@ -1024,17 +1024,17 @@ class icit_srdb {
 
                             if ( in_array( $column, $primary_key ) ) {
                                 $where_sql[] = "`{$column}` = " . $this->db_escape( $data_to_fix );
-                                continue;
+                                continue 2;
                             }
 
                             // exclude cols
                             if ( in_array( $column, $this->exclude_cols ) ) {
-                                continue;
+                                continue 2;
                             }
 
                             // include cols
                             if ( ! empty( $this->include_cols ) && ! in_array( $column, $this->include_cols ) ) {
-                                continue;
+                                continue 2;
                             }
 
                             // Run a search replace on the data that'll respect the serialisation.
