@@ -1,5 +1,10 @@
 # Changelog
 
+# Version 4.1.4
+ * When using PHP 8.3+, SRDB no longer generates warnings for every string.
+ * Fixed Deprecation warning creating dynamic property: alter_collation.
+ * Fixed Deprecation warning when passing null to htmlentities().
+
 # Version 4.1.3
  * Fix regex search/replace using WebUI
 
