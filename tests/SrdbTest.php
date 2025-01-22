@@ -161,7 +161,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase {
 
         // test the database is actually changed
         $modified = self::$pdo->query( "SELECT url FROM `" . static::TESTDB['table'] . "` LIMIT 1;" )->fetchColumn();
-        $this->assertRegExp( "/{$replace}/", $modified );
+        $this->assertMatchesRegularExpression( "/{$replace}/", $modified );
 
     }
 
@@ -196,7 +196,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase {
 
         // test the database is actually changed
         $modified = self::$pdo->query( "SELECT content FROM `" . static::TESTDB['table'] . "` LIMIT 1;" )->fetchColumn();
-        $this->assertRegExp( "/{$replace}/", $modified );
+        $this->assertMatchesRegularExpression( "/{$replace}/", $modified );
 
     }
 
@@ -255,7 +255,7 @@ class SrdbTest extends \PHPUnit\Framework\TestCase {
 
         // test the database is actually changed
         $modified = self::$pdo->query( "SELECT url FROM `" . static::TESTDB['table'] . "` LIMIT 1;" )->fetchColumn();
-        $this->assertRegExp( $result, $modified, 'Database not updated, modified result is ' . $modified );
+        $this->assertMatchesRegularExpression( $result, $modified, 'Database not updated, modified result is ' . $modified );
 
     }
 
@@ -370,8 +370,8 @@ class SrdbTest extends \PHPUnit\Framework\TestCase {
         $content  = $modified[0]['content'];
         $url      = $modified[0]['url'];
 
-        $this->assertRegExp( "/$search/", $content, 'Content column was modified' );
-        $this->assertRegExp( "/$replace/", $url, 'URL column was not modified' );
+        $this->assertMatchesRegularExpression( "/$search/", $content, 'Content column was modified' );
+        $this->assertMatchesRegularExpression( "/$replace/", $url, 'URL column was not modified' );
 
     }
 
@@ -413,8 +413,8 @@ class SrdbTest extends \PHPUnit\Framework\TestCase {
         $content  = $modified[0]['content'];
         $url      = $modified[0]['url'];
 
-        $this->assertRegExp( "/$replace/", $content, 'Content column was not modified' );
-        $this->assertRegExp( "/$search/", $url, 'URL column was modified' );
+        $this->assertMatchesRegularExpression( "/$replace/", $content, 'Content column was not modified' );
+        $this->assertMatchesRegularExpression( "/$search/", $url, 'URL column was modified' );
 
     }
 
