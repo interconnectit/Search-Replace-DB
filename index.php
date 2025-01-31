@@ -455,7 +455,7 @@ class icit_srdb_ui extends icit_srdb {
      * @return string    Escaped string.
      */
     public function esc_html_attr( $string = '', $echo = false ) {
-        $output = htmlentities( $string, ENT_QUOTES, 'UTF-8' );
+        $output = $string ? htmlentities( $string, ENT_QUOTES, 'UTF-8' ) : '';
         if ( $echo ) {
             echo $output;
         } else {
