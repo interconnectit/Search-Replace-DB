@@ -1078,7 +1078,7 @@ class icit_srdb {
                             // nothing for this state
                         } elseif ( $update && ! empty( $where_sql ) ) {
 
-                            $sql = 'UPDATE ' . $table . ' SET ' . implode( ', ',
+                            $sql = 'UPDATE `' . $table . '` SET ' . implode( ', ',
                                     $update_sql ) . ' WHERE ' . implode( ' AND ', array_filter( $where_sql ) );
 
                             $result = $this->db_update( $sql );
@@ -1125,7 +1125,7 @@ class icit_srdb {
         $columns     = array();
 
         // Get a list of columns in this table
-        $fields = $this->db_query( "DESCRIBE {$table}" );
+        $fields = $this->db_query( "DESCRIBE `{$table}`" );
         if ( ! $fields ) {
             $this->add_error( $this->db_error(), 'db' );
         } else {
