@@ -841,7 +841,7 @@ class icit_srdb {
         // some unserialised data cannot be re-serialised eg. SimpleXMLElements
         try {
             // If this looks like serialized data, try to unserialize it.
-            $unserialized = $this->is_serialized( $data ) ? @unserialize( $data ) : false;
+            $unserialized = self::is_serialized( $data ) ? @unserialize( $data ) : false;
             
             if ( $unserialized !== false ) {
                 $data = $this->recursive_unserialize_replace( $from, $to, $unserialized, true );
@@ -1356,7 +1356,7 @@ class icit_srdb {
      * @param bool   $strict Optional. Whether to be strict about the end of the string. Default true.
      * @return bool False if not serialized and true if it was.
      */
-    public function is_serialized( $data, $strict = true ) {
+    public static function is_serialized( $data, $strict = true ) {
         // If it isn't a string, it isn't serialized.
         if ( ! is_string( $data ) ) {
             return false;
