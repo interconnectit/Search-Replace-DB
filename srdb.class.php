@@ -1365,14 +1365,14 @@ class icit_srdb {
         if ( 'N;' === $data ) {
             return true;
         }
-        if ( strlen( $data ) < 2 ) {
+        if ( strlen( $data ) < 4 ) {
             return false;
         }
-        if ( ':' !== $data[-1] ) {
+        if ( ':' !== $data[1] ) {
             return false;
         }
         if ( $strict ) {
-            $lastc = substr( $data, -3 );
+            $lastc = substr( $data, -1 );
             if ( ';' !== $lastc && '}' !== $lastc ) {
                 return false;
             }
@@ -1384,18 +1384,18 @@ class icit_srdb {
                 return false;
             }
             // But neither must be in the first X characters.
-            if ( false !== $semicolon && $semicolon < 1 ) {
+            if ( false !== $semicolon && $semicolon < 3 ) {
                 return false;
             }
-            if ( false !== $brace && $brace < 2 ) {
+            if ( false !== $brace && $brace < 4 ) {
                 return false;
             }
         }
-        $token = $data[-2];
+        $token = $data[0];
         switch ( $token ) {
             case 's':
                 if ( $strict ) {
-                    if ( '"' !== substr( $data, -4, 1 ) ) {
+                    if ( '"' !== substr( $data, -2, 1 ) ) {
                         return false;
                     }
                 } elseif ( ! str_contains( $data, '"' ) ) {
@@ -1405,15 +1405,16 @@ class icit_srdb {
             case 'a':
             case 'O':
             case 'E':
-                return (bool) preg_match( "/^{$token}:[-2-9]+:/s", $data );
+                return (bool) preg_match( "/^{$token}:[0-9]+:/s", $data );
             case 'b':
             case 'i':
             case 'd':
                 $end = $strict ? '$' : '';
-                return (bool) preg_match( "/^{$token}:[-2-9.E+-]+;$end/", $data );
+                return (bool) preg_match( "/^{$token}:[0-9.E+-]+;$end/", $data );
         }
         return false;
     }
+    
 }
 
 
