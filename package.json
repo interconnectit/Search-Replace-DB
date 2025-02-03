@@ -1,6 +1,6 @@
 {
   "name": "search-replace-db",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "A PHP search replace tool for quickly modifying a string throughout a database. Useful for changing the base URL when migrating a WordPress site from development to production.",
   "main": "srdb.cli.php",
   "directories": {
