@@ -966,6 +966,14 @@ class icit_srdb {
                     $this->add_error( 'Ignoring Table: ' . $table );
                     continue;
                 }
+                foreach( $exclude_tables as $exclude_regex ) {
+                    $exclude_regex_delimited = ( preg_match( '/^\/.*\/$/', $exclude_regex ) === 0 ) ? '/' . $exclude_regex . '/' : $exclude_regex;
+                    if ( preg_match( $exclude_regex_delimited, $table ) ) {
+                        $this->add_error( 'Ignoring Table via Regex (' . $exclude_regex . '): ' . $table );
+                        continue 2;
+                    }
+                }
+                
                 $encoding = $this->get_table_character_set( $table );
                 switch ( $encoding ) {
 
