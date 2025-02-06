@@ -158,14 +158,18 @@ class icit_srdb_ui extends icit_srdb {
         // exclude / include columns
         $this->exclude_cols = isset( $_POST['exclude_cols'] ) ? $_POST['exclude_cols'] : array();
 
-        if ( $this->exclude_cols && is_string( $this->exclude_cols ) ) {
+        if ( $this->exclude_cols && is_string( $this->exclude_cols ) && strlen($this->exclude_cols) > 0 ) {
             $this->exclude_cols = array_filter( array_map( 'trim', explode( ',', $this->exclude_cols ) ) );
+        }else{
+            $this->exclude_cols = array();
         }
 
         $this->include_cols = isset( $_POST['include_cols'] ) ? $_POST['include_cols'] : array();
 
-        if ( $this->include_cols && is_string( $this->include_cols ) ) {
+        if ( $this->include_cols && is_string( $this->include_cols ) && strlen($this->include_cols) > 0) {
             $this->include_cols = array_filter( array_map( 'trim', explode( ',', $this->include_cols ) ) );
+        }else{
+            $this->include_cols = array();
         }
 
         // are doing something?
