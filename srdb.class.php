@@ -821,7 +821,35 @@ class icit_srdb {
         }
     }
 
+    
+    /**
+     * Validates a JSON string.
+     * 
+     * @param string $json The JSON string to validate.
+     * @param int $depth Maximum depth. Must be greater than zero.
+     * @param int $flags Bitmask of JSON decode options.
+     * @return bool Returns true if the string is a valid JSON, otherwise false.
+     */
+    public function json_validate($json, $depth = 512, $flags = 0) {
+        if(function_exists('json_validate')){ 
+           // Uses json_validate from PHP8 definition
+           return json_validate($json, $depth, $flags);
+        }
+        // Similar logic is used if json_validate is not defined
+        
+        if (!is_string($json)) {
+            return false;
+        }
 
+        try {
+            json_decode($json, false, $depth, $flags | JSON_THROW_ON_ERROR);
+            return true;
+        } catch (\JsonException $e) {
+            return false;
+        }
+    }
+
+    
     /**
      * Take a serialised array and unserialise it replacing elements as needed and
      * unserialising any subordinate arrays and performing the replace on those too.
@@ -838,6 +866,39 @@ class icit_srdb {
         if( $data === 'b:0;' )	// This string will unserialize to false. It also can't be the
             return $data;		// target of a search & replace so can be returned as is.
 
+        // Adds Support for str replacement directly in JSON data or in nested JSON or Serialized arrays/objects 
+		if(is_string($data) && $this->json_validate($data)){ // Class wrapped json_validate function to handle compatibility in PHP versions
+			$json_decoded = json_decode($data,true);
+			if(!empty($json_decoded)){
+				$data = $json_decoded;
+				if ( is_array( $data ) ) {
+					$_tmp = array();
+					foreach ( $data as $key => $value ) {
+						$_tmp[ $key ] = $this->recursive_unserialize_replace( $from, $to, $value, false );
+					}
+
+					$data = $_tmp;
+					unset( $_tmp );
+				} elseif ( is_object( $data ) ) { // Could be removed because json_decode($data,true) returns Array, but kept for object handling 
+					$_tmp  = $data;
+					$props = get_object_vars( $data );
+					foreach ( $props as $key => $value ) {
+						$_tmp->$key = $this->recursive_unserialize_replace( $from, $to, $value, false );
+					}
+
+					$data = $_tmp;
+					unset( $_tmp );
+				} else {
+					if ( is_string( $data ) ) {
+						$data = $this->str_replace( $from, $to, $data );
+					}
+				}
+                // Return data to JSON as it came
+				$data = json_encode($data);
+				return $data;
+			}
+        }
+        
         // some unserialised data cannot be re-serialised eg. SimpleXMLElements
         try {
             // If this looks like serialized data, try to unserialize it.
