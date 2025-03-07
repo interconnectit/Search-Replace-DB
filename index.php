@@ -669,6 +669,7 @@ class icit_srdb_ui extends icit_srdb {
                 <div class="fields fields-large">
                     <div class="sr-boxes">
                         <div class="sr-box-0">
+                            <div class="field field-medium">
                             <label for="search-0"><span class="label-text">replace</span> <span
                                     class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
                                                                                         placeholder="search for&hellip;"
@@ -676,12 +677,10 @@ class icit_srdb_ui extends icit_srdb {
                                                                                             true ); ?>"
                                                                                         name="search-0"/><span
                                     class="hide-if-regex-off regex-right">/</span></label>
-                            <label for="replace-0"><span class="label-text">with</span> <input id="replace-0"
-                                                                                               type="text"
-                                                                                               placeholder="replace with&hellip;"
-                                                                                               value="<?php $this->esc_html_attr( $this->replace,
-                                                                                                   true ); ?>"
-                                                                                               name="replace-0"/></label>
+                        </div>
+                        <div class="field field-medium">
+                            <label for="replace-0"><span class="label-text">with</span>
+                            <input id="replace-0" type="text" placeholder="replace with&hellip;" value="<?php $this->esc_html_attr( $this->replace, true ); ?>" name="replace-0"/></label></div>
                         </div>
                     </div>
 
@@ -1359,7 +1358,7 @@ class icit_srdb_ui extends icit_srdb {
 
                 @media only screen and (min-width: 1110px) {
                     .label-text {
-                        display: inline;
+                        display: block;
                     }
 
                     .fields-large label {
@@ -4692,16 +4691,16 @@ class icit_srdb_ui extends icit_srdb {
                         add_search: function () {
                             var $row = $('.sr-boxes');
                             $new_search = $('<div class="sr-box-' + t.searches + '"></div>').appendTo($row);
-                            $('<label for="search-' + t.searches + '"><span class="label-text">replace</span> ' +
+                            $('<div class="field field-medium"><label for="search-' + t.searches + '"><span class="label-text">replace</span> ' +
                                 '<span class="hide-if-regex-off regex-left">/</span>' +
                                 '<input id="search-' + t.searches + '" type="text" placeholder="search for&hellip;" ' +
                                 'value="<?php $this->esc_html_attr( $this->search,
                                     true ); ?>" name="search-' + t.searches + '"/> ' +
-                                '<span class="hide-if-regex-off regex-right">/</span></label> ' +
+                                '<span class="hide-if-regex-off regex-right">/</span></label> ' + '</div><div class="field field-medium">' +
                                 '<label for="replace-' + t.searches + '"><span class="label-text">with </span>' +
                                 '<input id="replace-' + t.searches + '" type="text" placeholder="replace with&hellip;"' +
                                 'value="<?php $this->esc_html_attr( $this->replace,
-                                    true ); ?>" name="replace-' + t.searches + '"/></label>').appendTo($new_search);
+                                    true ); ?>" name="replace-' + t.searches + '"/></label></div>').appendTo($new_search);
 
                             if (t.searches == 1)
                                 dom.removeClass('multisearch-off');
