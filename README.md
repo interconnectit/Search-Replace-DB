@@ -85,7 +85,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
     expression.
 
   -r, --replace
-    None empty string to replace search with or `preg_replace()`
+    Non-empty string to replace search with or `preg_replace()`
     style replacement.
 
   -t, --tables
@@ -93,7 +93,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
     separate for multiple values.
 
   -w, --exclude-tables
-    If set excluded the specified tables, comma separate for multuple
+    If set excludes the specified tables, comma separate for multuple
     values.
 
   -i, --include-cols
@@ -109,7 +109,7 @@ Type `php srdb.cli.php` to run the program. Type `php srdb.cli.php
     --replace as a regular expression replacement.
 
   -l, --pagesize
-    How rows to fetch at a time from a table.
+    How many rows to fetch at a time from a table.
 
   -z, --dry-run [no value]
     Prevents any updates happening so you can preview the number of
