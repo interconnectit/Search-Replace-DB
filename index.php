@@ -669,14 +669,14 @@ class icit_srdb_ui extends icit_srdb {
                 <div class="fields fields-large">
                     <div class="sr-boxes">
                         <div class="sr-box-0">
-                            <label for="search-0"><span class="label-text">replace</span> <span
+                            <label for="search-0"><span class="label-fw">replace</span> <br> <span
                                     class="hide-if-regex-off regex-left">/</span><input id="search-0" type="text"
                                                                                         placeholder="search for&hellip;"
                                                                                         value="<?php $this->esc_html_attr( $this->search,
                                                                                             true ); ?>"
                                                                                         name="search-0"/><span
                                     class="hide-if-regex-off regex-right">/</span></label>
-                            <label for="replace-0"><span class="label-text">with</span> <input id="replace-0"
+                            <label for="replace-0"><span class="label-fw">with</span> <br> <input id="replace-0"
                                                                                                type="text"
                                                                                                placeholder="replace with&hellip;"
                                                                                                value="<?php $this->esc_html_attr( $this->replace,
@@ -1365,12 +1365,11 @@ class icit_srdb_ui extends icit_srdb {
                     .fields-large label {
                         margin: 0;
                         text-align: left;
-                        display: inline-block;
                     }
 
                     .fields-large input[type="text"] {
                         width: 15em;
-                    }
+		    }
 
                     .regex-on .fields-large .regex-left + input[type="text"] {
                         width: 12.7em;
@@ -1480,7 +1479,11 @@ class icit_srdb_ui extends icit_srdb {
                     padding-left: 0;
                     border-left: 0;
                     width: 1em;
-                }
+		}
+
+		#replace-0 {
+		    width: 100%;
+		}
 
                 [type="modify-ui"],
                 [type="submit"] {
@@ -1501,7 +1504,11 @@ class icit_srdb_ui extends icit_srdb {
                     -moz-transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
                     -ms-transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
                     transition: background-color 0.2s ease-in, color 0.2s ease-in, padding-left 0.05s ease-in;
-                }
+		}
+
+		#search-0 {
+		    width: 100%;
+		}
 
                 .separator {
                     margin-right: 20px;
