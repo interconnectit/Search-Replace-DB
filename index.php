@@ -1377,6 +1377,30 @@ class icit_srdb_ui extends icit_srdb {
                     }
                 }
 
+                .sr-boxes label {
+                    display: block;
+                    margin: 0 0 8px 0;
+                }
+
+                .sr-boxes .label-text {
+                    display: block;
+                    margin-bottom: 6px;
+                }
+
+                .sr-boxes input[type="text"] {
+                    width: 100% !important;
+                    font-size: 1.6rem;
+                    padding: 0.5em;
+                    box-sizing: border-box;
+                    border: 2px solid rgba(0,0,0,0.1);
+                    background: #fff;
+                }
+
+                @media only screen and (min-width: 1110px) {
+                    /* ensure the .fields-large rule doesn't override our stacked layout */
+                    .fields-large .sr-boxes label { display: block; }
+                }
+
                 .field {
                     float: left;
                     padding-right: 20px;
